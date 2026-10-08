@@ -3,6 +3,15 @@
   "schema": "db_corp",
   "daily_table": "t_ep_electricity_data_30min",
   "contract_table": "t_ep_contracted_power",
+  "management_table": "t_power_report_mng_info",
+  "customer_table": "t_arve_customer_info",
+  "pending_statuses": ["1", "5"],
+  "batch_user": "electricity_report_batch",
+  "customer_columns": {
+    "customer_number": "CMN_OldCustomerNum__c",
+    "address": "CMN_DemandLocationAddress__c"
+  },
+  "customer_filters": {"CMN_BusinessType__c": "2"},
   "value_unit": "kWh",
   "quality_columns": ["T01_KSKJ_KSU", "T01_FSU_KSU"]
 }

@@ -21,19 +21,20 @@ A4横・2ページの帳票を、matplotlib → メモリ上のPNG → Jinja2 �
 | 場所 | 役割 |
 | --- | --- |
 | `main.py` | 1顧客分の実行入口 |
-| `batch.py` | 複数顧客のCPUコア数に応じたプロセス並列処理 |
+| `batch.py` | 管理テーブル・JSONの対象を1件ずつCPUコア数に応じて並列処理 |
+| `services/report_job_source.py` | 管理テーブルの作成対象取得・状態更新・ARVE契約情報取得 |
 | `services/database_source.py` | テーブルの取得・日別48列の展開・kWh→kW換算 |
 | `services/data_service.py` | 入力検証・対象期間・No.別の集計 |
 | `services/report_service.py` | 取得・集計・描画・PDF保存の流れ |
 | `services/chart_service.py` | 完成した2ページだけをBytesIOでPNG化 |
 | `rendering/pages/` | 1・2ページ目の合成と描画順 |
 | `rendering/canvas.py` | mm座標、見出し、注釈、グラフ軸、表の共通描画 |
-| `rendering/icons.py` | 青い助言枠の電球アイコン（図形で描画） |
+| `rendering/icons.py` | 青い助言枠の左上に`assets/ICON.png`を配置 |
 | `rendering/styles.py` | 用紙内枠の寸法、配色、数値書式、共通注記 |
 | `services/font_service.py` | 通常・太字の準備・登録・終了処理を一か所で管理 |
 | `services/pdf_service.py` | Jinja2のHTML生成・PlaywrightのPDF化・保存 |
 | `templates/report.html` | A4横、黒い外枠、1ページ目中央の破線 |
-| `assets/` | 帳票で使用するTEPCOロゴと出典 |
+| `assets/` | TEPCOロゴ、青い電球の`ICON.png`、画像の説明 |
 | `examples/` | サンプルCSV・顧客設定・DB設定・ジョブ一覧 |
 | `tests/` | 単位・集計・各No.の描画・フォントの検証 |
 
@@ -41,6 +42,8 @@ A4横・2ページの帳票を、matplotlib → メモリ上のPNG → Jinja2 �
 
 ## 実行
 Python 3.10以降を使用します。以下はプロジェクトのルートで実行してください。
+実行前に、青い電球の画像を**幅90×高さ89ピクセルの`assets/ICON.png`**として配置してください。ファイル名の大文字・小文字も一致させます。画像本体は同梱していません。No.4〜No.7の全ての青い助言枠でこの画像を使用し、幅3.3mm・元の縦横比で左上に配置します。透過PNGに対応します。画像がない場合やサイズが異なる場合は、配置場所・必要サイズを示すエラーになります。
+画像はワーカープロセスごとに一度だけ読み込み、以降はメモリ内の画像を再利用します。画像を差し替えた場合はワーカープロセスを起動し直してください。
 ```bash
 python -m pip install -r requirements.txt
 python -m playwright install chromium
@@ -60,6 +63,13 @@ python main.py --supply-point 0000000000000000000001 --report-month 2026-06 --db
 ```
 
 ### 並列実行
+管理テーブルから対象を取得する場合は、次を実行します。`TARGET_YEAR_MONTH`のYYYYMMを対象年月として使い、1件ずつ並列処理します。`--workers`を省略すると利用可能なCPUコア数を使います。
+```bash
+python batch.py --from-management --db-config examples/database.json --output-dir output/reports
+```
+既定の取得対象は`CREATE_STATUS`の「1:作成依頼」「5:エラー」です。0件ならワーカーを起動せず正常終了します。着手時に「2:作成中」、PDF保存後に「3:完了」、失敗時に「5:エラー」へ更新します。No.0の名義・住所・お客さま番号はARVE、契約電力はEPテーブルから取得します。PDF名は未加入なら`企業ID_供給地点特定番号_YYYYMM.pdf`、加入なら`企業ID_供給地点特定番号_syousapo_YYYYMM.pdf`です。[管理テーブルからの並列処理](docs/managed_batch.md)に設定・状態・再実行手順を記載しています。
+
+従来のジョブJSONを使用する場合：
 ```bash
 python batch.py --jobs examples/jobs.csv.json --output-dir output/reports
 python batch.py --jobs examples/jobs.db.json --db-config examples/database.json --report-month 2026-06 --output-dir output/reports
@@ -74,11 +84,11 @@ python examples/generate_sample.py
 ```
 
 ## 詳細仕様と確認
-[No.0〜No.7の仕様](docs/report_specs.md)、[CSV・DBと単位](docs/data_inputs.md)、[メモリと並列処理](docs/parallel_processing.md)、[メイリオ](docs/fonts.md)に用途ごとの説明をまとめています。
+[No.0〜No.7の仕様](docs/report_specs.md)、[CSV・DBと単位](docs/data_inputs.md)、[管理テーブルからの並列処理](docs/managed_batch.md)、[メモリと並列処理](docs/parallel_processing.md)、[メイリオ](docs/fonts.md)に用途ごとの説明をまとめています。
 ```bash
 python -m unittest discover -s tests -v
 ```
-58件のテストを使用しています。実DBの接続確認と1000件の所要時間・最大メモリ測定は、実行環境で行ってください。
+80件のテストを使用しています。描画テストでも`assets/ICON.png`を使用します。管理状態・ARVE取得・2プロセスの重複着手防止・1000件の投入を検証しています。1000件の投入テストはPDFを生成せずキューの動作を確認するもので、実DB接続・1000件のPDF所要時間・最大メモリ測定は実行環境で行ってください。
 
 ## 今回の整理
 No.別の描画を専用モジュールへ分割し、古いページ・部品描画ファイルは削除しました。未使用のグラフ書式・色定義・HTMLファイル経由の互換関数も削除しています。重複していた顧客サンプル設定は`examples/customer.json`に集約しました。古い確認用PNG・HTML・PDFとPythonキャッシュは配布ソースから除き、必要なロゴ・テスト・実行例を保持しています。

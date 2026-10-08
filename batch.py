@@ -46,7 +46,7 @@ def _close_worker():
             _source.close()
 
 
-def _init_worker(font, browser, db_settings=None, bold_font=None):
+def _init_worker(font, browser, db_settings=None, bold_font=None, managed=False):
     """各ワーカー内で帳票サービスを一度だけ作る。
 
     Args:
@@ -54,6 +54,7 @@ def _init_worker(font, browser, db_settings=None, bold_font=None):
         browser (str | None): Chromiumの絶対パス。
         db_settings (dict | None): DB取得設定。接続はワーカー内で作る。
         bold_font (str | None): 太字書体の絶対パス。
+        managed (bool): Trueなら管理状態・ARVE情報も扱うDBサービスを作る。
     """
     global _service, _source
     # 重いライブラリの読み込みと初期化は子プロセス側で行う。
@@ -68,20 +69,131 @@ def _init_worker(font, browser, db_settings=None, bold_font=None):
     # ワーカーの通常終了時にブラウザーとDB接続プールを閉じる。
     Finalize(None, _close_worker, exitpriority=10)
     if db_settings is not None:
-        from services.database_source import DatabaseSource
+        if managed:
+            from services.report_job_source import ReportJobSource as Source
+        else:
+            from services.database_source import DatabaseSource as Source
 
-        _source = DatabaseSource(db_settings)
+        _source = Source(db_settings)
+
+
+def managed_report_filename(target):
+    """管理レコードの企業ID・供給地点・加入フラグ・対象年月からPDF名を作る。
+
+    未加入は「企業ID_供給地点特定番号_YYYYMM.pdf」、加入は
+    「企業ID_供給地点特定番号_syousapo_YYYYMM.pdf」。管理テーブルの
+    値をそのまま使用し、先頭ゼロを削除したり欠損値を代用したりしない。
+
+    Args:
+        target (dict): company_id、supply_point、target_year_month、
+            syousapo_flgを持つ管理テーブルの取得レコード。
+
+    Returns:
+        str: 拡張子.pdfを含む保存ファイル名。
+
+    Raises:
+        ValueError: 企業ID・供給地点・対象年月が不正、または加入フラグが
+            boolでない場合。パス区切り等が含まれる値も拒否する。
+    """
+    import re
+    from services.data_service import bounds
+
+    company = target["company_id"]
+    point, month = target["supply_point"], target["target_year_month"]
+    joined = target["syousapo_flg"]
+    if not isinstance(company, str) or not re.fullmatch(
+        r"[A-Za-z0-9_-]{1,14}", company
+    ):
+        raise ValueError("企業IDは14文字以内の英数字・ハイフン・下線が必要です")
+    if not isinstance(point, str) or not re.fullmatch(r"[A-Za-z0-9_-]{1,22}", point):
+        raise ValueError(
+            "供給地点特定番号は22文字以内の英数字・ハイフン・下線が必要です"
+        )
+    if not isinstance(month, str) or not re.fullmatch(r"\d{6}", month):
+        raise ValueError("管理テーブルの対象年月はYYYYMMの6桁文字列が必要です")
+    bounds(f"{month[:4]}-{month[4:]}")
+    # "False"などの文字列をbool()でTrueと解釈し、加入者の名前にしない。
+    if not isinstance(joined, bool):
+        raise ValueError("省サポ加入フラグSYOUSAPO_FLGはTrueまたはFalseが必要です")
+    suffix = "_syousapo" if joined else ""
+    return f"{company}_{point}{suffix}_{month}.pdf"
+
+
+def _run_managed_job(job):
+    """管理テーブルから取得した1件を着手・作成・状態更新する。
+
+    Args:
+        job (dict): managementの取得レコード、config_values、output_dirを持つジョブ。
+
+    Returns:
+        dict: id、status、outputと生成結果。先に着手された1件はskipped。
+            状態更新自体が失敗した場合はstate_update_errorも記録する。
+    """
+    target = job["management"]
+    output, claimed = None, False
+    try:
+        if _source is None:
+            raise ValueError("管理テーブル入力にはDB取得サービスが必要です")
+        # 着手直前に状態条件付きUPDATEを行い、他のバッチとの二重処理を防ぐ。
+        claimed = _source.claim(target)
+        if not claimed:
+            return {"id": job["id"], "status": "skipped", "output": None}
+        filename = managed_report_filename(target)
+        point, month = target["supply_point"], target["target_year_month"]
+        report_month = f"{month[:4]}-{month[4:]}"
+        # 添付の命名規則で保存し、同じ名前を管理テーブルにも記録する。
+        output = (Path(job["output_dir"]) / filename).resolve()
+        if len(str(output)) > 255:
+            raise ValueError(
+                "管理テーブルへ保存するPDFの絶対パスは255文字以内にしてください"
+            )
+        if output == Path(job["config_path"]):
+            raise ValueError("PDF保存先と共通設定ファイルのパスが競合しています")
+        # No.0の契約情報をARVEから取得し、サンプルの名義を使用しない。
+        config = {
+            **job["config_values"],
+            **_source.load_customer(point),
+            "target_month": report_month,
+            "company_id": target["company_id"],
+            "syousapo_flg": target["syousapo_flg"],
+        }
+        result = _service.generate_database(
+            _source, point, report_month, config, output
+        )
+        # 原子的なPDF保存に成功した後でのみ、完了状態と保存先を記録する。
+        _source.finish(target, output=output)
+        return {"id": job["id"], **result, "create_status": "3"}
+    except Exception as exc:
+        error = f"{type(exc).__name__}: {exc}"
+        result = {
+            "id": job["id"],
+            "status": "failed",
+            "output": str(output) if output else None,
+            "error": error,
+        }
+        if claimed:
+            try:
+                _source.finish(target, error=error)
+                result["create_status"] = "5"
+            except Exception as state_exc:
+                # DB障害時に「状態更新も成功した」と報告しない。復旧判断用に残す。
+                result["state_update_error"] = (
+                    f"{type(state_exc).__name__}: {state_exc}"
+                )
+        return result
 
 
 def _run_job(job):
     """1件を処理し、成功・失敗を小さな辞書で親へ返す。
 
     Args:
-        job (dict): id、csvまたはsupply_point、config、outputを持つジョブ。
+        job (dict): CSV・DBの従来ジョブ、またはmanagementを持つ管理テーブルの1件。
 
     Returns:
         dict: id、status、output、成功時のbytesまたは失敗時のerror。
     """
+    if "management" in job:
+        return _run_managed_job(job)
     try:
         config = json.loads(Path(job["config"]).read_text(encoding="utf-8"))
         # 顧客1件ごとに設定とデータを読み込む。画像やDataFrameを親から送らない。
@@ -175,25 +287,69 @@ def load_jobs(manifest, output_dir):
     return jobs
 
 
+def load_managed_jobs(settings, output_dir, config_path):
+    """親プロセスで管理テーブルから作成対象だけを取得する。
+
+    取得用DB接続は子プロセス起動前に閉じる。各ジョブには主キー・対象月・
+    共通設定だけを持たせ、実績と契約情報の取得は各ワーカーで実行する。
+
+    Args:
+        settings (dict): 管理・ARVE・実績テーブルのDB設定。
+        output_dir (pathlib.Path): 最終PDFの保存先。
+        config_path (pathlib.Path): 共通の注記などを持つJSON。契約値はDBで置き換える。
+
+    Returns:
+        list[dict]: 取得順の軽いジョブ一覧。対象0件なら空配列。
+    """
+    from services.report_job_source import ReportJobSource
+
+    config_path = Path(config_path).resolve()
+    config = json.loads(config_path.read_text(encoding="utf-8"))
+    if not isinstance(config, dict):
+        raise ValueError("共通設定JSONにはオブジェクトが必要です")
+    source = ReportJobSource(settings)
+    try:
+        targets = source.fetch_targets()
+    finally:
+        source.close()
+    return [
+        {
+            "id": f'{target["supply_point"]}_{target["target_year_month"]}',
+            "management": target,
+            "config_values": config,
+            "config_path": str(config_path),
+            "output_dir": str(Path(output_dir).resolve()),
+        }
+        for target in targets
+    ]
+
+
 def run_jobs(
-    jobs, workers=None, font=None, browser=None, db_settings=None, bold_font=None
+    jobs,
+    workers=None,
+    font=None,
+    browser=None,
+    db_settings=None,
+    bold_font=None,
+    managed=False,
 ):
     """ジョブを有限個ずつ投入し、完了した結果を順次返す。
 
     同時に投入する件数をワーカー数の2倍までに制限する。
     プロセス間でDataFrame、画像、PDFは受け渡さない。各ワーカーが
-    CSVを読み、PDFを保存し、結果のメタデータだけを返す。
+    CSVまたはDBから取得し、PDFを保存し、結果のメタデータだけを返す。
 
     Args:
-        jobs (list[dict]): load_jobsで検証済みのジョブ。
+        jobs (list[dict]): load_jobsまたはload_managed_jobsで取得したジョブ。
         workers (int | None): 並列数。既定は利用可能CPU数。
         font (pathlib.Path | None): 日本語フォント。
         browser (pathlib.Path | None): Chromium実行ファイル。
         db_settings (dict | None): テーブル入力時のDB設定。
         bold_font (pathlib.Path | None): 太字書体。各ワーカーで一度だけ読み込む。
+        managed (bool): Trueなら管理テーブルの状態・ARVE情報を処理する。
 
     Yields:
-        dict: 完了順の成功・失敗結果。入力順とは限らない。
+        dict: 完了順の成功・失敗・スキップ結果。入力順とは限らない。
 
     Raises:
         ValueError: workersが正の整数でない場合。
@@ -216,6 +372,7 @@ def run_jobs(
             str(Path(browser).resolve()) if browser else None,
             db_settings,
             str(Path(bold_font).resolve()) if bold_font else None,
+            managed,
         ),
     ) as pool:
         # 投入待ちのジョブを順番に取り出す。全件の重いデータを先に読み込まない。
@@ -240,13 +397,24 @@ def run_jobs(
 
 
 def main():
-    """ジョブJSONに従って並列生成し、結果JSONを保存する。
+    """管理テーブルまたはジョブJSONに従って並列生成し、結果JSONを保存する。
 
     1件のデータ不正では他のジョブを止めず、失敗結果を記録する。
     失敗があれば終了コード1、全成功なら0で終了する。
     """
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--jobs", type=Path, required=True)
+    source = parser.add_mutually_exclusive_group(required=True)
+    source.add_argument("--jobs", type=Path)
+    source.add_argument(
+        "--from-management",
+        action="store_true",
+        help="管理テーブルから作成依頼・エラーを取得する",
+    )
+    parser.add_argument(
+        "--config",
+        type=Path,
+        help="管理テーブル入力の共通設定JSON。契約情報はARVEから取得する",
+    )
     parser.add_argument("--output-dir", type=Path, default=Path("output/batch"))
     parser.add_argument("--workers", type=int)
     parser.add_argument("--font", type=Path)
@@ -255,12 +423,25 @@ def main():
     parser.add_argument("--db-config", type=Path)
     parser.add_argument("--report-month", help="DB取得の最終月。指定月を含む12か月")
     args = parser.parse_args()
-    jobs = load_jobs(args.jobs, args.output_dir)
     db_settings = (
         json.loads(args.db_config.read_text(encoding="utf-8"))
         if args.db_config
         else None
     )
+    if args.from_management:
+        if db_settings is None:
+            parser.error("管理テーブル入力には--db-configが必要です")
+        if args.report_month:
+            parser.error("管理テーブル入力の対象月はTARGET_YEAR_MONTHを使用します")
+        jobs = load_managed_jobs(
+            db_settings,
+            args.output_dir,
+            args.config or Path(__file__).parent / "examples" / "customer.json",
+        )
+    else:
+        if args.config:
+            parser.error("--configは--from-managementと併用してください")
+        jobs = load_jobs(args.jobs, args.output_dir)
     if any("supply_point" in job for job in jobs) and db_settings is None:
         parser.error("テーブル入力には--db-configが必要です")
     # CLIで対象月を指定した場合は、各DBジョブの月よりも優先する。
@@ -272,9 +453,17 @@ def main():
             if "supply_point" in job:
                 job["report_month"] = args.report_month
     args.output_dir.mkdir(parents=True, exist_ok=True)
+    if not jobs:
+        print("作成対象が0件のため、並列処理を行わず終了します。", flush=True)
     results = []
     for result in run_jobs(
-        jobs, args.workers, args.font, args.browser, db_settings, args.font_bold
+        jobs,
+        args.workers,
+        args.font,
+        args.browser,
+        db_settings,
+        args.font_bold,
+        managed=args.from_management,
     ):
         results.append(result)
         print(
@@ -284,7 +473,7 @@ def main():
     (args.output_dir / "results.json").write_text(
         json.dumps(results, ensure_ascii=False, indent=2), encoding="utf-8"
     )
-    if any(row["status"] != "succeeded" for row in results):
+    if any(row["status"] == "failed" for row in results):
         raise SystemExit(1)
 
 

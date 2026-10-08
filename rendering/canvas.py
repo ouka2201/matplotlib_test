@@ -84,11 +84,13 @@ class FirstPageCanvas(PageCanvas):
             w (float): 描画領域の幅（mm）。
             h (float): 描画領域の高さ（mm）。
             lines (list[str]): 説明欄に表示する行ごとの文字列。
-            advice (bool): Trueなら電球アイコン付きの青い助言欄、Falseなら黄色い結果欄を描く。
+            advice (bool): TrueならICON.png付きの青い助言欄、Falseなら黄色い結果欄を描く。
             centered (bool): Trueなら説明文を中央揃えにする。
 
         Raises:
             ValueError: 説明文を5.5pt以上で説明欄に収められない場合。
+                またはICON.pngのサイズが90×89ピクセルではない場合。
+            OSError: advice=Trueでassets/ICON.pngを読み込めない場合。
         """
         self.canvas.add_patch(
             Rectangle(
@@ -181,10 +183,12 @@ class SecondPageCanvas(PageCanvas):
             w (float): 描画領域の幅（mm）。
             h (float): 描画領域の高さ（mm）。
             lines (list[str]): 説明欄に表示する行ごとの文字列。
-            advice (bool): Trueなら電球アイコン付きの青い助言欄、Falseなら黄色い結果欄を描く。
+            advice (bool): TrueならICON.png付きの青い助言欄、Falseなら黄色い結果欄を描く。
 
         Raises:
             ValueError: 説明文を5.5pt以上で説明欄に収められない場合。
+                またはICON.pngのサイズが90×89ピクセルではない場合。
+            OSError: advice=Trueでassets/ICON.pngを読み込めない場合。
         """
         self.canvas.add_patch(
             Rectangle(

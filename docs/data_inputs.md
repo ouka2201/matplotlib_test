@@ -4,7 +4,7 @@
 ### 対象期間と契約電力
 指定したレポート作成年月を**含む12か月**を取得します。例：2026-06なら2025-07-01 00:00以上、2026-07-01 00:00未満。日付列はVARCHARのYYYYMMDDのため、SQLでは20250701以上・20260701未満で絞ります。供給地点`T01_KYO_CTN_TOK_NO`もWHERE条件に指定します。供給地点特定番号は22文字の文字列として先頭の0を保持し、お客さま番号とは別に扱います。
 この12か月は取得可能な最大範囲です。1年未満の場合は、範囲内で取得できた最初の日〜最後の日を実績期間にします。前後の実績がない日や月は0で補完しません。CSV・DBとも各実績日には48枠を要求し、実績期間途中の欠落日・枠はエラーにします。実績が全くない場合も明確なエラーにします。期間の前後に実績がない理由（契約開始・終了など）の照合は、現時点では入力に契約期間がないため行いません。
-契約電力は`T_EP_CONTRACTED_POWER`の`QSQB_DCIS2_SPL_PT_SPC_NO`で検索し、`QSQB_DCIS2_HVPW_CTRT`をkWとして使います。configの契約電力はこのDB値で上書きします。画像の契約電力テーブルには期間別の履歴が示されていないため、参照時点の1行を使用します。ご契約名義・住所・お客さま番号は引き続き顧客設定から取得します。
+契約電力は`T_EP_CONTRACTED_POWER`の`QSQB_DCIS2_SPL_PT_SPC_NO`で検索し、`QSQB_DCIS2_HVPW_CTRT`をkWとして使います。configの契約電力はこのDB値で上書きします。画像の契約電力テーブルには期間別の履歴が示されていないため、参照時点の1行を使用します。単体CLI・従来のジョブJSONでは名義・住所・お客さま番号を顧客設定から取得します。`--from-management`では`T_ARVE_CUSTOMER_INFO`から取得します。
 
 ### 接続設定
 `examples/database.json`をコピーし、実環境のスキーマ・テーブル名を指定してください。大文字で引用して作ったテーブルでは設定名も大文字に合わせます。列名は大小文字を区別せず解決します。DBの種類はSQLAlchemyの接続URLとDBドライバーで指定します。接続URLは設定ファイルでなく`REPORT_DATABASE_URL`環境変数へ設定します。PostgreSQLなら追加で`python -m pip install "psycopg[binary]"`、接続URLは`postgresql+psycopg://USER:PASSWORD@HOST:5432/DBNAME`の形式です。他のDBでは対応するドライバーとURL形式を使用してください。
@@ -15,6 +15,13 @@
 python main.py --supply-point 0000000000000000000001 --report-month 2026-06 --db-config db_config.json --config customer.json --font /path/to/font.ttf --output output/customer_0001.pdf
 ```
 ### 1000件の並列生成
+管理テーブルから作成対象を取得する場合は、1000件のジョブJSONを用意する必要はありません。
+```bash
+python batch.py --from-management --db-config db_config.json --output-dir output/reports
+```
+`T_POWER_REPORT_MNG_INFO`の作成依頼・エラーを取得し、供給地点と`TARGET_YEAR_MONTH`の年月ごとに1件ずつ処理します。名義・住所・お客さま番号はARVEテーブルで照合します。詳細は[管理テーブルからの並列処理](managed_batch.md)を参照してください。
+
+従来のJSON方式も利用できます。
 `examples/jobs.db.json`と同じ形式で1000件の顧客を記載します。各ワーカーでDB Engineを作り、親や他のワーカーとは接続を共有しません。DB接続は日別データと契約電力の取得中だけ使用し、画像描画の前に返します。
 ```bash
 python batch.py --jobs jobs.db.json --db-config db_config.json --report-month 2026-06 --output-dir output/reports --font /path/to/font.ttf
