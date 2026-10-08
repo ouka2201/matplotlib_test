@@ -1,87 +1,77 @@
-"""帳票内のアイコンをmatplotlibの図形で描く。画像ファイルや絵文字は使わない。"""
+"""青い助言枠の左上に、指定されたICON.pngを配置する。"""
 
-from matplotlib.path import Path
-from matplotlib.patches import PathPatch, Rectangle
-from matplotlib.transforms import Affine2D
+from functools import lru_cache
+from io import BytesIO
+from pathlib import Path
+
+import matplotlib.image as mpimg
+
+# 実行時の作業フォルダーによらず、プロジェクト内の画像を参照する。
+ICON_PATH = Path(__file__).resolve().parents[1] / "assets" / "ICON.png"
+ICON_SIZE_PX = (90, 89)  # 元画像の幅・高さ。帳票上の寸法はmmで指定する。
+ICON_WIDTH_MM = 3.3
+
+
+@lru_cache(maxsize=1)
+def load_advice_icon():
+    """90×89ピクセルのICON.pngを読み込み、プロセス内で再利用する。
+
+    1000件の並列処理でも、各ワーカーは画像を一度だけ読み込む。
+    顧客別のアイコン画像や一時ファイルは作成しない。画像を差し替えた
+    場合は、読み込み済みのワーカープロセスを起動し直す。
+
+    Returns:
+        numpy.ndarray: matplotlibで描画する画像。PNGの透過情報も保持する。
+
+    Raises:
+        FileNotFoundError: assets/ICON.pngが配置されていない場合。
+        OSError: PNG画像の読み込みに失敗した場合。
+        ValueError: 画像の幅・高さが90×89ピクセルではない場合。
+    """
+    if not ICON_PATH.is_file():
+        raise FileNotFoundError(
+            f"青い助言枠の画像がありません。90×89ピクセルのICON.pngを"
+            f"次の場所に配置してください: {ICON_PATH}"
+        )
+    icon = mpimg.imread(BytesIO(ICON_PATH.read_bytes()), format="png")
+    height, width = icon.shape[:2]
+    if (width, height) != ICON_SIZE_PX:
+        raise ValueError(
+            f"ICON.pngは幅90×高さ89ピクセルで用意してください。"
+            f"現在のサイズ: 幅{width}×高さ{height}ピクセル"
+        )
+    return icon
 
 
 def draw_advice_bulb(ax, x, y):
-    """青色の助言枠の左上に、青い電球アイコンを描画する。
+    """助言枠の左上に、ICON.pngを元の縦横比で描画する。
 
-    電球の輪郭・口金・白いフィラメントを図形で描くため、フォントに
-    電球の文字がなくても同じ形を表示できる。PNGはページ全体の生成時に
-    メモリ上で作られ、アイコン用の画像ファイルは作成しない。
+    PNGはページFigureへ直接配置する。幅3.3mmで縮小し、上端は枠より
+    2mm上、左端は枠より0.25mm左に置き、下側を枠内に少し重ねる。
 
     Args:
         ax (matplotlib.axes.Axes): 左上原点・mm単位のページ配置用Axes。
         x (float): 助言枠の左端（mm）。
         y (float): 助言枠の上端（mm）。
+
+    Returns:
+        matplotlib.image.AxesImage: ページに配置したアイコン画像。
+
+    Raises:
+        FileNotFoundError: assets/ICON.pngが配置されていない場合。
+        OSError: PNG画像の読み込みに失敗した場合。
+        ValueError: 画像の幅・高さが90×89ピクセルではない場合。
     """
-    color = "#4b9ec0"
-    # 電球の中心を枠の左上に置き、口金は枠内へ少し重ねる。
-    cx, cy = x + 1, y - 0.8
-    outline = Path(
-        [
-            (0, -1.15),
-            (-0.68, -1.15),
-            (-1.25, -0.61),
-            (-1.25, 0),
-            (-1.25, 0.61),
-            (-0.65, 0.68),
-            (-0.6, 1.3),
-            (0.6, 1.3),
-            (0.65, 0.68),
-            (1.25, 0.61),
-            (1.25, 0),
-            (1.25, -0.61),
-            (0.68, -1.15),
-            (0, -1.15),
-            (0, -1.15),
-        ],
-        [Path.MOVETO]
-        + [Path.CURVE4] * 6
-        + [Path.LINETO]
-        + [Path.CURVE4] * 6
-        + [Path.CLOSEPOLY],
+    icon = load_advice_icon()
+    left, top = x - 0.25, y - 2
+    height = ICON_WIDTH_MM * icon.shape[0] / icon.shape[1]
+    # y軸は下向き。originとextentを指定して上下を反転させずに配置する。
+    # aspect="auto"で、ページ全体のmm座標や他のグラフの位置を維持する。
+    return ax.imshow(
+        icon,
+        extent=(left, left + ICON_WIDTH_MM, top + height, top),
+        origin="upper",
+        aspect="auto",
+        interpolation="lanczos",
+        zorder=3,
     )
-    ax.add_patch(
-        PathPatch(
-            outline,
-            transform=Affine2D().translate(cx, cy) + ax.transData,
-            facecolor=color,
-            edgecolor="none",
-            zorder=3,
-        )
-    )
-    # 口金を2段に分け、丸印ではなく電球だと分かる形にする。
-    for left, top, width, height in (
-        (-0.58, 1.43, 1.16, 0.3),
-        (-0.43, 1.86, 0.86, 0.23),
-    ):
-        ax.add_patch(
-            Rectangle(
-                (cx + left, cy + top),
-                width,
-                height,
-                facecolor=color,
-                edgecolor="none",
-                zorder=3,
-            )
-        )
-    # 白いフィラメントは描画済みの電球本体に重ねる。
-    ax.plot(
-        [cx - 0.42, cx - 0.16, cx, cx + 0.16, cx + 0.42],
-        [cy + 0.08, cy + 0.42, cy + 0.18, cy + 0.42, cy + 0.08],
-        color="white",
-        linewidth=0.45,
-        solid_capstyle="round",
-        zorder=4,
-    )
-    for offset in (-0.16, 0.16):
-        ax.plot(
-            [cx + offset, cx + offset],
-            [cy + 0.42, cy + 1.13],
-            color="white",
-            linewidth=0.4,
-            zorder=4,
-        )
