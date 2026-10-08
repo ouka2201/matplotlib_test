@@ -1,0 +1,4 @@
+[
+  {"id": "customer_0001", "supply_point": "0000000000000000000001", "report_month": "2026-06", "config": "customer.json"},
+  {"id": "customer_0002", "supply_point": "0000000000000000000002", "report_month": "2026-06", "config": "customer.json"}
+]

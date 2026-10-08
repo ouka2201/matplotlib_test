@@ -1,0 +1,8 @@
+{
+  "url_env": "REPORT_DATABASE_URL",
+  "schema": "db_corp",
+  "daily_table": "t_ep_electricity_data_30min",
+  "contract_table": "t_ep_contracted_power",
+  "value_unit": "kWh",
+  "quality_columns": ["T01_KSKJ_KSU", "T01_FSU_KSU"]
+}

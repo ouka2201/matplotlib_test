@@ -1,0 +1,10 @@
+{
+  "customer_name": "サンプル製作所　四日市工場",
+  "address": "三重県四日市市（サンプル住所）",
+  "customer_number": "981-0000000000000",
+  "contract_kw": 1600,
+  "target_month": "2026-06",
+  "issuer": "電力使用状況レポート",
+  "holidays": [],
+  "is_sample": true
+}
