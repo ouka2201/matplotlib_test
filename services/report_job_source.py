@@ -18,6 +18,34 @@ CUSTOMER_COLUMNS = {
 }
 
 
+def customer_column_mapping(table, settings):
+    """ARVEの名義・住所・お客さま番号の物理列名を共通で解決する。
+
+    Args:
+        table (sqlalchemy.Table): 反映済みのARVEテーブル。
+        settings (dict): customer_columnsの任意指定を持つDB設定。
+
+    Returns:
+        dict: 帳票の項目名から物理列名への対応。
+
+    Raises:
+        ValueError: 名義列を一意に特定できない場合。
+    """
+    mapping = {**CUSTOMER_COLUMNS, **settings.get("customer_columns", {})}
+    if not mapping.get("customer_name"):
+        matches = [
+            column.name
+            for column in table.c
+            if column.name.upper().startswith("CMN_DEMANDLOCATIONFULLNAME_")
+        ]
+        if len(matches) != 1:
+            raise ValueError(
+                "customer_columns.customer_nameに名義の物理列名を指定してください"
+            )
+        mapping["customer_name"] = matches[0]
+    return mapping
+
+
 class ReportJobSource(DatabaseSource):
     """1プロセス専用の対象取得・状態更新・実績取得用DBサービス。"""
 
@@ -239,18 +267,7 @@ class ReportJobSource(DatabaseSource):
                     autoload_with=connection,
                 )
             table = self.customer
-            mapping = {**CUSTOMER_COLUMNS, **self.settings.get("customer_columns", {})}
-            if not mapping.get("customer_name"):
-                matches = [
-                    col.name
-                    for col in table.c
-                    if col.name.upper().startswith("CMN_DEMANDLOCATIONFULLNAME_")
-                ]
-                if len(matches) != 1:
-                    raise ValueError(
-                        "customer_columns.customer_nameに名義の物理列名を指定してください"
-                    )
-                mapping["customer_name"] = matches[0]
+            mapping = customer_column_mapping(table, self.settings)
             columns = [
                 self._column(table, mapping[key]).label(key)
                 for key in ("customer_name", "address", "customer_number")

@@ -36,6 +36,7 @@ A4横・2ページの帳票を、matplotlib → メモリ上のPNG → Jinja2 �
 | `templates/report.html` | A4横、黒い外枠、1ページ目中央の破線 |
 | `assets/` | TEPCOロゴ、青い電球の`ICON.png`、画像の説明 |
 | `examples/` | サンプルCSV・顧客設定・DB設定・ジョブ一覧 |
+| `examples/insert_test_data.py` | 取込管理・ARVE・契約電力・日別48枠へ同じ供給地点の架空データをINSERT |
 | `tests/` | 単位・集計・各No.の描画・フォントの検証 |
 
 全No.のページ配置は左上原点・mm単位です。グラフ軸の中では日時・電力などのデータ座標を使います。ページ全体の合成は`rendering/pages/first_page.py`と`second_page.py`、黒枠・破線はHTMLで調整します。No.4・No.5を同じ条件分岐で描く旧処理は分割し、各No.の座標をそのファイルで確認できる形にしています。
@@ -57,7 +58,7 @@ python main.py --csv examples/sample.csv --font /path/to/meiryo.ttc --font-bold 
 同じフォルダーに`meiryo.ttc`と`meiryob.ttc`があれば太字指定を省略できます。他のTTF/OTFでは通常・太字を両方指定します。フォント本体は同梱していません。
 
 ### テーブル入力
-`examples/database.json`を実環境に合わせてコピーし、SQLAlchemyの接続URLを`REPORT_DATABASE_URL`環境変数に設定します。ご使用のDB用ドライバーもインストールしてください。
+実テーブルはPostgreSQLです。`requirements.txt`にPsycopg 3のドライバーを含めています。`examples/database.json`を実環境に合わせてコピーし、接続URLを`REPORT_DATABASE_URL`環境変数に設定します。ドライバーを明示するため、URLは`postgresql+psycopg://USER:PASSWORD@HOST:5432/DBNAME`の形式です。スキーマ・テーブル名は実際の定義に合わせます。設定とテストデータ登録の例は[登録手順](docs/test_data.md)を参照してください。
 ```bash
 python main.py --supply-point 0000000000000000000001 --report-month 2026-06 --db-config examples/database.json --config examples/customer.json --output output/report.pdf
 ```
@@ -76,6 +77,15 @@ python batch.py --jobs examples/jobs.db.json --db-config examples/database.json 
 ```
 既定は利用可能CPU数のプロセス並列です。必要なら`--workers 4`などで指定します。1000件の一覧では顧客IDを全件一意にしてください。CSV・顧客設定の相対パスはジョブJSONの配置場所基準です。各ワーカーはブラウザー・フォント・DBサービスを再利用します。
 
+### テーブルへテストデータを登録する
+検証DBの接続・列設定と`seed_record_type_ids`の実際のIDを用意した後、次の例で1000地点・3か月分を登録できます。投入先は30分値取込管理・ARVE・EP契約電力・EP30分値の4テーブルです。全て同じ22桁の供給地点特定番号を使い、取込管理は`3:完了`で登録します。レポート管理の作成は後続の取込確認処理へ渡します。
+
+```bash
+python examples/insert_test_data.py --db-config examples/database.json --report-month 2026-06 --count 1000 --months 3
+```
+
+最大電力は`--max-kw`、契約電力は`--contract-kw`で指定できます。既存行は既定でエラーにし、`--on-existing skip`なら保持して不足分だけ追加します。`--dry-run`では登録予定件数を確認できます。手元で試すSQLite用設定・テーブル作成も用意しています。[テストデータの登録手順](docs/test_data.md)を参照してください。
+
 ### 確認用出力とサンプル生成
 1年未満の動作確認用に`examples/sample_short.csv`（2026年4月〜6月）を同梱しています。`python main.py --csv examples/sample_short.csv --output output/short_report.pdf`で生成できます。
 通常は完成PDFのみを保存します。必要なときだけ`--debug-dir output/debug`で完成ページPNG・HTMLを保存します。新しいサンプルを生成する場合：
@@ -88,7 +98,7 @@ python examples/generate_sample.py
 ```bash
 python -m unittest discover -s tests -v
 ```
-80件のテストを使用しています。描画テストでも`assets/ICON.png`を使用します。管理状態・ARVE取得・2プロセスの重複着手防止・1000件の投入を検証しています。1000件の投入テストはPDFを生成せずキューの動作を確認するもので、実DB接続・1000件のPDF所要時間・最大メモリ測定は実行環境で行ってください。
+92件のテストを使用しています。描画テストでも`assets/ICON.png`を使用します。管理状態・ARVE取得・2プロセスの重複着手防止・1000件の投入に加え、4テーブルの供給地点一致・取込完了状態・レポート管理への未投入・既存行の保持・ロールバック・366日分の実績を検証しています。1000件の検証ではPDFを生成せず、登録・キューの動作を確認しています。実DB接続・1000件のPDF所要時間・最大メモリ測定は実行環境で行ってください。
 
 ## 今回の整理
 No.別の描画を専用モジュールへ分割し、古いページ・部品描画ファイルは削除しました。未使用のグラフ書式・色定義・HTMLファイル経由の互換関数も削除しています。重複していた顧客サンプル設定は`examples/customer.json`に集約しました。古い確認用PNG・HTML・PDFとPythonキャッシュは配布ソースから除き、必要なロゴ・テスト・実行例を保持しています。

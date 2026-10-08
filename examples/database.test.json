@@ -1,14 +1,15 @@
 {
-  "url_env": "REPORT_DATABASE_URL",
-  "schema": "db_corp",
+  "url_env": "REPORT_TEST_DATABASE_URL",
+  "schema": null,
   "daily_table": "t_ep_electricity_data_30min",
   "import_management_table": "t_30min_import_mng",
   "contract_table": "t_ep_contracted_power",
   "management_table": "t_power_report_mng_info",
   "customer_table": "t_arve_customer_info",
   "pending_statuses": ["1", "5"],
-  "batch_user": "electricity_report_batch",
+  "batch_user": "electricity_report_test",
   "customer_columns": {
+    "customer_name": "CMN_DemandLocationFullName_Test__c",
     "customer_number": "CMN_OldCustomerNum__c",
     "address": "CMN_DemandLocationAddress__c",
     "company_id": "CMN_KigyoID_Fk__c",
@@ -16,5 +17,10 @@
   },
   "customer_filters": {"CMN_BusinessType__c": "2"},
   "value_unit": "kWh",
-  "quality_columns": ["T01_KSKJ_KSU", "T01_FSU_KSU"]
+  "quality_columns": ["T01_KSKJ_KSU", "T01_FSU_KSU"],
+  "seed_record_type_ids": {
+    "joined": "TEST_SYOUSAPO",
+    "not_joined": "TEST_OTHER"
+  },
+  "seed_defaults": {}
 }
