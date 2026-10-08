@@ -39,7 +39,8 @@ def load_data(path, target_month):
 
     タイムゾーン付き日時は日本時間へ変換する。日時の重複や
     不正値は全入力行を検査し、その後で対象期間外の行を除外する。
-    欠損を0で補完せず、暦に基づいた全30分枠がそろうことを確認する。
+    直近12か月内の実績期間を使う。期間の前後に実績がなくても受け付け、
+    実績がある最初の日〜最後の日は、毎日48枠が連続することを確認する。
 
     Args:
         path (str | pathlib.Path): 入力CSVのパス。
@@ -52,7 +53,7 @@ def load_data(path, target_month):
 
     Raises:
         ValueError: 必須列の不足、不正な日時・電力、重複日時、
-            対象期間の欠損または30分刻みでない日時がある場合。
+            実績期間内の欠損または30分刻みでない日時がある場合。
         OSError: CSVファイルを読み込めない場合。
     """
     df = pd.read_csv(path, dtype={"timestamp": str})
@@ -70,10 +71,11 @@ def validate_data(df, target_month):
         target_month (str): 最終対象月。YYYY-MM形式。
 
     Returns:
-        pandas.DataFrame: 指定月を含む12か月の完全な30分枠。
+        pandas.DataFrame: 直近12か月内の実績。期間は1日〜12か月。
+            最初と最後の日を含め、毎日48枠の連続したデータ。
 
     Raises:
-        ValueError: 必須列不足、不正値、重複、欠損がある場合。
+        ValueError: 必須列不足、不正値、重複、実績なし、期間途中の欠損がある場合。
     """
     # 検証中の型変換や並べ替えで、呼び出し元が持つDataFrameを変更しない。
     df = df.copy()
@@ -106,15 +108,19 @@ def validate_data(df, target_month):
         .sort_values("timestamp")
         .reset_index(drop=True)
     )
-    # 暦から「本来必要な全30分枠」を作り、取得データと完全一致するか調べる。
-    # 件数だけ一致していても、日時の抜けや余分な枠があれば拒否する。
-    expected = pd.date_range(start, end, freq="30min", inclusive="left")
+    if df.empty:
+        raise ValueError("対象の直近12か月に実績データがありません")
+    # 実績がある最初〜最後の日を検査する。実績の前後は0で埋めない。
+    # DBは日別48列なのでCSVも1日48枠を要求し、途中の欠落日・枠を見逃さない。
+    actual_start = df.timestamp.iloc[0].normalize()
+    actual_end = df.timestamp.iloc[-1].normalize() + timedelta(days=1)
+    expected = pd.date_range(actual_start, actual_end, freq="30min", inclusive="left")
     actual = pd.DatetimeIndex(df.timestamp)
     if not actual.equals(expected):
         missing = expected.difference(actual)
         unexpected = actual.difference(expected)
         raise ValueError(
-            f"直近12か月の30分データが不完全です。欠損={len(missing)}、時刻不整合={len(unexpected)}"
+            f"実績期間の30分データが不完全です。欠損={len(missing)}、時刻不整合={len(unexpected)}"
         )
     return df
 
@@ -230,28 +236,41 @@ def build_context(df, config):
             seriesにはdf（全枠）、day（対象月のピーク日の48枠）、
             daily（日別最大。kwは未丸め値、display_kwはNo.1の表示値）、
             monthly（月別集計）、top（上位50枠）、
-            week（ピークを含む336枠）、各区分の件数を格納する。
+            week（ピークを含む最大7日間）、各区分の件数を格納する。
+            対象月に実績がない場合はday・dailyが空、日別ピークはNone。
 
     Raises:
-        ValueError: 契約電力が正の有限数でない、または対象月が不正な場合。
+        ValueError: 契約電力が正の有限数でない、対象月が不正、または実績がない場合。
         KeyError: 必須設定またはデータ列がない場合。
     """
     contract = float(config["contract_kw"])
     if not math.isfinite(contract) or contract <= 0:
         raise ValueError("contract_kwは正の有限数にしてください")
     start, end, month = bounds(config["target_month"])
-    # 日別カレンダーと日別グラフは、12か月のうち最後の指定月を対象にする。
-    last_month = df.loc[df.timestamp >= month].copy()
-    # 同値の場合、時刻が早い枠を採用。TOP50は必ず50枠。
+    if df.empty:
+        raise ValueError("集計対象の実績データがありません")
+    df = df.sort_values("timestamp").copy()
+    actual_start = df.timestamp.iloc[0].normalize()
+    actual_end = df.timestamp.iloc[-1].normalize() + timedelta(days=1)
+    # 日別欄は指定月を使う。別の月に置き換えず、実績がなければ空で扱う。
+    last_month = df.loc[(df.timestamp >= month) & (df.timestamp < end)].copy()
+    # 最大50枠。1日48枠だけの実績では48枠を使い、存在しない50位を作らない。
     top = df.sort_values(["kw", "timestamp"], ascending=[False, True]).head(50)
     peak = top.iloc[0]
-    monthly_peak = last_month.loc[last_month.kw.idxmax()]
-    day = last_month.loc[last_month.timestamp.dt.date == monthly_peak.timestamp.date()]
+    monthly_peak = (
+        last_month.loc[last_month.kw.idxmax()] if not last_month.empty else None
+    )
+    day = (
+        last_month.loc[last_month.timestamp.dt.date == monthly_peak.timestamp.date()]
+        if monthly_peak is not None
+        else last_month.copy()
+    )
     daily_idx = last_month.groupby(last_month.timestamp.dt.date)["kw"].idxmax()
     daily = last_month.loc[daily_idx].copy()
     # No.1だけの表示値。集計・順位・No.2の48枠は、丸め前のkwを使用する。
     daily["display_kw"] = daily.kw.map(calendar_power)
-    months = pd.period_range(start, end - timedelta(days=1), freq="M")
+    # 実績のある月だけを年月順に並べる。存在しない月を0kWhとはみなさない。
+    months = pd.period_range(actual_start, actual_end - timedelta(days=1), freq="M")
     monthly = (
         df.groupby(df.timestamp.dt.to_period("M"))["kw"]
         .agg(["sum", "max"])
@@ -269,8 +288,16 @@ def build_context(df, config):
         .sort_values("timestamp")
         .copy()
     )
-    week_stats = week.groupby(week.timestamp.dt.date)["kw"].agg(["sum", "max"])
-    # TOP50の同じ50枠を、月・曜日・開始時刻の時間帯ごとに数える。
+    # 日別表は十進数で合計し、15501.023000000001のような計算誤差の桁を防ぐ。
+    # 表示桁で丸めず、入力値の小数部を保ったkWhを求める。
+    week_stats = week.groupby(week.timestamp.dt.date)["kw"].agg(
+        kwh=lambda values: float(
+            sum((Decimal(str(value)) for value in values), Decimal("0"))
+            * Decimal("0.5")
+        ),
+        max="max",
+    )
+    # 同じ上位最大50枠を、月・曜日・開始時刻の時間帯ごとに数える。
     # ゼロ件の区分も埋めて、グラフの軸を毎回同じ順序にする。
     month_count = (
         top.groupby(top.timestamp.dt.to_period("M"))
@@ -295,12 +322,12 @@ def build_context(df, config):
                 cells.append(None)
                 continue
             ts = pd.Timestamp(year=month.year, month=month.month, day=number)
-            r = by_date[ts.date()]
+            r = by_date.get(ts.date())
             cells.append(
                 {
                     "day": number,
-                    "time": r.timestamp.strftime("%H:%M"),
-                    "kw": r.display_kw,
+                    "time": r.timestamp.strftime("%H:%M") if r is not None else None,
+                    "kw": r.display_kw if r is not None else None,
                     "kind": (
                         "holiday"
                         if ts.weekday() == 6
@@ -320,7 +347,9 @@ def build_context(df, config):
     context = {
         "customer": config,
         "target_month": month_str,
-        "period": f"{start:%Y年%m月}〜{end - timedelta(days=1):%Y年%m月}",
+        "period": f"{actual_start:%Y年%m月}〜{actual_end - timedelta(days=1):%Y年%m月}",
+        "actual_period": f"{actual_start:%Y/%m/%d}〜{actual_end - timedelta(days=1):%Y/%m/%d}",
+        "has_full_year": actual_start == start and actual_end == end,
         "weeks": weeks,
         "daily_top": [
             {
@@ -330,9 +359,13 @@ def build_context(df, config):
             }
             for _, r in daily_top.iterrows()
         ],
-        "day_date": date_label(monthly_peak.timestamp),
-        "day_peak_time": time_range(monthly_peak.timestamp),
-        "day_peak_kw": monthly_peak.kw,
+        "day_date": (
+            date_label(monthly_peak.timestamp) if monthly_peak is not None else None
+        ),
+        "day_peak_time": (
+            time_range(monthly_peak.timestamp) if monthly_peak is not None else None
+        ),
+        "day_peak_kw": monthly_peak.kw if monthly_peak is not None else None,
         "energy_peak_month": monthly.kwh.idxmax().strftime("%Y年%m月"),
         "energy_min_month": monthly.kwh.idxmin().strftime("%Y年%m月"),
         "power_peak_month": monthly["max"].idxmax().strftime("%Y年%m月"),
@@ -348,14 +381,19 @@ def build_context(df, config):
             }
             for i, (_, r) in enumerate(top.head(10).iterrows())
         ],
-        "rank50_row": {
-            "rank": 50,
-            "date": date_label(top.iloc[49].timestamp),
-            "time": top.iloc[49].timestamp.strftime("%H:%M"),
-            "kw": top.iloc[49].kw,
-        },
+        "rank50_row": (
+            {
+                "rank": 50,
+                "date": date_label(top.iloc[49].timestamp),
+                "time": top.iloc[49].timestamp.strftime("%H:%M"),
+                "kw": top.iloc[49].kw,
+            }
+            if len(top) >= 50
+            else None
+        ),
         "count": len(df),
         "top_count": len(top),
+        "top_label": f"TOP{len(top)}",
         "top_month": peak_month_str,
         "top_weekdays": most_common_labels(
             weekday_count, {i: WEEKDAYS[i] + "曜日" for i in range(7)}
@@ -365,7 +403,7 @@ def build_context(df, config):
         ),
         "week_period": f"{week_start:%Y年%m月%d日}〜{week_end - timedelta(days=1):%Y年%m月%d日}",
         "week_rows": [
-            {"date": date_label(pd.Timestamp(d)), "kwh": r["sum"] * 0.5, "kw": r["max"]}
+            {"date": date_label(pd.Timestamp(d)), "kwh": r["kwh"], "kw": r["max"]}
             for d, r in week_stats.iterrows()
         ],
         "notes": "最大電力は30分間の平均電力の最大値です。使用電力量は各枠の平均電力×0.5時間を合計しています。",
@@ -382,5 +420,7 @@ def build_context(df, config):
         "weekday_count": weekday_count,
         "hour_count": hour_count,
         "holidays": holidays,
+        "partial_period": actual_start != start or actual_end != end,
+        "actual_period": context["actual_period"],
     }
     return context, series

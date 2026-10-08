@@ -14,6 +14,10 @@ def draw_no2(page, series):
     text, title, note, chart_axes = page.text, page.title, page.note, page.chart_axes
     # 左下の日別グラフは、指定月内で最大電力が発生した日の48枠を表示する。
     day = series["day"]
+    if day.empty:
+        title(2, 136.7, 2, "30分ごとの需要電力の推移")
+        text(5, 144, "対象月に実績がないため、日別グラフは表示しません", size=6.8)
+        return
     stamp = day.iloc[0].timestamp
     weekday = "月火水木金土日"[stamp.weekday()]
     title(2, 136.7, 2, f"30分ごとの需要電力の推移：{stamp:%Y年%m月%d日}（{weekday}）")

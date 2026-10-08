@@ -46,7 +46,7 @@ python -m pip install -r requirements.txt
 python -m playwright install chromium
 python main.py --csv examples/sample.csv --output output/report.pdf
 ```
-顧客設定の既定値は`examples/customer.json`です。実データでは`--config customer.json`を指定します。CSVの`kw`は30分平均電力(kW)、DBの48枠は使用電力量(kWh)で、取得時に2倍してkWへ換算します。対象月を含む直近12か月の完全な30分枠が必要です。
+顧客設定の既定値は`examples/customer.json`です。実データでは`--config customer.json`を指定します。CSVの`kw`は30分平均電力(kW)、DBの48枠は使用電力量(kWh)で、取得時に2倍してkWへ換算します。取得対象は指定月を含む直近12か月ですが、その中の実績が1年未満でも作成できます。実績の最初の日〜最後の日について、毎日48枠の連続データが必要です。実績期間の前後は補完せず、途中の欠測・重複・不正値はエラーにします。対象月に実績がなくても、月別・期間全体のグラフを生成し、No.1・No.2は実績なしと表示します。
 Windowsではメイリオを自動検出します。別環境で通常・太字のフォントを明示する場合：
 ```bash
 python main.py --csv examples/sample.csv --font /path/to/meiryo.ttc --font-bold /path/to/meiryob.ttc --output output/report.pdf
@@ -67,6 +67,7 @@ python batch.py --jobs examples/jobs.db.json --db-config examples/database.json 
 既定は利用可能CPU数のプロセス並列です。必要なら`--workers 4`などで指定します。1000件の一覧では顧客IDを全件一意にしてください。CSV・顧客設定の相対パスはジョブJSONの配置場所基準です。各ワーカーはブラウザー・フォント・DBサービスを再利用します。
 
 ### 確認用出力とサンプル生成
+1年未満の動作確認用に`examples/sample_short.csv`（2026年4月〜6月）を同梱しています。`python main.py --csv examples/sample_short.csv --output output/short_report.pdf`で生成できます。
 通常は完成PDFのみを保存します。必要なときだけ`--debug-dir output/debug`で完成ページPNG・HTMLを保存します。新しいサンプルを生成する場合：
 ```bash
 python examples/generate_sample.py
@@ -77,7 +78,7 @@ python examples/generate_sample.py
 ```bash
 python -m unittest discover -s tests -v
 ```
-44件のテストを使用しています。実DBの接続確認と1000件の所要時間・最大メモリ測定は、実行環境で行ってください。
+58件のテストを使用しています。実DBの接続確認と1000件の所要時間・最大メモリ測定は、実行環境で行ってください。
 
 ## 今回の整理
 No.別の描画を専用モジュールへ分割し、古いページ・部品描画ファイルは削除しました。未使用のグラフ書式・色定義・HTMLファイル経由の互換関数も削除しています。重複していた顧客サンプル設定は`examples/customer.json`に集約しました。古い確認用PNG・HTML・PDFとPythonキャッシュは配布ソースから除き、必要なロゴ・テスト・実行例を保持しています。

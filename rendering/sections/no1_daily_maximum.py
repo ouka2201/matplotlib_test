@@ -121,11 +121,12 @@ def draw_no1(page, daily, config):
             # 前月・翌月の空白セルは背景だけ描く。
             if not day:
                 continue
-            item = by_day[day]
+            item = by_day.get(day)
+            # 実績のない日には時刻・電力を捏造せず、その状態を表示する。
             labels = [
                 f"{month.month:02d}/{day:02d}",
-                item.timestamp.strftime("%H:%M"),
-                f"{calendar_power(item.kw):,}kW",
+                item.timestamp.strftime("%H:%M") if item is not None else "--:--",
+                f"{calendar_power(item.kw):,}kW" if item is not None else "実績なし",
             ]
             for line_index, label in enumerate(labels):
                 canvas.text(
@@ -153,7 +154,11 @@ def draw_no1(page, daily, config):
         canvas.text(
             note_x + 1.405,
             note_y + 2.5608,
-            "TOP3は以下のとおりでした",
+            (
+                "TOP3は以下のとおりでした"
+                if not daily.empty
+                else "対象月の実績はありません"
+            ),
             fontsize=6.8,
             color=TEXT,
             ha="left",

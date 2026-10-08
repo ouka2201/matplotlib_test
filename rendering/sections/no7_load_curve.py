@@ -87,7 +87,7 @@ def draw_no7(page, s, context):
         9,
         [
             f"ピークは、{peak_text}に発生しています",
-            "当該日を含む一週間の電力の使い方に注目してください",
+            f"当該日を含む{'一週間' if week_days == 7 else week_label}の電力の使い方に注目してください",
         ],
     )
     note(

@@ -31,7 +31,7 @@ class ReportService:
         """1顧客分を生成する。通常は完成PDFだけをファイルへ保存する。
 
         Args:
-            csv_path (pathlib.Path): 12か月分の電力CSV。
+            csv_path (pathlib.Path): 直近12か月内の実績CSV。1年未満も利用できる。
             config (dict): 契約情報・対象月などの設定。
             output (pathlib.Path): この顧客のPDF保存先。
             debug_dir (pathlib.Path | None): 指定時だけPNGとHTMLを保存する。

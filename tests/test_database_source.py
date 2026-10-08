@@ -82,7 +82,7 @@ class DatabaseSourceTests(unittest.TestCase):
         rows = daily_rows()
         for invalid in [
             rows + [rows[0]],
-            rows[1:],
+            rows[:1] + rows[2:],
             [{**row, SLOTS[47]: ""} if i == 0 else row for i, row in enumerate(rows)],
         ]:
             with self.assertRaises(ValueError):
@@ -96,6 +96,42 @@ class DatabaseSourceTests(unittest.TestCase):
             expand_daily_rows(
                 rows, "2026-06", "0000000000000000000001", quality_columns=["MISSING"]
             )
+
+    def test_database_accepts_three_day_history(self):
+        """SQL取得でも、3日間だけの実績と契約電力を正しく返す。"""
+        settings = {"schema": None, "url_env": "REPORT_TEST_URL"}
+        with patch.dict(os.environ, {"REPORT_TEST_URL": "sqlite://"}):
+            source = DatabaseSource(settings)
+        try:
+            metadata = MetaData()
+            daily = Table(
+                "t_ep_electricity_data_30min",
+                metadata,
+                Column(POINT, String(22)),
+                Column(DATE, String(8)),
+                *[Column(name, String(9)) for name in SLOTS]
+            )
+            contract = Table(
+                "t_ep_contracted_power",
+                metadata,
+                Column(CONTRACT_POINT, String(22)),
+                Column(CONTRACT_POWER, Integer),
+            )
+            metadata.create_all(source.engine)
+            rows = daily_rows()[-3:]
+            with source.engine.begin() as connection:
+                connection.execute(daily.insert(), rows)
+                connection.execute(
+                    contract.insert(),
+                    [{CONTRACT_POINT: "0000000000000000000001", CONTRACT_POWER: 50}],
+                )
+            frame, power = source.load("0000000000000000000001", "2026-06")
+            self.assertEqual(len(frame), 144)
+            self.assertEqual(power, 50)
+            self.assertEqual(frame.timestamp.iloc[0], pd.Timestamp("2026-06-28"))
+            self.assertEqual(frame.kw.iloc[-1], 96)
+        finally:
+            source.close()
 
     def test_database_filters_and_contract(self):
         """SQLiteで顧客別・期間別の取得と、契約電力の参照を確認する。"""

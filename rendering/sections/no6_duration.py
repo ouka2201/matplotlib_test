@@ -33,6 +33,10 @@ def duration_axis(df, segments=46):
     Raises:
         ValueError: segmentsが0以下など、分割数が不正な場合。
     """
+    if df.empty:
+        raise ValueError("デュレーションカーブの実績データがありません")
+    if not isinstance(segments, (int, np.integer)) or segments <= 0:
+        raise ValueError("分割数は正の整数にしてください")
     ordered = df.sort_values(["kw", "timestamp"], ascending=[False, True]).reset_index(
         drop=True
     )
@@ -46,7 +50,7 @@ def duration_axis(df, segments=46):
 
 
 def draw_no6(page, s, context, duration_data=None):
-    """年間の電力順位とTOP50の区分別の特徴を描画する。
+    """実績期間の電力順位と上位最大50枠の特徴を描画する。
 
     Args:
         page (SecondPageCanvas): 2ページ目の描画用ページ。
@@ -73,6 +77,9 @@ def draw_no6(page, s, context, duration_data=None):
         f"30分ごとの需要電力［kW］{frames:,}コマを大きい順に並べたものです（48コマ/日×{days}日={frames:,}コマ）",
         size=7,
     )
+    if not context.get("has_full_year", True):
+        text(6, 13, f'実績期間：{context["actual_period"]}', size=5.5)
+    top_label = context.get("top_label", "TOP50")
     # 電力順位と日時ラベルの対応はduration_axisで決定済み。
     # ここでは再ソートせず、そのまま曲線と横軸を描く。
     ordered, ticks, labels = duration_data
@@ -83,7 +90,8 @@ def draw_no6(page, s, context, duration_data=None):
     ax.set_xlim(1, len(ordered))
     ax.set_ylim(0, max(1, ordered.kw.max()) * 1.1)
     ax.set_xticks(ticks, labels, rotation=90, fontsize=3.8)
-    # TOP10と50位は、同じTOP50の順位から取得。kWへの換算はDB取得時に済んでいる。
+    # 上位10件と50位は同じ順位から取得し、50位がなければ実績なしを表示する。
+    # kWへの換算はDB取得時に済んでいる。
     top_rows = [
         [r["rank"], r["date"], r["time"], format_number(r["kw"])]
         for r in context["top_rows"]
@@ -91,16 +99,19 @@ def draw_no6(page, s, context, duration_data=None):
     widths = [0.09, 0.46, 0.18, 0.27]
     table(3, 82, 56, 27, ["順位", "年月日", "時分", "電力(kW)"], top_rows, widths, 5)
     r = context["rank50_row"]
-    table(
-        3,
-        109,
-        56,
-        2.5,
-        None,
-        [[r["rank"], r["date"], r["time"], format_number(r["kw"])]],
-        widths,
-        5,
-    )
+    if r is not None:
+        table(
+            3,
+            109,
+            56,
+            2.5,
+            None,
+            [[r["rank"], r["date"], r["time"], format_number(r["kw"])]],
+            widths,
+            5,
+        )
+    else:
+        text(3, 109, f'50位の実績なし（全{context["count"]}コマ）', size=5.5)
     peak = s["top"].iloc[0].timestamp
     note(
         62,
@@ -131,7 +142,15 @@ def draw_no6(page, s, context, duration_data=None):
     canvas.add_patch(
         Rectangle((108, 14), 171, 9, facecolor="white", edgecolor=TITLE, lw=0.8)
     )
-    text(193.5, 17, "TOP50における特徴", size=10.2, color=TITLE, bold=True, ha="center")
+    text(
+        193.5,
+        17,
+        f"{top_label}における特徴",
+        size=10.2,
+        color=TITLE,
+        bold=True,
+        ha="center",
+    )
     specs = [
         ("month_count", "月別", 114, 39, 39),
         ("weekday_count", "曜日別", 162, 39, 27),
@@ -186,7 +205,7 @@ def draw_no6(page, s, context, duration_data=None):
         55,
         16,
         [
-            "TOP50を見ると、以下の特徴があります",
+            f"{top_label}を見ると、以下の特徴があります",
             f'月別で多いのは{context["top_month"]}',
             f'曜日別で多いのは{context["top_weekdays"]}',
             f'時間帯別で多いのは{context["top_hours"]}',

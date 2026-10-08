@@ -18,19 +18,24 @@ def draw_no4(page, series):
     dates = [f"{p.year}/{p.month:02d}" for p in month.index]
     title(143.1, 2, 3, f"月ごとの使用電力量の推移（{period}）")
     text(147, 9, "月ごとの使用電力量［kWh］の推移をグラフ化したものです", size=7)
+    if series.get("partial_period"):
+        text(147, 15, f'集計対象：{series["actual_period"]}', size=5.5)
     ax = chart_axes(155.5, 19.5, 123.5, 40, "電力量(kWh)")
+    count = len(month)
     values = month["kwh"].to_numpy()
     peak = int(values.argmax())
     ax.bar(
-        range(12),
+        range(count),
         values,
         width=0.53,
-        color=[ENERGY_RED if i == peak else ENERGY_BLUE for i in range(12)],
+        color=[ENERGY_RED if i == peak else ENERGY_BLUE for i in range(count)],
     )
-    ax.set_xlim(-0.6, 11.6)
-    ax.set_xticks(range(12), dates, rotation=90, fontsize=6)
+    ax.set_xlim(-0.6, count - 0.4)
+    ax.set_xticks(range(count), dates, rotation=90, fontsize=6)
     ax.set_ylim(0, max(1, values.max()) * 1.15)
-    for rank, i in enumerate(sorted(range(12), key=lambda j: (-values[j], j))[:3], 1):
+    for rank, i in enumerate(
+        sorted(range(count), key=lambda j: (-values[j], j))[:3], 1
+    ):
         ax.text(
             i,
             values[i] + values.max() * 0.035,

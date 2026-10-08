@@ -19,17 +19,20 @@ def draw_no5(page, series, config):
     dates = [f"{p.year}/{p.month:02d}" for p in month.index]
     title(143.1, 100, 4, f"最大電力の推移（{period}）")
     text(147, 107, "月ごとの最大電力［kW］の推移をグラフ化したものです", size=7)
+    if series.get("partial_period"):
+        text(147, 113, f'集計対象：{series["actual_period"]}', size=5.5)
     ax = chart_axes(155.5, 120, 123.5, 47, "電力(kW)")
+    count = len(month)
     values = month["max"].to_numpy()
     peak = int(values.argmax())
     bars = ax.bar(
-        range(12),
+        range(count),
         values,
         width=0.53,
-        color=[POWER_RED if i == peak else POWER_BLUE for i in range(12)],
+        color=[POWER_RED if i == peak else POWER_BLUE for i in range(count)],
     )
-    ax.set_xlim(-0.6, 11.6)
-    ax.set_xticks(range(12), dates, rotation=90, fontsize=6)
+    ax.set_xlim(-0.6, count - 0.4)
+    ax.set_xticks(range(count), dates, rotation=90, fontsize=6)
     # 換算済みの最大kWと、元からkWの契約値をそのまま使う。
     contract = float(config["contract_kw"])
     ax.set_ylim(0, max(1, values.max(), contract) * 1.22)

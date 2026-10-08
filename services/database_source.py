@@ -32,7 +32,8 @@ def expand_daily_rows(
         quality_columns (Iterable[str]): 0件を要求する欠測・不正値件数列。指定時だけ検査する。
 
     Returns:
-        pandas.DataFrame: 完全な12か月分のtimestamp・kw列。
+        pandas.DataFrame: 直近12か月内で実績のある期間のtimestamp・kw列。
+            1年未満を許容するが、実績期間内は毎日48枠が必要。
 
     Raises:
         ValueError: 日付・値・単位・品質件数が不正、日別行の重複や欠損がある場合。
@@ -49,6 +50,8 @@ def expand_daily_rows(
     records = pd.DataFrame(
         [{str(k).upper(): v for k, v in row.items()} for row in rows]
     )
+    if records.empty:
+        raise ValueError("対象の直近12か月に実績データがありません")
     required = [POINT, DATE, *SLOTS, *[c.upper() for c in quality_columns]]
     missing = set(required) - set(records.columns)
     if missing:
@@ -80,7 +83,7 @@ def expand_daily_rows(
         dates.to_numpy()[:, None] + np.arange(48)[None, :] * np.timedelta64(30, "m")
     ).reshape(-1)
     # 日時と電力を同じ行順で平坦化する。日付や枠の対応がずれないようにする。
-    # 共通の検証で1年分の欠損・重複・負数なども確認する。
+    # 共通検証で実績期間内の欠損・重複・負数を確認する。期間前後の不足は許容する。
     frame = pd.DataFrame(
         {"timestamp": timestamps, "kw": values.reshape(-1) * factors[value_unit]}
     )
