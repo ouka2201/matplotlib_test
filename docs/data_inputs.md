@@ -7,7 +7,7 @@
 契約電力は`T_EP_CONTRACTED_POWER`の`QSQB_DCIS2_SPL_PT_SPC_NO`で検索し、`QSQB_DCIS2_HVPW_CTRT`をkWとして使います。configの契約電力はこのDB値で上書きします。画像の契約電力テーブルには期間別の履歴が示されていないため、参照時点の1行を使用します。単体CLI・従来のジョブJSONでは名義・住所・お客さま番号を顧客設定から取得します。`--from-management`では`T_ARVE_CUSTOMER_INFO`から取得します。
 
 ### 接続設定
-実テーブルはPostgreSQLです。`examples/database.json`をコピーし、実環境のスキーマ・テーブル名を指定してください。引用符なしで作った識別子はPostgreSQL側で小文字になります。`"DB_CORP"`のように二重引用符付きで作った場合は、設定のスキーマ名も`DB_CORP`に合わせます。テーブル名も同様です。列名は実定義を読み取った後に大小文字を区別せず解決します。`requirements.txt`に`psycopg[binary]>=3.2,<4`を含めています。接続URLは設定ファイルでなく`REPORT_DATABASE_URL`環境変数へ設定し、`postgresql+psycopg://USER:PASSWORD@HOST:5432/DBNAME`の形式を使用します。
+実テーブルはPostgreSQLです。`examples/database.json`をコピーし、実環境のスキーマ・テーブル名を指定してください。引用符なしで作った識別子はPostgreSQL側で小文字になります。`"DB_CORP"`のように二重引用符付きで作った場合は、設定のスキーマ名も`DB_CORP`に合わせます。テーブル名も同様です。列名は実定義を読み取った後に大小文字を区別せず解決します。`requirements.txt`に`psycopg2-binary==2.9.10`を含めています。接続URLは設定ファイルでなく`REPORT_DATABASE_URL`環境変数へ設定し、`postgresql+psycopg2://USER:PASSWORD@HOST:5432/DBNAME`の形式を使用します。
 `quality_columns`には欠測・不正値件数列を指定しています。0以外の日がある場合は生成を中断し、欠損を0と見なしません。実テーブルに列がない場合は設定を空配列にして、枠値の欠損・不正値検査だけを利用できます。
 
 ### 単体生成

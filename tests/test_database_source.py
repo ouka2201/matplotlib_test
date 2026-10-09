@@ -45,6 +45,32 @@ def daily_rows(month="2026-06", point="0000000000000000000001"):
 class DatabaseSourceTests(unittest.TestCase):
     """CSVを介さないテーブル取得と日時変換を確認する。"""
 
+    def test_postgresql_uses_psycopg2_and_preserves_connection_settings(self):
+        """旧URLもPsycopg2を選び、認証情報等を保持して接続をまだ開かない。"""
+        import psycopg2
+
+        for driver in ("postgresql", "postgresql+psycopg", "postgresql+psycopg2"):
+            # 全て検証用の値。実DBへ接続するテストではない。
+            url = f"{driver}://seed_test:p%40ss%2Fword@127.0.0.1:5432/test_database?sslmode=require"
+            with self.subTest(driver=driver), patch.dict(
+                os.environ, {"REPORT_DRIVER_TEST_URL": url}
+            ), patch.object(
+                psycopg2, "connect", side_effect=AssertionError("Must not connect")
+            ) as connect:
+                source = DatabaseSource({"url_env": "REPORT_DRIVER_TEST_URL"})
+                try:
+                    self.assertEqual(source.engine.dialect.driver, "psycopg2")
+                    self.assertEqual(source.engine.dialect.dbapi.__name__, "psycopg2")
+                    self.assertEqual(source.engine.url.username, "seed_test")
+                    self.assertEqual(source.engine.url.password, "p@ss/word")
+                    self.assertEqual(source.engine.url.host, "127.0.0.1")
+                    self.assertEqual(source.engine.url.port, 5432)
+                    self.assertEqual(source.engine.url.database, "test_database")
+                    self.assertEqual(source.engine.url.query["sslmode"], "require")
+                    connect.assert_not_called()
+                finally:
+                    source.close()
+
     def test_slots_kw_and_year_range(self):
         """1・2・48の開始時刻、kWの保持、月別kWhの集計を確認する。"""
         frame = expand_daily_rows(
@@ -109,7 +135,7 @@ class DatabaseSourceTests(unittest.TestCase):
                 metadata,
                 Column(POINT, String(22)),
                 Column(DATE, String(8)),
-                *[Column(name, String(9)) for name in SLOTS]
+                *[Column(name, String(9)) for name in SLOTS],
             )
             contract = Table(
                 "t_ep_contracted_power",
@@ -145,7 +171,7 @@ class DatabaseSourceTests(unittest.TestCase):
                 metadata,
                 Column(POINT, String(22)),
                 Column(DATE, String(8)),
-                *[Column(name, String(9)) for name in SLOTS]
+                *[Column(name, String(9)) for name in SLOTS],
             )
             contract = Table(
                 "t_ep_contracted_power",

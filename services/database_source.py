@@ -96,6 +96,9 @@ class DatabaseSource:
     def __init__(self, settings):
         """接続先の環境変数とテーブル設定からEngineを作る。
 
+        PostgreSQLは実バッチと同じPsycopg2へ接続ドライバーを統一する。
+        接続URLの認証情報・ホスト・DB名・オプションはそのまま保持する。
+
         Args:
             settings (dict): url_env、schema、daily_table、contract_table、
                 value_unit、quality_columns。接続URLを直接設定ファイルに保存しない。
@@ -104,6 +107,7 @@ class DatabaseSource:
             ValueError: 接続先環境変数がない場合。
         """
         from sqlalchemy import create_engine
+        from sqlalchemy.engine import make_url
 
         # 接続先と認証情報は環境変数から読む。顧客ジョブや設定JSONには書かない。
         variable = settings.get("url_env", "REPORT_DATABASE_URL")
@@ -111,8 +115,15 @@ class DatabaseSource:
         if not url:
             raise ValueError(f"DB接続先を環境変数{variable}に設定してください")
         self.settings = settings
+        connection_url = make_url(url)
+        if connection_url.get_backend_name() == "postgresql":
+            # SQLAlchemyの既定ドライバーや旧設定に左右されないよう、
+            # PostgreSQLの接続はpsycopg2-binaryのpsycopg2へ統一する。
+            connection_url = connection_url.set(drivername="postgresql+psycopg2")
         # Engineはワーカー内で作る。接続の利用前確認を有効にし、SQLの値をログへ表示しない。
-        self.engine = create_engine(url, pool_pre_ping=True, hide_parameters=True)
+        self.engine = create_engine(
+            connection_url, pool_pre_ping=True, hide_parameters=True
+        )
         self.daily = None
         self.contract = None
 

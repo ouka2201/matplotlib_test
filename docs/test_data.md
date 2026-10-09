@@ -35,7 +35,7 @@
 
 実テーブルはPostgreSQLです。プロジェクトのルートで実行します。`examples/database.json`をコピーし、検証用PostgreSQLのスキーマ・テーブル名・ARVE列名を指定してください。既存の4テーブルを読み取り、実列の型に合わせてINSERTします。SQLiteのテーブル作成機能は手元の検証用です。
 
-ドライバーはPsycopg 3を使用し、`requirements.txt`に`psycopg[binary]>=3.2,<4`を追加しています。
+ドライバーは実バッチと同じPsycopg2を使用し、`requirements.txt`に`psycopg2-binary==2.9.10`を固定しています。Pythonでのモジュール名は`psycopg2`です。
 
 ```bash
 python -m pip install -r requirements.txt
@@ -46,16 +46,18 @@ python -m pip install -r requirements.txt
 PowerShellの場合：
 
 ```powershell
-$env:REPORT_DATABASE_URL = "postgresql+psycopg://USER:PASSWORD@HOST:5432/DBNAME"
+$env:REPORT_DATABASE_URL = "postgresql+psycopg2://USER:PASSWORD@HOST:5432/DBNAME"
 ```
 
 bashの場合：
 
 ```bash
-export REPORT_DATABASE_URL="postgresql+psycopg://USER:PASSWORD@HOST:5432/DBNAME"
+export REPORT_DATABASE_URL="postgresql+psycopg2://USER:PASSWORD@HOST:5432/DBNAME"
 ```
 
-URLの`+psycopg`でPsycopg 3のドライバーを明示します。ユーザー名・パスワード内の`@`・`/`等はURLエンコードして指定します。接続URLをJSONへ保存する必要はありません。
+URLの`+psycopg2`でPsycopg2のドライバーを明示します。ユーザー名・パスワード内の`@`・`/`等はURLエンコードして指定します。接続URLをJSONへ保存する必要はありません。
+
+`DatabaseSource`もPostgreSQLの接続URLを`postgresql+psycopg2`へ統一します。`postgresql://`形式や旧版のドライバー表記が残っていても、認証情報・ホスト・ポート・DB名・SSL等の接続オプションを保持してPsycopg2を使用します。単体レポート・管理バッチ・テストデータ登録で共通の接続処理を使います。
 
 ### スキーマ・テーブル名
 
@@ -187,7 +189,7 @@ python examples/insert_test_data.py --db-config examples/database.test.json --re
 
 PostgreSQLの接続形式・識別子・ドライバーの参考資料：
 
-- [SQLAlchemyのPsycopg接続](https://docs.sqlalchemy.org/en/20/dialects/postgresql.html#module-sqlalchemy.dialects.postgresql.psycopg)
+- [SQLAlchemyのPsycopg2接続](https://docs.sqlalchemy.org/en/20/dialects/postgresql.html#module-sqlalchemy.dialects.postgresql.psycopg2)
 - [SQLAlchemyのURLエンコード](https://docs.sqlalchemy.org/en/20/core/engines.html#escaping-special-characters-such-as-at-signs-in-passwords)
 - [PostgreSQLの識別子](https://www.postgresql.org/docs/current/sql-syntax-lexical.html)
-- [Psycopgのインストール](https://www.psycopg.org/psycopg3/docs/basic/install.html)
+- [Psycopg2のインストール](https://www.psycopg.org/docs/install.html)
