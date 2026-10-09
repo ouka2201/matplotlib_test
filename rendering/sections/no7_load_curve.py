@@ -23,19 +23,19 @@ def draw_no7(page, s, context):
     )
     peak = s["top"].iloc[0].timestamp
     peak_text = f"{peak:%m月%d日%H:%M}〜{peak+timedelta(minutes=30):%H:%M}"
-    title(116, 6, f'ロードカーブ（{context["week_period"]}）')
+    title(107.2, 6, f'ロードカーブ（{context["week_period"]}）')
     week = s["week"]
     week_days = week.timestamp.dt.normalize().nunique()
     week_frames = len(week)
     week_label = "1週間" if week_days == 7 else f"{week_days}日間"
     text(
         6,
-        123,
+        115.5,
         f"⑤におけるピーク発生日を含む{week_label}について、30分ごとの需要電力［kW］{week_frames}コマを時系列に並べたものです（48コマ/日×{week_days}日={week_frames}コマ）",
         size=6.8,
     )
     # 通常は7日×48枠。期間選定側で7日未満になった場合も実データの件数で描画する。
-    ax = axes(14, 137, 202, 43, "電力(kW)")
+    ax = axes(12.55, 127.1, 206.8, 48.0, "電力(kW)")
     # 昼休みの12:00・12:30も青。No.6の1位の日時だけを赤で上書きする。
     colors = [
         LOAD_ORANGE if 8 <= ts.hour < 12 or 13 <= ts.hour < 18 else TOP_BLUE
@@ -62,17 +62,22 @@ def draw_no7(page, s, context):
         xt.extend([i * 48, i * 48 + 12, i * 48 + 24, i * 48 + 36])
         xtlabels.extend(["0", "6", "12", "18"])
     ax.set_xticks(xt, xtlabels, fontsize=5.5)
+    # 1時間は30分値2枠。6時間ごとの主目盛りを含め、薄い線を1時間間隔で描く。
+    # 補助線は棒の背面へ配置し、日境界の線より薄くする。
+    ax.set_xticks(range(0, week_frames, 2), minor=True)
+    ax.grid(axis="x", which="both", color="#e4e4e4", lw=0.25)
+    ax.tick_params(axis="x", which="minor", length=0)
     ax.xaxis.tick_top()
     ax.tick_params(axis="x", pad=2)
-    text(151, 128, "橙：08〜12時・13〜18時 ／ 青：その他 ／ 赤：1位", size=5.5)
+    text(190, 117, "橙：08〜12時・13〜18時 ／ 青：その他 ／ 赤：1位", size=5.5)
     # 日別kWhは元の48枠の合計、最大kWは換算済み。端数を丸めず、再度2倍しない。
     rows = [
         [r["date"], format_number(r["kwh"]), format_number(r["kw"])]
         for r in context["week_rows"]
     ]
     table(
-        219,
-        150,
+        220.5,
+        136.8,
         59,
         26,
         ["年月日", "電力量(kWh)", "最大電力(kW)"],
@@ -81,23 +86,24 @@ def draw_no7(page, s, context):
         5.7,
     )
     note(
-        7,
-        183,
-        74,
-        9,
+        6.5,
+        179.4,
+        70.6,
+        11.3,
         [
             f"ピークは、{peak_text}に発生しています",
             f"当該日を含む{'一週間' if week_days == 7 else week_label}の電力の使い方に注目してください",
         ],
     )
     note(
-        85,
-        183,
-        95,
-        10,
+        96.2,
+        179.5,
+        81.9,
+        11.2,
         [
-            "年間を通じて日中を中心に電気を使用しており、かつ土・日曜日も",
-            "使用している場合、特に太陽光発電システムの導入が効果的です",
+            "年間を通じて日中を中心に電気を使用しており、",
+            "かつ土・日曜日も使用している場合、",
+            "特に太陽光発電システムの導入が効果的です",
         ],
         advice=True,
     )
@@ -105,5 +111,5 @@ def draw_no7(page, s, context):
     footer_lines = DEFAULT_NOTES.replace(
         "30分ごとの使用電力量", "\n30分ごとの使用電力量"
     ).replace("この対象期間は、", "\nこの対象期間は、")
-    text(184, 183.5, footer_lines, size=5.5, linespacing=1.4)
+    text(197.0, 179.6, footer_lines, size=5.5, linespacing=1.4)
     text(278, 192, "発行元：東京電力エナジーパートナー株式会社", size=5.3, ha="right")

@@ -96,7 +96,8 @@ class ShortHistoryTests(unittest.TestCase):
             fig = draw_second_page(series, self.config, context)
         try:
             texts = [t.get_text() for t in fig.axes[0].texts]
-            self.assertIn("TOP48における特徴", texts)
+            self.assertIn("TOP48", texts)
+            self.assertIn("における特徴", texts)
             self.assertIn("50位の実績なし（全48コマ）", texts)
             self.assertTrue(any("48コマ/日×1日=48コマ" in text for text in texts))
             self.assertTrue(any("当該日を含む1日間" in text for text in texts))

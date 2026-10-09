@@ -8,12 +8,12 @@
 /* 印刷時の用紙はA4横。余白はpage内の配置で決める。 */ @page { size: A4 landscape; margin: 0; }
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }
-.page { position: relative; width: 297mm; height: 210mm; padding: 9mm; background: white; break-after: page; }
-/* 各ページの外周だけを黒枠で囲む。画像より手前に描画する。 */ .page::before { content: ''; position: absolute; top: 8mm; right: 8mm; bottom: 8mm; left: 8mm; border: .25mm solid #000; pointer-events: none; z-index: 10; }
+.page { --report-left: 9.7mm; --report-top: 7.6mm; --report-width: 277.2mm; --report-height: 195.1mm; position: relative; width: 297mm; height: 210mm; background: white; break-after: page; }
+/* 見本PDFの外枠位置。画像と枠は同じ寸法を使い、余白を別々に設定しない。 */ .page::before { content: ''; position: absolute; top: var(--report-top); left: var(--report-left); width: var(--report-width); height: var(--report-height); border: .25mm solid #000; pointer-events: none; z-index: 10; }
 .page:last-child { break-after: auto; }
 * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-/* matplotlibで完成したページPNGを、外枠内281×194mmに配置する。 */ .report-page-image { position: absolute; top: 8mm; left: 8mm; display: block; width: 281mm; height: 194mm; }
-/* 区切りの破線は1ページ目の左右中央だけに配置する。 */ #page-1::after { content: ''; position: absolute; top: 8mm; bottom: 8mm; left: 50%; border-left: .2mm dashed #727d81; pointer-events: none; }
+/* matplotlibの配置座標281×194を、見本の外枠内に配置する。 */ .report-page-image { position: absolute; top: var(--report-top); left: var(--report-left); display: block; width: var(--report-width); height: var(--report-height); }
+/* 区切りの破線は1ページ目の左右中央だけに配置する。 */ #page-1::after { content: ''; position: absolute; top: var(--report-top); height: var(--report-height); left: calc(var(--report-left) + var(--report-width) / 2); border-left: .2mm dashed #000; pointer-events: none; }
 /* 画面で確認するときだけ背景と影を付ける。印刷時には適用しない。 */ @media screen { body { background: #e9eef0; } .page { margin: 5mm auto; box-shadow: 0 1mm 5mm #bcc8cc; } }
 </style>
 </head>

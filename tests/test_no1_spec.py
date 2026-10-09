@@ -113,7 +113,7 @@ class No1SpecTests(unittest.TestCase):
                         )
                         self.assertEqual(patch.get_facecolor(), to_rgba(color))
                     texts = [item.get_text() for item in fig.axes[0].texts]
-                    self.assertIn(f"{month.month:02d}/01", texts)
+                    self.assertIn(f"{month.month}/1", texts)
                     self.assertIn("202kW", texts)
                     weekday = "月火水木金土日"[month.weekday()]
                     self.assertIn(f"1位 1日（{weekday}） 19:00〜19:30 202kW", texts)

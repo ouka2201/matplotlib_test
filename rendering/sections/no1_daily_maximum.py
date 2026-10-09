@@ -8,14 +8,14 @@ import pandas as pd
 from services.data_service import calendar_power
 from rendering.styles import WIDTH
 
-TITLE_BLUE = "#4a95c0"
-SUNDAY = "#d59aa8"
+TITLE_BLUE = "#00b0f0"
+SUNDAY = "#f6bbc6"
 SATURDAY = "#89b9df"
-WEEKDAY = "#b4b8bb"
+WEEKDAY = "#c0c0c0"
 SUNDAY_BG = "#ffd7de"
 WEEKDAY_BG = "#f2f2f2"
 SATURDAY_BG = "#e7f0fb"
-NOTE_BG = "#fff3ca"
+NOTE_BG = "#fff2cc"
 TEXT = "#202020"
 
 
@@ -42,13 +42,11 @@ def draw_no1(page, daily, config):
 
     # 年月部分も白地に青文字。写真に写った選択時の背景色は描かない。
     canvas.add_patch(
-        Ellipse(
-            (3.7935, 62.5456), 4.496, 4.3456, facecolor=TITLE_BLUE, edgecolor="none"
-        )
+        Ellipse((3.7935, 59.9), 4.496, 4.3456, facecolor=TITLE_BLUE, edgecolor="none")
     )
     canvas.text(
         3.7935,
-        62.5456,
+        59.9,
         "1",
         fontsize=9.6,
         color="white",
@@ -58,9 +56,9 @@ def draw_no1(page, daily, config):
     )
     canvas.text(
         7.306,
-        62.5456,
+        59.9,
         f"日ごとの最大電力：{month:%Y年%m月}",
-        fontsize=11.1,
+        fontsize=11.5,
         fontweight="bold",
         color=TITLE_BLUE,
         ha="left",
@@ -68,7 +66,7 @@ def draw_no1(page, daily, config):
     )
     canvas.text(
         5.62,
-        69.2192,
+        66.3,
         "日ごとの最大電力［kW］を表示したものです",
         fontsize=6.9,
         color=TEXT,
@@ -76,9 +74,9 @@ def draw_no1(page, daily, config):
         va="center",
     )
 
-    left, width = 2.1075, 90.6225
+    left, width = 1.05, 86.55
     cell_width = width / 7
-    header_top, header_height = 72.168, 5.3544
+    header_top, header_height = 68.95, 5.4
     for column, weekday in enumerate("日月火水木金土"):
         color = SUNDAY if column == 0 else SATURDAY if column == 6 else WEEKDAY
         canvas.add_patch(
@@ -124,7 +122,7 @@ def draw_no1(page, daily, config):
             item = by_day.get(day)
             # 実績のない日には時刻・電力を捏造せず、その状態を表示する。
             labels = [
-                f"{month.month:02d}/{day:02d}",
+                f"{month.month}/{day}",
                 item.timestamp.strftime("%H:%M") if item is not None else "--:--",
                 f"{calendar_power(item.kw):,}kW" if item is not None else "実績なし",
             ]
@@ -133,14 +131,14 @@ def draw_no1(page, daily, config):
                     x + cell_width / 2,
                     top + row_height * (0.27 + 0.23 * line_index),
                     label,
-                    fontsize=6.4 if len(weeks) <= 5 else 6.0,
+                    fontsize=5.5 if len(weeks) <= 5 else 5.2,
                     color=TEXT,
                     ha="center",
                     va="center",
                     fontweight="bold",
                 )
 
-    note_x, note_y, note_width, note_height = 94.5565, 97.5432, 44.5385, 19.5552
+    note_x, note_y, note_width, note_height = 87.3, 95.25, 52.0, 16.6
     canvas.add_patch(
         Rectangle(
             (note_x, note_y),
@@ -153,17 +151,17 @@ def draw_no1(page, daily, config):
     note_texts = [
         canvas.text(
             note_x + 1.405,
-            note_y + 2.5608,
+            note_y + 1.9,
             (
                 "TOP3は以下のとおりでした"
                 if not daily.empty
                 else "対象月の実績はありません"
             ),
-            fontsize=6.8,
+            fontsize=7.1,
             color=TEXT,
             ha="left",
             va="center",
-            fontweight="bold",
+            fontweight="normal",
         )
     ]
     # 表示時の丸めで順位が変わらないよう、元のkwと日時で選ぶ。
@@ -175,9 +173,9 @@ def draw_no1(page, daily, config):
         note_texts.append(
             canvas.text(
                 note_x + 1.405,
-                note_y + 2.5608 + rank * 4.656,
+                note_y + 1.9 + rank * 3.9,
                 label,
-                fontsize=6.2,
+                fontsize=7.0,
                 color=TEXT,
                 ha="left",
                 va="center",

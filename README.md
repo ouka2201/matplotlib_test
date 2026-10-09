@@ -9,7 +9,7 @@ python -m pip install -r requirements.txt
 python -m playwright install chromium
 ```
 
-`assets/ICON.png`に90×89ピクセルの青い電球画像を配置します。書体はメイリオです。Windowsでは自動検出し、別環境では通常・太字のパスを指定します。アイコン・フォント本体は同梱していません。PostgreSQLのドライバーは`psycopg2-binary==2.9.10`です。
+`assets/ICON.png`には見本から取り出した90×89ピクセルの青い電球画像を同梱しています。書体はメイリオです。Windowsでは自動検出し、別環境では通常・太字のパスを指定します。フォント本体は同梱していません。PostgreSQLのドライバーは`psycopg2-binary==2.9.10`です。
 
 ## 既存バッチから呼ぶ
 

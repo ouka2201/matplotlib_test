@@ -17,11 +17,11 @@ def draw_no5(page, series, config):
     month = series["monthly"]
     period = f"{month.index[0].year}年{month.index[0].month:02d}月〜{month.index[-1].year}年{month.index[-1].month:02d}月"
     dates = [f"{p.year}/{p.month:02d}" for p in month.index]
-    title(143.1, 100, 4, f"最大電力の推移（{period}）")
-    text(147, 107, "月ごとの最大電力［kW］の推移をグラフ化したものです", size=7)
+    title(142.0, 97.0, 4, f"最大電力の推移（{period}）")
+    text(147, 105, "月ごとの最大電力［kW］の推移をグラフ化したものです", size=7)
     if series.get("partial_period"):
-        text(147, 113, f'集計対象：{series["actual_period"]}', size=5.5)
-    ax = chart_axes(155.5, 120, 123.5, 47, "電力(kW)")
+        text(147, 110, f'集計対象：{series["actual_period"]}', size=5.5)
+    ax = chart_axes(153.5, 115.1, 126.5, 52.4, "電力(kW)")
     count = len(month)
     values = month["max"].to_numpy()
     peak = int(values.argmax())
@@ -35,31 +35,40 @@ def draw_no5(page, series, config):
     ax.set_xticks(range(count), dates, rotation=90, fontsize=6)
     # 換算済みの最大kWと、元からkWの契約値をそのまま使う。
     contract = float(config["contract_kw"])
-    ax.set_ylim(0, max(1, values.max(), contract) * 1.22)
-    ax.bar_label(
+    ax.set_ylim(0, max(1, values.max(), contract) * 1.1)
+    labels = ax.bar_label(
         bars,
         labels=[format_number(v) for v in values],
         padding=3,
         fontsize=6.4,
         color=BLACK,
     )
-    ax.axhline(contract, color=POWER_RED, ls=":", lw=0.8, label="契約電力")
+    # 小数を省略せず、1か月分の幅へ文字サイズを合わせる。
+    renderer = page.fig.canvas.get_renderer()
+    available = ax.get_window_extent(renderer).width / count * 0.88
+    for label in labels:
+        width = renderer.get_text_width_height_descent(
+            label.get_text(), label.get_fontproperties(), False
+        )[0]
+        if width > available:
+            label.set_fontsize(label.get_fontsize() * available / width)
+    ax.axhline(contract, color=POWER_RED, ls="--", lw=0.8, label="契約電力")
     ax.legend(
         loc="upper center", bbox_to_anchor=(0.5, 1.15), frameon=False, fontsize=6.8
     )
     note(
-        175.5,
-        185,
-        31.5,
-        7.5,
+        173.8,
+        184.6,
+        32.1,
+        7.0,
         [f"ピークは{month.index[peak].month:02d}月でした"],
         centered=True,
     )
     note(
-        218.5,
-        182,
-        47.5,
-        10.8,
+        218.1,
+        182.4,
+        48.3,
+        10.6,
         [
             f"次の{month.index[peak].month:02d}月に契約電力を",
             "超過しないよう気を付けましょう",

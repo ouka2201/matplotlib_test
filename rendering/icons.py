@@ -9,7 +9,7 @@ import matplotlib.image as mpimg
 # 実行時の作業フォルダーによらず、プロジェクト内の画像を参照する。
 ICON_PATH = Path(__file__).resolve().parents[1] / "assets" / "ICON.png"
 ICON_SIZE_PX = (90, 89)  # 元画像の幅・高さ。帳票上の寸法はmmで指定する。
-ICON_WIDTH_MM = 3.3
+ICON_WIDTH_MM = 7.5
 
 
 @lru_cache(maxsize=1)
@@ -46,8 +46,8 @@ def load_advice_icon():
 def draw_advice_bulb(ax, x, y):
     """助言枠の左上に、ICON.pngを元の縦横比で描画する。
 
-    PNGはページFigureへ直接配置する。幅3.3mmで縮小し、上端は枠より
-    2mm上、左端は枠より0.25mm左に置き、下側を枠内に少し重ねる。
+    PNGはページFigureへ直接配置する。見本に合わせて幅7.5mmで描き、
+    上端は枠より4mm上、左端は枠より2.25mm左に置く。
 
     Args:
         ax (matplotlib.axes.Axes): 左上原点・mm単位のページ配置用Axes。
@@ -63,7 +63,7 @@ def draw_advice_bulb(ax, x, y):
         ValueError: 画像の幅・高さが90×89ピクセルではない場合。
     """
     icon = load_advice_icon()
-    left, top = x - 0.25, y - 2
+    left, top = x - 2.25, y - 4
     height = ICON_WIDTH_MM * icon.shape[0] / icon.shape[1]
     # y軸は下向き。originとextentを指定して上下を反転させずに配置する。
     # aspect="auto"で、ページ全体のmm座標や他のグラフの位置を維持する。

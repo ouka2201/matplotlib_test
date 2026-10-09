@@ -136,7 +136,7 @@ class No6DurationTests(unittest.TestCase):
             self.assertEqual(fig.axes[4].get_xticklabels()[0].get_text(), "07月")
             self.assertEqual(fig.axes[6].get_xticklabels()[0].get_text(), "0")
             texts = [item.get_text() for item in fig.axes[0].texts]
-            self.assertIn("ピークは、06月30日\n23:30〜00:00に発生しています", texts)
+            self.assertIn("ピークは、06月30日23:30〜00:00に発生しています", texts)
             self.assertTrue(any("48コマ/日×365日=17,520コマ" in item for item in texts))
             self.assertTrue(
                 any("基本料金の低減につながります" in item for item in texts)

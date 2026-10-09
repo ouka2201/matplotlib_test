@@ -47,8 +47,8 @@ class No3FooterTests(unittest.TestCase):
                 "料金の算定期間とは異なる場合があります",
             )
             renderer = fig.canvas.get_renderer()
-            left, bottom = ax.transData.transform((59, 193))
-            right, top = ax.transData.transform((138.5, 184))
+            left, bottom = ax.transData.transform((56.3, 192.8))
+            right, top = ax.transData.transform((139.4, 183.8))
             for artist in ax.texts:
                 box = artist.get_window_extent(renderer)
                 self.assertGreaterEqual(box.x0, left - 1)

@@ -3,9 +3,10 @@
 from matplotlib.patches import Rectangle
 from rendering.styles import WIDTH
 
-HEADER_BLUE = "#4f91b9"
-LABEL_BLUE = "#4f91b9"
-TEXT_COLOR = "#172b36"
+HEADER_BLUE = "#41aed6"
+HEADER_CENTER_BLUE = "#6ebadc"
+LABEL_BLUE = "#41aed6"
+TEXT_COLOR = "#000000"
 
 
 def draw_no0(page, config):
@@ -26,19 +27,24 @@ def draw_no0(page, config):
     canvas = page.canvas
     # タイトル帯と白い細線。寸法は完成した帳票上のmmで指定する。
     canvas.add_patch(
-        Rectangle((0, -0.0075), 140.5, 18.8055, facecolor=HEADER_BLUE, edgecolor="none")
+        Rectangle((0.85, 0.85), 138.8, 17.2, facecolor=HEADER_BLUE, edgecolor="none")
     )
-    for y in (4.2909, 15.0369):
+    canvas.add_patch(
+        Rectangle(
+            (0.85, 4.9), 138.8, 9.1, facecolor=HEADER_CENTER_BLUE, edgecolor="none"
+        )
+    )
+    for y in (4.22, 14.66):
         canvas.add_patch(
-            Rectangle((0, y), 140.5, 0.5373, facecolor="white", edgecolor="none")
+            Rectangle((0.85, y), 138.8, 0.65, facecolor="white", edgecolor="none")
         )
     canvas.text(
         70.25,
-        10.1415,
+        9.4,
         "電力使用状況見える化レポート",
         ha="center",
         va="center",
-        fontsize=12.5,
+        fontsize=11.5,
         fontweight="bold",
         color="#101010",
     )
@@ -51,15 +57,13 @@ def draw_no0(page, config):
     value_texts = []
     # 青いラベルと契約値を対応させ、4行を同じ間隔で並べる。
     for index, (label, value) in enumerate(rows):
-        top = 24.4695 + index * 7.5819
+        top = 21.75 + index * 8.42
         canvas.add_patch(
-            Rectangle(
-                (7.7275, top), 23.1825, 7.1043, facecolor=LABEL_BLUE, edgecolor="none"
-            )
+            Rectangle((7.05, top), 23.35, 7.75, facecolor=LABEL_BLUE, edgecolor="none")
         )
         canvas.text(
-            8.8515,
-            top + 3.55215,
+            8.1,
+            top + 3.875,
             label,
             ha="left",
             va="center",
@@ -69,13 +73,13 @@ def draw_no0(page, config):
         )
         value_texts.append(
             canvas.text(
-                33.0175,
-                top + 3.55215,
+                31.8,
+                top + 3.875,
                 value,
                 ha="left",
                 va="center",
                 fontsize=7.7,
-                fontweight="bold",
+                fontweight="normal",
                 color=TEXT_COLOR,
             )
         )

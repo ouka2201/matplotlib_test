@@ -71,7 +71,7 @@ class FirstPageCanvas(PageCanvas):
             ha="center",
             bold=True,
         )
-        self.text(x + 5, y - 0.1, label, size=10.2, color=TITLE, bold=True)
+        self.text(x + 5, y - 0.1, label, size=11.5, color=TITLE, bold=True)
 
     def note(self, x, y, w, h, lines, advice=False, centered=False):
         """黄色の結果欄または青色の助言欄を描画する。
@@ -97,7 +97,7 @@ class FirstPageCanvas(PageCanvas):
                 (x, y),
                 w,
                 h,
-                facecolor="#b7cce0" if advice else "#fff2c5",
+                facecolor="#b5d7ea" if advice else "#fff2cc",
                 edgecolor="none",
             )
         )
@@ -109,7 +109,7 @@ class FirstPageCanvas(PageCanvas):
             "\n".join(lines),
             size=7.1,
             ha="center" if centered else "left",
-            linespacing=1.55,
+            linespacing=1.35,
         )
         # 画像中の文字はブラウザー側で検査できないため、実際の描画幅で調整。
         self.fig.canvas.draw()
@@ -149,6 +149,8 @@ class FirstPageCanvas(PageCanvas):
         for side in ("left", "bottom"):
             ax.spines[side].set_color("#969696")
             ax.spines[side].set_linewidth(0.4)
+        ax.grid(axis="y", color="#f2f2f2", lw=0.4)
+        ax.set_axisbelow(True)
         ax.set_ylim(bottom=0)
         return ax
 
@@ -170,7 +172,7 @@ class SecondPageCanvas(PageCanvas):
         self.text(
             3.8, y + 0.3, str(number), size=8.1, color="white", bold=True, ha="center"
         )
-        self.text(7, y, label, size=10.2, color=TITLE, bold=True)
+        self.text(7, y, label, size=11.5, color=TITLE, bold=True)
 
     def note(self, x, y, w, h, lines, advice=False):
         """黄色の結果欄または青色の助言欄を描画する。
@@ -195,7 +197,7 @@ class SecondPageCanvas(PageCanvas):
                 (x, y),
                 w,
                 h,
-                facecolor="#b7cce0" if advice else "#fff2c5",
+                facecolor="#b5d7ea" if advice else "#fff2cc",
                 edgecolor="none",
             )
         )
@@ -272,8 +274,19 @@ class SecondPageCanvas(PageCanvas):
         t.auto_set_font_size(False)
         t.set_fontsize(size)
         for (r, c), cell in t.get_celld().items():
-            cell.set_edgecolor("#858b91")
-            cell.set_linewidth(0.45)
-            cell.set_facecolor("#e1e6eb" if headers is not None and r == 0 else "white")
+            cell.set_edgecolor("#202020")
+            cell.set_linewidth(0.4)
+            cell.set_facecolor("#e5e5e5" if headers is not None and r == 0 else "white")
             cell.PAD = 0.035
+        # 順位表は幅が狭いため、日付や小数を隣の列へはみ出させない。
+        renderer = self.fig.canvas.get_renderer()
+        table_width = ax.get_window_extent(renderer).width
+        for (_, column), cell in t.get_celld().items():
+            item = cell.get_text()
+            text_width = renderer.get_text_width_height_descent(
+                item.get_text(), item.get_fontproperties(), False
+            )[0]
+            available = table_width * widths[column] * (1 - 2 * cell.PAD)
+            if text_width > available:
+                item.set_fontsize(size * available / text_width * 0.98)
         return t

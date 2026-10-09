@@ -47,7 +47,7 @@ def draw_no3(page, config):
     canvas = page.canvas
     logo = load_footer_logo()
     # ロゴは文字列の代用ではなくPNGを貼り付け、元の縦横比を保つ。
-    logo_x, logo_y, logo_width = 3, 180, 26
+    logo_x, logo_y, logo_width = 2.4, 184.7, 26.5
     logo_height = logo_width * logo.shape[0] / logo.shape[1]
     canvas.imshow(
         logo,
@@ -55,7 +55,7 @@ def draw_no3(page, config):
         aspect="auto",
     )
 
-    x, y, width, height = 59, 184, 79.5, 9
+    x, y, width, height = 56.3, 183.8, 83.1, 9
     value = str(config.get("notes", DEFAULT_NOTES))
     start = value.find(EMPHASIS)
     fig = canvas.figure

@@ -68,22 +68,24 @@ def draw_no6(page, s, context, duration_data=None):
     )
     if duration_data is None:
         duration_data = duration_axis(s["df"])
-    title(2, 5, f'デュレーションカーブ（{context["period"]}）')
+    title(0.9, 5, f'デュレーションカーブ（{context["period"]}）')
     frames = len(s["df"])
     days = frames // 48
     text(
         6,
-        9,
+        8,
         f"30分ごとの需要電力［kW］{frames:,}コマを大きい順に並べたものです（48コマ/日×{days}日={frames:,}コマ）",
         size=7,
     )
     if not context.get("has_full_year", True):
-        text(6, 13, f'実績期間：{context["actual_period"]}', size=5.5)
+        text(6, 11, f'実績期間：{context["actual_period"]}', size=5.5)
     top_label = context.get("top_label", "TOP50")
     # 電力順位と日時ラベルの対応はduration_axisで決定済み。
     # ここでは再ソートせず、そのまま曲線と横軸を描く。
     ordered, ticks, labels = duration_data
-    ax = axes(12, 16, 94, 48, "電力(kW)", grid=False)
+    # 大きな電力では桁区切りの目盛りが長くなるので、縦軸用の余白を増やす。
+    left = 12.0 if ordered.kw.max() >= 1000 else 9.95
+    ax = axes(left, 12.0, 108.95 - left, 47.2, "電力(kW)")
     rank = range(1, len(ordered) + 1)
     ax.fill_between(rank, ordered.kw, color=DURATION_BLUE)
     ax.plot(rank, ordered.kw, color=DURATION_BLUE, lw=0.4)
@@ -97,78 +99,85 @@ def draw_no6(page, s, context, duration_data=None):
         for r in context["top_rows"]
     ]
     widths = [0.09, 0.46, 0.18, 0.27]
-    table(3, 82, 56, 27, ["順位", "年月日", "時分", "電力(kW)"], top_rows, widths, 5)
+    table(
+        1.05,
+        74.8,
+        34.5,
+        27,
+        ["順位", "年月日", "時分", "電力(kW)"],
+        top_rows,
+        widths,
+        4.2,
+    )
     r = context["rank50_row"]
     if r is not None:
         table(
-            3,
-            109,
-            56,
+            1.05,
+            101.8,
+            34.5,
             2.5,
             None,
             [[r["rank"], r["date"], r["time"], format_number(r["kw"])]],
             widths,
-            5,
+            4.2,
         )
     else:
-        text(3, 109, f'50位の実績なし（全{context["count"]}コマ）', size=5.5)
+        text(1.05, 102, f'50位の実績なし（全{context["count"]}コマ）', size=5.5)
     peak = s["top"].iloc[0].timestamp
     note(
-        62,
-        82,
-        46,
-        13,
+        40.0,
+        79.0,
+        68.0,
+        6.0,
         [
-            f"ピークは、{peak:%m月%d日}",
-            f"{peak:%H:%M}〜{peak+timedelta(minutes=30):%H:%M}に発生しています",
+            f"ピークは、{peak:%m月%d日%H:%M}〜{peak+timedelta(minutes=30):%H:%M}に発生しています",
         ],
     )
     note(
-        62,
-        97,
-        46,
-        17,
+        35.9,
+        90.7,
+        77.3,
+        15.1,
         [
-            "ピークの発生要因と思われる設備を",
-            "一斉に稼働させず15分前後ずらすことや、",
-            "業務の一部を他の曜日、季節にシフトする",
-            "ことが可能であればピークが抑制され、",
-            "基本料金の低減につながります",
+            "ピークの発生要因と思われる設備を一斉に稼働させず15分前後",
+            "ずらすことや、業務の一部を他の曜日、季節にシフトすることが",
+            "可能であればピークが抑制され、基本料金の低減につながります",
         ],
         advice=True,
     )
 
     # 上部右側は横長の共通見出し、3グラフ、その下に結果と助言を配置。
     canvas.add_patch(
-        Rectangle((108, 14), 171, 9, facecolor="white", edgecolor=TITLE, lw=0.8)
+        Rectangle((110.3, 12.5), 169.5, 7.9, facecolor="white", edgecolor=TITLE, lw=0.8)
     )
     text(
-        193.5,
-        17,
-        f"{top_label}における特徴",
-        size=10.2,
+        190.5,
+        14.7,
+        "における特徴",
+        size=9.6,
         color=TITLE,
         bold=True,
-        ha="center",
+        ha="left",
     )
+    text(190.5, 14.7, top_label, size=9.6, color="#e03531", bold=True, ha="right")
     specs = [
-        ("month_count", "月別", 114, 39, 39),
-        ("weekday_count", "曜日別", 162, 39, 27),
-        ("hour_count", "時間帯別", 200, 39, 77),
+        ("month_count", "月別", 116.8, 31.0, 42.0),
+        ("weekday_count", "曜日別", 165.9, 30.7, 27.4),
+        ("hour_count", "時間帯別", 197.3, 30.7, 83.0),
     ]
     for key, label, x, y, w in specs:
         text(
             x + w / 2,
-            28,
+            24.0,
             f"【{label}】",
-            size=10.2,
+            size=11.5,
             color=TITLE,
             bold=True,
             ha="center",
         )
         counts = s[key]
         vals = counts.to_numpy()
-        ax = axes(x, y, w, 39, "発生回数")
+        ax = axes(x, y, w, 39.1, "発生回数")
         bars = ax.bar(
             range(len(vals)),
             vals,
@@ -200,10 +209,10 @@ def draw_no6(page, s, context, duration_data=None):
                     color=BLACK,
                 )
     note(
-        169,
-        82,
-        55,
-        16,
+        169.0,
+        74.0,
+        55.0,
+        15.7,
         [
             f"{top_label}を見ると、以下の特徴があります",
             f'月別で多いのは{context["top_month"]}',
@@ -212,10 +221,10 @@ def draw_no6(page, s, context, duration_data=None):
         ],
     )
     note(
-        141,
-        101,
-        111,
-        13,
+        141.0,
+        91.0,
+        114.9,
+        15.1,
         [
             "月ごと、曜日ごと、時間帯ごとの特徴を把握して、ピークの抑制につなげましょう",
             "稼働している設備を把握するためには、個別機器ごとの電力使用状況の見える化がおすすめです",

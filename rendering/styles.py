@@ -4,9 +4,9 @@ from decimal import Decimal
 
 # A4横の用紙から左右上下8mmの余白を除いた、外枠内の寸法。
 WIDTH, HEIGHT = 281, 194
-TITLE = "#398fb9"
+TITLE = "#00b0f0"
 # 2ページ目の描画でも参照する共通色。
-DURATION_BLUE = "#5684ad"
+DURATION_BLUE = "#72a3c9"
 # No.2の棒色は帳票出力項目仕様に合わせる。他のグラフの配色とは個別に管理する。
 DAILY_BLUE = "#72a3c9"
 DAILY_RED = "#e15759"

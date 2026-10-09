@@ -127,13 +127,13 @@ class No5PowerTests(unittest.TestCase):
             line = ax.lines[0]
             self.assertEqual(list(line.get_ydata()), [39, 39])  # 契約値を2倍しない。
             self.assertEqual(line.get_color(), "#e15759")
-            self.assertEqual(line.get_linestyle(), ":")
+            self.assertEqual(line.get_linestyle(), "--")
             self.assertEqual(line.get_label(), "契約電力")
             legend = ax.get_legend()
             self.assertEqual(
                 [text.get_text() for text in legend.get_texts()], ["契約電力"]
             )
-            self.assertEqual(legend.get_lines()[0].get_linestyle(), ":")
+            self.assertEqual(legend.get_lines()[0].get_linestyle(), "--")
             self.assertEqual(legend.get_lines()[0].get_color(), "#e15759")
             self.assertEqual(ax.get_ylabel(), "電力(kW)")
             self.assertEqual(

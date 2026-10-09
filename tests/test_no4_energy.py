@@ -81,7 +81,7 @@ class No4EnergyTests(unittest.TestCase):
             )
             self.assertEqual(len(ax.lines), 1)
             self.assertEqual(list(ax.lines[0].get_ydata()), [100, 100])
-            self.assertEqual(ax.lines[0].get_linestyle(), ":")
+            self.assertEqual(ax.lines[0].get_linestyle(), "--")
             self.assertEqual(ax.lines[0].get_color(), "#72a3c9")
             self.assertEqual(
                 [(t.get_text(), t.get_position()[0]) for t in ax.texts],
@@ -96,7 +96,7 @@ class No4EnergyTests(unittest.TestCase):
                 ],
             )
             texts = [t.get_text() for t in fig.axes[0].texts]
-            self.assertIn("使用電力量が最も多かったのは\n08月でした。", texts)
+            self.assertIn("使用電力量が最も\n多かったのは08月でした", texts)
             self.assertIn(
                 "03月（青点線）を上回る使用電力量は\n空調による影響が大きいと思われます\n空調洗浄や高効率空調への更新が\n使用電力量削減につながります",
                 texts,
@@ -115,7 +115,7 @@ class No4EnergyTests(unittest.TestCase):
             )
             self.assertEqual(ax.patches[0].get_facecolor(), to_rgba("#e15759"))
             texts = [t.get_text() for t in fig.axes[0].texts]
-            self.assertIn("使用電力量が最も多かったのは\n07月でした。", texts)
+            self.assertIn("使用電力量が最も\n多かったのは07月でした", texts)
             self.assertTrue(any(t.startswith("07月（青点線）") for t in texts))
         finally:
             plt.close(fig)
