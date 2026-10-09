@@ -148,3 +148,21 @@ class ReportService:
             self.printer.close()
         finally:
             self.charts.fonts.close()
+
+    def __enter__(self):
+        """withブロック内で、このプロセス専用サービスを使用する。
+
+        Returns:
+            ReportService: 初期化済みの自分自身。
+        """
+        return self
+
+    def __exit__(self, exc_type, exc, traceback):
+        """成功・失敗にかかわらずブラウザーとフォントを解放する。
+
+        Args:
+            exc_type (type | None): 発生した例外の型。
+            exc (Exception | None): 発生した例外。
+            traceback (TracebackType | None): 例外の追跡情報。
+        """
+        self.close()

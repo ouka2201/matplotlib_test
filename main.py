@@ -55,30 +55,25 @@ def main():
         db_source = DatabaseSource(
             json.loads(args.db_config.read_text(encoding="utf-8"))
         )
-    service = None
     try:
-        # フォントとChromiumを初期化し、画像とHTMLをメモリ上で生成する。
-        service = ReportService(args.font, args.browser, args.font_bold)
-        if db_source is not None:
-            service.generate_database(
-                db_source,
-                args.supply_point,
-                args.report_month or config["target_month"],
-                config,
-                args.output.resolve(),
-                args.debug_dir,
-            )
-        else:
-            service.generate(args.csv, config, args.output.resolve(), args.debug_dir)
-    # 途中でデータ検証や描画が失敗しても、ブラウザーとDB接続を解放する。
-    # ブラウザーの終了で例外が起きてもDBの終了処理は実行する。
-    finally:
-        try:
-            if service is not None:
-                service.close()
-        finally:
+        # withでフォント・ブラウザーの準備と終了処理をまとめる。
+        with ReportService(args.font, args.browser, args.font_bold) as service:
             if db_source is not None:
-                db_source.close()
+                service.generate_database(
+                    db_source,
+                    args.supply_point,
+                    args.report_month or config["target_month"],
+                    config,
+                    args.output.resolve(),
+                    args.debug_dir,
+                )
+            else:
+                service.generate(
+                    args.csv, config, args.output.resolve(), args.debug_dir
+                )
+    finally:
+        if db_source is not None:
+            db_source.close()
     print(f"PDF: {args.output.resolve()}")
 
 

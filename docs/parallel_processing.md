@@ -22,7 +22,7 @@ python batch.py --jobs jobs.json --output-dir output/reports --font /path/to/fon
 # メモリに応じて並列数を調整
 python batch.py --jobs jobs.json --output-dir output/reports --font /path/to/font.ttf --workers 4
 ```
-`ProcessPoolExecutor`を`spawn`で使い、MatplotlibとChromiumをワーカープロセスごとに分離します。各ワーカーはフォント・テンプレート・Chromiumを再利用し、顧客ごとに新しいブラウザーコンテキストを作成して最後に閉じます。親プロセスは同時投入をワーカー数の2倍までに制限します。1000件分のDataFrame・画像・PDFを親で保持せず、ワーカーにはパスだけを渡し、成功／失敗と保存先のみを返します。1件のデータ不正でも他の顧客の処理は続き、結果は `results.json` に保存されます。ワーカーの異常終了や初期化失敗は処理全体のエラーとして通知します。
+共通の`services.batch_service.run_parallel()`が`ProcessPoolExecutor`を`spawn`で使い、MatplotlibとChromiumをワーカープロセスごとに分離します。各ワーカーはフォント・テンプレート・Chromiumを再利用し、顧客ごとに新しいブラウザーコンテキストを作成して最後に閉じます。親プロセスは同時投入をワーカー数の2倍までに制限します。1000件分のDataFrame・画像・PDFを親で保持せず、ワーカーにはパスだけを渡し、成功／失敗と保存先のみを返します。1件のデータ不正でも他の顧客の処理は続き、結果は `results.json` に保存されます。ワーカーの異常終了や初期化失敗は処理全体のエラーとして通知します。
 
 既定の並列数は利用可能な論理CPU数です。Python 3.13以降は`os.process_cpu_count()`、旧版ではCPU affinityまたは`os.cpu_count()`を使います。コンテナーのCPU quotaがこれらに反映されない環境では`--workers`を明示してください。WindowsのExecutor上限は61です。Chromiumもメモリを使用するので、実測した1ワーカー当たりの使用量と空きメモリから適切な並列数を決めてください。数値計算ライブラリのスレッド数は、外部設定がなければ1に抑えます。
 
@@ -33,4 +33,4 @@ python batch.py --jobs jobs.json --output-dir output/reports --font /path/to/fon
 
 
 ## 管理テーブルを入口にする場合
-`batch.py --from-management`で管理テーブルの作成依頼・エラーを取得し、各レコードを1件ずつ既存のプロセス並列処理に渡します。親プロセスの取得用DB接続はワーカー起動前に閉じ、各ワーカーで独立したDBサービスを作ります。0件ならワーカーは起動しません。詳細は[管理テーブルからの並列処理](managed_batch.md)を参照してください。
+`batch.py --from-management`で指定年月の状態2・5を取得し、各レコードを1件ずつ既存のプロセス並列処理に渡します。親プロセスの取得用DB接続はワーカー起動前に閉じ、各ワーカーで独立したDBサービスを作ります。0件ならワーカーは起動しません。詳細は[管理テーブルからの並列処理](managed_batch.md)を参照してください。

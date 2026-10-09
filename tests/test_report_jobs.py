@@ -15,6 +15,7 @@ from sqlalchemy import Boolean, Column, DateTime, MetaData, String, Table, selec
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import batch
+from services import batch_service
 from services.database_source import POINT, DATE, SLOTS, CONTRACT_POINT, CONTRACT_POWER
 from services.report_job_source import (
     ReportJobSource,
@@ -317,7 +318,7 @@ class ReportJobsTests(unittest.TestCase):
             self.settings, self.root, self.config_path, "2026-06"
         )
         self.assertEqual(jobs, [])
-        with patch.object(batch, "ProcessPoolExecutor") as pool:
+        with patch.object(batch_service, "ProcessPoolExecutor") as pool:
             self.assertEqual(list(batch.run_jobs(jobs, workers=2, managed=True)), [])
             pool.assert_not_called()
 
@@ -339,7 +340,7 @@ class ReportJobsTests(unittest.TestCase):
             str(output),
         ]
         with patch.object(sys, "argv", argv), patch.object(
-            batch, "ProcessPoolExecutor"
+            batch_service, "ProcessPoolExecutor"
         ) as pool, patch("builtins.print"):
             batch.main()
         self.assertEqual(json.loads((output / "results.json").read_text()), [])
@@ -621,7 +622,7 @@ class ReportJobsTests(unittest.TestCase):
             return future
 
         with patch.object(batch, "cpu_workers", return_value=3), patch.object(
-            batch, "ProcessPoolExecutor"
+            batch_service, "ProcessPoolExecutor"
         ) as pool:
             pool.return_value.__enter__.return_value.submit.side_effect = completed
             results = list(batch.run_jobs(jobs, managed=True))
@@ -659,9 +660,9 @@ class ReportJobsTests(unittest.TestCase):
                 counts["active"] -= 1
             return {"id": job["id"], "status": "succeeded"}
 
-        with patch.object(batch, "ProcessPoolExecutor", TestExecutor), patch.object(
-            batch, "_run_job", run_one
-        ):
+        with patch.object(
+            batch_service, "ProcessPoolExecutor", TestExecutor
+        ), patch.object(batch, "_run_job", run_one):
             results = list(batch.run_jobs(jobs, workers=2, managed=True))
         self.assertEqual(len(results), 1000)
         self.assertEqual(

@@ -1,39 +1,18 @@
 """顧客ジョブをCPUコア数に応じてプロセス並列で実行するCLI。"""
 
 import argparse
-from concurrent.futures import ProcessPoolExecutor, wait, FIRST_COMPLETED
 import json
 import multiprocessing
-from multiprocessing.util import Finalize
 import os
+from multiprocessing.util import Finalize
 from pathlib import Path
-import sys
 
-# 各ライブラリ内の数値計算スレッドの増殖を抑える。外部設定があれば優先する。
-for variable in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS"):
-    os.environ.setdefault(variable, "1")
+from services.batch_service import cpu_workers, managed_report_filename, run_parallel
 
 # これらの変数は各ワーカープロセスの中で個別に保持される。
 # 顧客データではなく、再利用するブラウザー・DB取得サービスだけを入れる。
 _service = None
 _source = None
-
-
-def cpu_workers():
-    """現在のプロセスが利用できる論理CPU数を求める。
-
-    Returns:
-        int: CPU数。未取得なら1。WindowsはProcessPoolExecutorの上限61まで。
-    """
-    # Pythonのバージョンに応じて、利用できる論理CPU数を取得する。
-    # コンテナー等で実際の上限と異なる場合は--workersで明示的に調整する。
-    if hasattr(os, "process_cpu_count"):
-        count = os.process_cpu_count() or 1
-    elif hasattr(os, "sched_getaffinity"):
-        count = len(os.sched_getaffinity(0)) or 1
-    else:
-        count = os.cpu_count() or 1
-    return min(count, 61) if sys.platform == "win32" else count
 
 
 def _close_worker():
@@ -75,48 +54,6 @@ def _init_worker(font, browser, db_settings=None, bold_font=None, managed=False)
             from services.database_source import DatabaseSource as Source
 
         _source = Source(db_settings)
-
-
-def managed_report_filename(target):
-    """管理レコードの企業ID・供給地点・加入フラグ・対象年月からPDF名を作る。
-
-    未加入は「企業ID_供給地点特定番号_YYYYMM.pdf」、加入は
-    「企業ID_供給地点特定番号_syousapo_YYYYMM.pdf」。管理テーブルの
-    値をそのまま使用し、先頭ゼロを削除したり欠損値を代用したりしない。
-
-    Args:
-        target (dict): company_id、supply_point、target_year_month、
-            syousapo_flgを持つ管理テーブルの取得レコード。
-
-    Returns:
-        str: 拡張子.pdfを含む保存ファイル名。
-
-    Raises:
-        ValueError: 企業ID・供給地点・対象年月が不正、または加入フラグが
-            boolでない場合。パス区切り等が含まれる値も拒否する。
-    """
-    import re
-    from services.data_service import bounds
-
-    company = target["company_id"]
-    point, month = target["supply_point"], target["target_year_month"]
-    joined = target["syousapo_flg"]
-    if not isinstance(company, str) or not re.fullmatch(
-        r"[A-Za-z0-9_-]{1,14}", company
-    ):
-        raise ValueError("企業IDは14文字以内の英数字・ハイフン・下線が必要です")
-    if not isinstance(point, str) or not re.fullmatch(r"[A-Za-z0-9_-]{1,22}", point):
-        raise ValueError(
-            "供給地点特定番号は22文字以内の英数字・ハイフン・下線が必要です"
-        )
-    if not isinstance(month, str) or not re.fullmatch(r"\d{6}", month):
-        raise ValueError("管理テーブルの対象年月はYYYYMMの6桁文字列が必要です")
-    bounds(f"{month[:4]}-{month[4:]}")
-    # "False"などの文字列をbool()でTrueと解釈し、加入者の名前にしない。
-    if not isinstance(joined, bool):
-        raise ValueError("省サポ加入フラグSYOUSAPO_FLGはTrueまたはFalseが必要です")
-    suffix = "_syousapo" if joined else ""
-    return f"{company}_{point}{suffix}_{month}.pdf"
 
 
 def _run_managed_job(job):
@@ -360,17 +297,10 @@ def run_jobs(
         ValueError: workersが正の整数でない場合。
         concurrent.futures.process.BrokenProcessPool: ワーカーが異常終了した場合。
     """
-    count = cpu_workers() if workers is None else workers
-    if not isinstance(count, int) or count < 1:
-        raise ValueError("workersは正の整数で指定してください")
-    count = min(count, len(jobs))
-    if not jobs:
-        return
-    # spawnで独立したPythonプロセスを起動する。
-    # Matplotlibの全体設定と同期Playwrightをワーカーごとに分離する。
-    with ProcessPoolExecutor(
-        max_workers=count,
-        mp_context=multiprocessing.get_context("spawn"),
+    yield from run_parallel(
+        jobs,
+        _run_job,
+        workers=cpu_workers() if workers is None else workers,
         initializer=_init_worker,
         initargs=(
             str(Path(font).resolve()) if font else None,
@@ -379,26 +309,7 @@ def run_jobs(
             str(Path(bold_font).resolve()) if bold_font else None,
             managed,
         ),
-    ) as pool:
-        # 投入待ちのジョブを順番に取り出す。全件の重いデータを先に読み込まない。
-        iterator = iter(jobs)
-        pending = set()
-        # 最初はワーカー数の2倍まで投入する。
-        # 処理中のジョブと少数の待機ジョブだけを持ち、無制限にキューを増やさない。
-        for _ in range(count * 2):
-            job = next(iterator, None)
-            if job is None:
-                break
-            pending.add(pool.submit(_run_job, job))
-        while pending:
-            # 1件以上の完了を待ち、完了した分だけ次のジョブを追加する。
-            # 結果は入力順ではなく完了順で返り、遅い顧客が他の結果を止めない。
-            done, pending = wait(pending, return_when=FIRST_COMPLETED)
-            for future in done:
-                yield future.result()
-                job = next(iterator, None)
-                if job is not None:
-                    pending.add(pool.submit(_run_job, job))
+    )
 
 
 def main():

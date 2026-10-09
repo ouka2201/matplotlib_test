@@ -1,4 +1,4 @@
-"""既存SQLの取得結果からの変換と、スレッド/プロセスへの接続を検証する。"""
+"""既存SQLの取得結果からの変換と、単一プロセスプールへの接続を検証する。"""
 
 from concurrent.futures import Future, ThreadPoolExecutor
 from contextlib import contextmanager
@@ -11,11 +11,10 @@ from unittest.mock import Mock, patch
 from sqlalchemy import create_engine, text
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from examples import existing_sql_batch as integration
+from services import batch_service as integration
 from services.database_source import DATE, POINT, SLOTS
 from services.query_result_service import prepare_query_results, row_to_dict
 from services.report_service import ReportService
-from services import query_result_worker as worker
 
 POINT_VALUE = "0000000000000000000001"
 
@@ -183,10 +182,9 @@ class QueryResultTests(unittest.TestCase):
         self.assertIsNone(debug)
 
     def test_existing_sql_collects_all_rows_before_rendering(self):
-        """セッション内で全行を取得し、排他的な終了日と軽い辞書をPDF側へ渡す。"""
+        """同じワーカー内で全行を取得し、両セッションを閉じてからPDF化する。"""
         sessions = []
         parameters = []
-        cust = customer()
 
         @contextmanager
         def get_session():
@@ -194,7 +192,7 @@ class QueryResultTests(unittest.TestCase):
             session.closed = False
             if not sessions:
                 session.execute.return_value.mappings.return_value.one.return_value = (
-                    cust
+                    customer()
                 )
             else:
                 session.execute.return_value.mappings.return_value.all.return_value = [
@@ -208,9 +206,9 @@ class QueryResultTests(unittest.TestCase):
                 parameters.append(session.execute.call_args.args[1])
                 session.closed = True
 
-        pool = Mock()
+        service = Mock()
 
-        def submit(function, payload):
+        def generate(**payload):
             self.assertTrue(all(session.closed for session in sessions))
             self.assertEqual(len(payload["daily_rows"]), 2)
             self.assertEqual(payload["report_month"], "2026-06")
@@ -218,74 +216,156 @@ class QueryResultTests(unittest.TestCase):
                 payload["output"].name,
                 f"COMPANY0000001_{POINT_VALUE}_syousapo_202606.pdf",
             )
-            self.assertIs(function, worker.render_query_result_job)
-            future = Future()
-            future.set_result({"status": "succeeded", "output": str(payload["output"])})
-            return future
+            return {"status": "succeeded", "output": str(payload["output"])}
 
-        pool.submit.side_effect = submit
+        service.generate_query_results.side_effect = generate
+        options = {
+            "service": service,
+            "get_session": get_session,
+            "load_sql_file": lambda name: "SELECT 1",
+            "report_month": "2026-06",
+            "output_dir": Path("out"),
+            "column_options": {},
+        }
         target = {
             "supply_point_number": POINT_VALUE,
             "company_id": "COMPANY0000001",
             "syousapo_flg": True,
         }
-        result = integration.create_report_from_existing_sql(
-            target, date(2026, 6, 1), get_session, lambda name: "SELECT 1", pool, "out"
-        )
+        with patch.object(integration, "_worker", options):
+            result = integration._run_report(target)
         self.assertEqual(result["status"], "succeeded")
         self.assertEqual(parameters[1]["start_date"], "20250701")
         self.assertEqual(parameters[1]["end_date"], "20260701")
 
     def test_worker_initializes_once_and_closes(self):
-        """PDF側でサービスを初期化・再利用し、終了時に閉じる。"""
-        with patch.object(worker, "_service", None), patch.object(
-            worker, "Finalize"
+        """子のサービスを一度作り、取得・描画を同じワーカーで再利用する。"""
+        options = {
+            "report_month": "2026-06",
+            "output_dir": Path("out"),
+            "column_options": {},
+        }
+        get_session, load_sql = Mock(), Mock()
+        with patch.object(integration, "_worker", None), patch.object(
+            integration, "Finalize"
         ), patch("services.report_service.ReportService") as service:
-            worker.initialize_query_worker()
-            worker.render_query_result_job({"output": Path("a.pdf")})
-            worker.render_query_result_job({"output": Path("b.pdf")})
+            integration._initialize_reports(get_session, load_sql, options)
             service.assert_called_once()
-            self.assertEqual(service.return_value.generate_query_results.call_count, 2)
-            worker._close_query_worker()
+            self.assertIs(integration._worker["get_session"], get_session)
+            self.assertIs(integration._worker["load_sql_file"], load_sql)
+            integration._close_reports()
             service.return_value.close.assert_called_once()
 
     def test_empty_targets_do_not_start_any_pool(self):
         """対象0件ではDB取得・ブラウザー・プロセスを起動しない。"""
         with patch.object(integration, "ProcessPoolExecutor") as pool:
-            result = integration.run_existing_sql_batch(
-                [], "202606", Mock(), Mock(), "out"
-            )
+            result = integration.run_reports([], "202606", Mock(), Mock(), "out")
             self.assertEqual(result, [])
             pool.assert_not_called()
 
     def test_cpu_count_and_failure_continuation(self):
-        """CPU数を使用し、1件の失敗後も全対象の結果を返す。"""
+        """単一プールでCPU数を使い、1件の失敗後も全対象を処理する。"""
         targets = [{"supply_point_number": str(index)} for index in range(10)]
 
-        def create(target, *args):
+        def create(target):
             if target["supply_point_number"] == "3":
-                raise ValueError("bad customer")
-            return {"status": "succeeded"}
+                return {
+                    "status": "failed",
+                    "supply_point_number": "3",
+                    "error": "bad customer",
+                }
+            return {
+                "status": "succeeded",
+                "supply_point_number": target["supply_point_number"],
+            }
+
+        class TestExecutor(ThreadPoolExecutor):
+            def __init__(self, max_workers, **kwargs):
+                super().__init__(max_workers=max_workers)
 
         callback = Mock()
         with patch.object(integration, "cpu_workers", return_value=2), patch.object(
-            integration, "ProcessPoolExecutor"
-        ) as pool, patch.object(
-            integration, "create_report_from_existing_sql", side_effect=create
-        ):
-            results = integration.run_existing_sql_batch(
-                targets, "202606", Mock(), Mock(), "out", on_result=callback
+            integration, "ProcessPoolExecutor", TestExecutor
+        ), patch.object(integration, "_run_report", side_effect=create):
+            results = integration.run_reports(
+                targets, date(2026, 6, 1), Mock(), Mock(), "out", on_result=callback
             )
-        self.assertEqual(pool.call_args.kwargs["max_workers"], 2)
         self.assertEqual(len(results), 10)
         self.assertEqual(sum(row["status"] == "failed" for row in results), 1)
         self.assertEqual(callback.call_count, 10)
+
+    def test_single_process_pool_receives_only_target_rows(self):
+        """子へ渡すのは軽い対象行だけで、日別データや別プールを渡さない。"""
+        target = {
+            "supply_point_number": POINT_VALUE,
+            "company_id": "COMPANY0000001",
+            "syousapo_flg": True,
+        }
+
+        def completed(function, item):
+            future = Future()
+            future.set_result(
+                {
+                    "status": "succeeded",
+                    "supply_point_number": item["supply_point_number"],
+                }
+            )
+            return future
+
+        with patch.object(integration, "ProcessPoolExecutor") as pool:
+            pool.return_value.__enter__.return_value.submit.side_effect = completed
+            integration.run_reports([target], "202606", Mock(), Mock(), "out")
+        pool.assert_called_once()
+        self.assertIs(
+            pool.call_args.kwargs["initializer"], integration._initialize_reports
+        )
+        get_session, load_sql_file, options = pool.call_args.kwargs["initargs"]
+        self.assertEqual(options["report_month"], "2026-06")
+        submitted = pool.return_value.__enter__.return_value.submit.call_args.args
+        self.assertIs(submitted[0], integration._run_report)
+        self.assertEqual(submitted[1], target)
+        self.assertEqual(len(submitted), 2)
+
+    def test_worker_error_does_not_raise_to_next_customer(self):
+        """SQL取得の失敗を顧客のエラーとして返す。"""
+        options = {
+            "service": Mock(),
+            "get_session": Mock(side_effect=RuntimeError("DB unavailable")),
+            "load_sql_file": Mock(),
+            "report_month": "2026-06",
+            "output_dir": Path("out"),
+            "column_options": {},
+        }
+        target = {
+            "supply_point_number": POINT_VALUE,
+            "company_id": "COMPANY0000001",
+            "syousapo_flg": True,
+        }
+        with patch.object(integration, "_worker", options):
+            result = integration._run_report(target)
+        self.assertEqual(result["status"], "failed")
+        self.assertIn("DB unavailable", result["error"])
+        options["service"].generate_query_results.assert_not_called()
+
+    def test_with_closes_service_even_on_failure(self):
+        """withを使う単体呼び出しでは、成功・例外時とも終了処理を行う。"""
+        for fail in (False, True):
+            service = ReportService.__new__(ReportService)
+            service.close = Mock()
+            try:
+                with service as entered:
+                    self.assertIs(entered, service)
+                    if fail:
+                        raise ValueError("bad data")
+            except ValueError:
+                pass
+            service.close.assert_called_once()
 
     def test_duplicate_targets_are_rejected(self):
         """同じ保存先へ並列に書かないよう、対象リストの地点重複を拒否する。"""
         with patch.object(integration, "ProcessPoolExecutor") as pool:
             with self.assertRaises(ValueError):
-                integration.run_existing_sql_batch(
+                integration.run_reports(
                     [{"supply_point_number": POINT_VALUE}] * 2,
                     "202606",
                     Mock(),

@@ -1,169 +1,84 @@
-# 既存バッチのSQL取得結果からPDFを作成する
+# 既存バッチへの組み込み
 
-画像の`CreatePowerReport.execute(row)`で取得した契約情報と日別48枠を、新しい`ReportService.generate_query_results()`へ渡せます。この入口はDBへの再接続・SQL実行を行いません。既存のget_session/load_sql_fileとSQLファイルを使用します。
+入口は`services.batch_service.run_reports()`です。既存の対象取得、get_session、load_sql_fileを使い、1件のSQL取得からPDF保存までを同じ子プロセスで行います。ThreadPoolとPDF用ProcessPoolを組み合わせる処理は不要になりました。
 
-## SELECT結果の列名
+## Jobクラスからの呼び出し
 
-契約情報SQLには次の別名を付けてください。画像にはSQL本文がないため、実際の名義列等は決め打ちしていません。
+画像のGenerateAllPowerReportJob.executeで、取得した対象リストを渡します。個別Jobへプールを渡す処理は不要です。
 
-| 取得項目 | SELECTの別名 | 型・単位 |
+```python
+from services.batch_service import run_reports
+
+def execute(self):
+    targets = list(self.get_report_target_job.execute())
+    return run_reports(
+        targets=targets,
+        report_month=self.create_report_job.report_ym,
+        get_session=get_session,
+        load_sql_file=load_sql_file,
+        output_dir="output/reports",
+    )
+```
+
+get_report_target_job側は、セッション内で全行を取得して返してください。SELECT件数はrowcountではなくlen(targets)を使います。対象行は辞書、RowMapping、SQLAlchemy Rowを受け付けます。
+
+```sql
+SELECT supply_point_number, company_id, syousapo_flg
+FROM corp.t_power_report_mng_info
+WHERE target_year_month = :report_ym
+  AND create_status IN ('2', '5');
+```
+
+targetsと指定年月は親で取得し、ワーカーには軽い対象行だけを渡します。日別データ・画像・PDFをプロセス間で渡しません。run_reportsにはYYYY-MM/ YYYYMM/日付を指定でき、内部ではYYYY-MMへ揃えます。
+
+get_sessionとload_sql_fileはモジュール直下で定義された関数を渡します。lambda、ローカル関数、DBセッションやBaseJobのオブジェクトは渡しません。get_sessionは子プロセス内でも接続設定を準備し、新規セッションを返す関数にしてください。親で初期化した接続を子へ引き継ぐ設計は使いません。Windowsの呼び出し入口は`if __name__ == "__main__":`で囲みます。
+
+## 使用する2つのSQL
+
+ワーカーは画像と同じファイル名を使用します。
+
+| SQLファイル | バインドする値 | 取得する結果 |
 | --- | --- | --- |
-| 契約名義 | `customer_name` | 空欄でない文字列 |
-| 契約住所 | `address` | 空欄でない文字列 |
-| お客さま番号 | `customer_number` | 先頭ゼロを保った文字列 |
-| 契約電力 | `contract_kw` | kW。正の数値または数値文字列 |
+| select_power_report_cust.sql | supply_point_number | 契約情報1行 |
+| select_power_report_30min.sql | supply_point_number、start_date、end_date | 全日分の日付+48枠 |
 
-日別SQLは`t01_get_ymd`と`t01_30t_syr01`〜48を取得します。日付はYYYYMMDD、48枠はkWhです。供給地点列をSELECTしない場合は検索した供給地点を補います。取得列名の大小文字は区別しません。供給地点列がある場合、他の地点の混入も検証します。
+契約情報SQLは次の別名で取得してください。ASを使うと列対応の設定が不要です。
 
-ASを変更しない場合は`customer_columns`で取得列名を指定できます。右側を実際のSELECT結果へ合わせてください。
+| 項目 | SELECTの別名 | 型・単位 |
+| --- | --- | --- |
+| 契約名義 | customer_name | 文字列 |
+| 契約住所 | address | 文字列 |
+| お客さま番号 | customer_number | 先頭ゼロを保った文字列 |
+| 契約電力 | contract_kw | kWの数値または数値文字列 |
+
+日別SQLはt01_get_ymdとt01_30t_syr01〜48を取得します。日付はYYYYMMDD、48枠はkWhです。列名の大小文字は区別しません。供給地点列は省略できます。
+
+日付条件は`取得年月日 >= :start_date AND 取得年月日 < :end_date`です。終了日は対象月の翌月1日で含めません。ワーカーはセッション内でmappings().one()/all()を使い、全行を取り出してからPDFを作ります。first()で1日だけ取得する処理は不要です。
+
+ASを変更できない場合だけ、任意のcolumn_optionsを指定します。
 
 ```python
 column_options = {
     "customer_columns": {
-        "customer_name": "SQLで取得した名義列名",
+        "customer_name": "実際の名義列名",
         "address": "cmn_demandlocationaddress__c",
         "customer_number": "cmn_oldcustomernum__c",
         "contract_kw": "qsqb_dcis2_hvpw_ctrt",
     },
 }
+# run_reports(..., column_options=column_options)
 ```
 
-日付は`date_column`、枠は枠1〜48の順の48列を`slot_columns`で指定できます。品質件数検査は取得した列名を`quality_columns`へ渡すと有効になります。共通の注記・休日等は`config`へ辞書で渡します。
+日付・枠にも別名がある場合はdate_column/slot_columnsを使用できます。取得済み品質件数列はquality_columns、注記や休日はconfigで渡せます。通常は標準の列名だけで使用してください。
 
-## 画像のSQL取得部分を変更する
+## 結果と状態更新
 
-セッション内で契約情報を`mappings().one()`、日別48枠を`mappings().all()`で取得し、辞書へ変換します。`first()`では最初の1日しか使用できません。ResultやセッションをPDFプロセスへ渡しません。
+結果は完了順のリストです。各行にstatusとsupply_point_number、成功時にoutput/bytes、失敗時にerrorを返します。対象0件ではプロセスを起動せず空リストを返します。1件の失敗後も他の対象を続けます。
 
-```python
-with get_session() as session:
-    sql_query = load_sql_file("select_power_report_cust.sql")
-    report_cust = dict(session.execute(text(sql_query), params).mappings().one())
+既存の状態更新処理は、run_reportsのon_resultへ結果を受け取る関数として渡せます。この関数は親で呼び出します。run_reports自身は管理テーブルへの着手・更新やロックを行いません。管理処理を本プログラムに任せる場合は、既存のbatch.py --from-managementを使用します。
 
-# boundsにはYYYY-MMで渡す。画像のstrftime("%Y%m")から変更する。
-report_month = self.report_ym.strftime("%Y-%m")
-start_date, end_date, _ = bounds(report_month)
-params = {
-    "supply_point_number": row.supply_point_number,
-    "start_date": start_date.strftime("%Y%m%d"),
-    "end_date": end_date.strftime("%Y%m%d"),
-}
-with get_session() as session:
-    sql_query = load_sql_file("select_power_report_30min.sql")
-    daily_rows = [
-        dict(item)
-        for item in session.execute(text(sql_query), params).mappings().all()
-    ]
-```
+PDF名は未加入が`企業ID_供給地点特定番号_YYYYMM.pdf`、加入が`企業ID_供給地点特定番号_syousapo_YYYYMM.pdf`です。assets/ICON.png（90×89）とメイリオを用意してください。別環境の書体はfont/bold_font、並列数はworkersで指定できます。
 
-SQLの日付条件は`取得年月日 >= :start_date AND 取得年月日 < :end_date`です。終了日は対象月の翌月1日で、含めません。指定月を含む直近12か月の中で、実績の最初の日〜最後の日に毎日48枠あれば、1年未満でも処理できます。
+旧examples/existing_sql_batch.pyとservices/query_result_worker.pyは削除し、処理をservices/batch_service.pyへまとめました。旧run_existing_sql_batchの呼び出しはrun_reportsへ変更してください。取得済みデータを1件だけ渡すgenerate_query_resultsは引き続き使用できます。
 
-単体で使用する場合は、同じプロセスで作ったReportServiceへ次のように渡し、終了時にcloseします。
-
-```python
-result = service.generate_query_results(
-    customer_row=report_cust,
-    daily_rows=daily_rows,
-    supply_point=row.supply_point_number,
-    report_month=report_month,
-    output=Path("output/report.pdf").resolve(),
-    # **column_options,  # 取得列の別名を変更していない場合
-)
-```
-
-この単体呼び出しを画像のThreadPoolの各スレッドで並列に実行しないでください。現在のMatplotlib設定・Figure管理と同期Playwrightはプロセス専用です。PDF生成は下記のプロセスプールへ渡します。
-
-## 既存の2つのJobクラスを維持する場合
-
-`examples/existing_sql_batch.py`の`create_report_from_existing_sql()`は、上記2つのSQL取得とPDFプロセスへの受け渡しをまとめています。get_session/load_sql_fileのimportとBaseJobの初期化は既存のものを使用します。
-
-```python
-from examples.existing_sql_batch import create_report_from_existing_sql
-
-def execute(self, row, pdf_pool):
-    self.logger.info("%s レポート作成開始", row.supply_point_number)
-    result = create_report_from_existing_sql(
-        target=row,
-        report_month=self.report_ym,
-        get_session=get_session,
-        load_sql_file=load_sql_file,
-        pdf_pool=pdf_pool,
-        output_dir="output/reports",
-        # column_options=column_options,
-    )
-    self.logger.info("%s レポート作成完了", row.supply_point_number)
-    return result
-```
-
-`GenerateAllPowerReportJob.execute`では既存ThreadPoolの外側にPDF用ProcessPoolを作り、`execute(row, pdf_pool)`へ渡します。対象リストは既存の管理SQLで指定年月・状態2/5を取得します。SELECT件数はrowcountではなく、取得したリストのlenを使用します。
-
-```python
-from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_completed
-import multiprocessing
-from batch import cpu_workers
-from services.query_result_worker import initialize_query_worker
-
-def execute(self):
-    # get_report_target_job側で、セッション内に全行を取得してください。
-    targets = list(self.get_report_target_job.execute())
-    if not targets:
-        return []
-    count = min(cpu_workers(), len(targets))
-    results = []
-    with ProcessPoolExecutor(
-        max_workers=count,
-        mp_context=multiprocessing.get_context("spawn"),
-        initializer=initialize_query_worker,
-        initargs=(None, None, None),
-    ) as pdf_pool:
-        with ThreadPoolExecutor(max_workers=count) as executor:
-            futures = {
-                executor.submit(self.create_report_job.execute, row, pdf_pool): row
-                for row in targets
-            }
-            for future in as_completed(futures):
-                row = futures[future]
-                try:
-                    results.append(future.result())
-                except Exception:
-                    self.logger.exception("%s レポート作成失敗", row.supply_point_number)
-    return results
-```
-
-targetsを辞書で取得している場合、ログのrow.supply_point_numberはrow["supply_point_number"]へ合わせます。画像はRowの属性アクセスなので、その形で例を示しています。
-
-Windowsの実行入口は`if __name__ == "__main__":`で囲みます。DBセッション・BaseJob・ロガー・Resultは子へ渡しません。PDFワーカーでReportServiceを一度だけ作り、複数件で再利用します。initargsは通常書体・Chromium・太字書体のパスの順です。WindowsではNoneでメイリオを検出し、別環境は書体のパスを指定してください。
-
-## 関数だけで組み込む場合
-
-次の関数はCPU数分のDB取得スレッドとPDF生成プロセスを作ります。各スレッドは1件のPDF終了まで待つため、全件の日別データを一括取得しません。1件の失敗を結果に記録し、他の対象を継続します。
-
-```python
-from examples.existing_sql_batch import run_existing_sql_batch
-
-results = run_existing_sql_batch(
-    targets=targets,
-    report_month=self.report_ym,
-    get_session=get_session,
-    load_sql_file=load_sql_file,
-    output_dir="output/reports",
-    # workers=4,
-    # column_options=column_options,
-    # on_result=既存のログまたは管理状態更新関数,
-)
-```
-
-on_resultは親で1件の完了結果を受け取る任意のコールバックです。status、supply_point_number、成功時のoutput/bytes、失敗時のerrorが得られます。get_sessionはスレッドごとに新しいセッションを返す関数にしてください。
-
-PDF名は既存のmanaged_report_filenameを使い、未加入は`企業ID_供給地点特定番号_YYYYMM.pdf`、加入は`企業ID_供給地点特定番号_syousapo_YYYYMM.pdf`です。assets/ICON.png（90×89）と通常・太字のフォントを用意します。最終PDF以外の画像・HTMLは通常保存しません。
-
-この既存SQL用の入口は管理状態の着手・更新やロックを実行しません。既存バッチの状態更新処理へ成功・失敗結果を渡してください。従来のbatch.py --from-managementは、引き続きReportJobSourceで処理権と状態更新を行う独立した入口です。
-
-| ファイル | 役割 |
-| --- | --- |
-| services/report_service.py | generate_query_results。取得済み結果からPDFを生成 |
-| services/query_result_service.py | 契約設定・timestamp/kwへの変換 |
-| services/query_result_worker.py | PDFプロセスの初期化と1件の描画 |
-| examples/existing_sql_batch.py | 既存関数を使う組み込み例 |
-| tests/test_query_results.py | 列対応・換算・全日取得・終了日・失敗継続の検証 |
-
-既存SQLファイル、BaseJob、get_session/load_sql_fileの本体は画像では提供されていないため同梱していません。実SQLのSELECT列名は標準のASまたは対応表へ合わせてください。
+既存SQL・BaseJob・get_session/load_sql_fileの本体は画像だけなので同梱していません。SELECTの実列名はASまたは対応表へ合わせてください。

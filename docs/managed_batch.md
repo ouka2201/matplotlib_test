@@ -31,7 +31,7 @@ WHERE target_year_month = :report_ym
 | --- | --- | --- |
 | 1 | 指定年月・状態2/5の3列をリストとして取得し、親のDB接続を閉じる | `ReportJobSource.fetch_targets()`、`load_managed_jobs()` |
 | 2 | 各ワーカーでブラウザー・フォント・DBサービスを初期化する | `batch._init_worker()` |
-| 3 | 取得した各レコードを1件ずつ投入する。投入中はワーカー数の2倍まで | `batch.run_jobs()` |
+| 3 | 取得した各レコードを1件ずつ投入する。投入中はワーカー数の2倍まで | `batch.run_jobs()`、共通の`batch_service.run_parallel()` |
 | 4 | 主キーごとの処理権を取得し、状態2へ更新する | `ReportJobSource.claim()` |
 | 5 | ARVEの名義・住所・お客さま番号、EPの契約電力・日別48枠を取得する | `load_customer()`、既存の`DatabaseSource.load()` |
 | 6 | matplotlib→BytesIOのPNG→Jinja2のHTML→PlaywrightのPDFをメモリでつなぐ | 既存の`ReportService.generate_database()` |
@@ -44,7 +44,7 @@ PDF名は次の規則で生成します。値は管理テーブルの`COMPANY_ID
 | False（未加入） | `企業ID_供給地点特定番号_YYYYMM.pdf` |
 | True（加入） | `企業ID_供給地点特定番号_syousapo_YYYYMM.pdf` |
 
-企業IDと供給地点は文字列のまま使用して先頭ゼロを保持します。企業IDが空欄・14文字超過・パス区切りを含む場合、または加入フラグがboolでない場合は、その1件を作成エラーにします。`batch.managed_report_filename()`に命名規則を集約しています。`FILE_NAME`・`FILE_PATH`にも実際の保存名を記録します。
+企業IDと供給地点は文字列のまま使用して先頭ゼロを保持します。企業IDが空欄・14文字超過・パス区切りを含む場合、または加入フラグがboolでない場合は、その1件を作成エラーにします。`services.batch_service.managed_report_filename()`に命名規則を集約しています。`FILE_NAME`・`FILE_PATH`にも実際の保存名を記録します。
 
 添付に記載された共有フォルダーを使用する場合は、次のように保存先を指定します。
 
