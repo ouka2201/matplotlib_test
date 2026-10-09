@@ -6,7 +6,7 @@
   "contract_table": "t_ep_contracted_power",
   "management_table": "t_power_report_mng_info",
   "customer_table": "t_arve_customer_info",
-  "pending_statuses": ["1", "5"],
+  "pending_statuses": ["2", "5"],
   "batch_user": "electricity_report_test",
   "customer_columns": {
     "customer_name": "CMN_DemandLocationFullName_Test__c",

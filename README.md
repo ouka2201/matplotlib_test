@@ -64,11 +64,13 @@ python main.py --supply-point 0000000000000000000001 --report-month 2026-06 --db
 ```
 
 ### 並列実行
-管理テーブルから対象を取得する場合は、次を実行します。`TARGET_YEAR_MONTH`のYYYYMMを対象年月として使い、1件ずつ並列処理します。`--workers`を省略すると利用可能なCPUコア数を使います。
+既存バッチのSQLで契約情報・日別48枠を取得済みの場合は、`ReportService.generate_query_results()`へ直接渡せます。[既存SQLからの組み込み手順](docs/existing_sql_integration.md)に、画像のJobクラスとThreadPoolへ接続する例を記載しています。`examples/existing_sql_batch.py`は既存の`get_session()`と`load_sql_file()`を使用し、PDF生成だけをプロセスへ渡します。
+
+管理テーブルから対象を取得する場合は、次を実行します。`--report-month`で対象年月を指定し、その月のリストを1件ずつ並列処理します。`--workers`を省略すると利用可能なCPUコア数を使います。
 ```bash
-python batch.py --from-management --db-config examples/database.json --output-dir output/reports
+python batch.py --from-management --report-month 2026-06 --db-config examples/database.json --output-dir output/reports
 ```
-既定の取得対象は`CREATE_STATUS`の「1:作成依頼」「5:エラー」です。0件ならワーカーを起動せず正常終了します。着手時に「2:作成中」、PDF保存後に「3:完了」、失敗時に「5:エラー」へ更新します。No.0の名義・住所・お客さま番号はARVE、契約電力はEPテーブルから取得します。PDF名は未加入なら`企業ID_供給地点特定番号_YYYYMM.pdf`、加入なら`企業ID_供給地点特定番号_syousapo_YYYYMM.pdf`です。[管理テーブルからの並列処理](docs/managed_batch.md)に設定・状態・再実行手順を記載しています。
+既定の取得対象は指定年月の`CREATE_STATUS IN ('2', '5')`です。PostgreSQLでは主キーごとのセッションロックにより同じ対象の同時作成を防ぎます。0件ならワーカーを起動せず正常終了します。着手時に「2:作成中」、PDF保存後に「3:完了」、失敗時に「5:エラー」へ更新します。No.0の名義・住所・お客さま番号はARVE、契約電力はEPテーブルから取得します。PDF名は未加入なら`企業ID_供給地点特定番号_YYYYMM.pdf`、加入なら`企業ID_供給地点特定番号_syousapo_YYYYMM.pdf`です。[管理テーブルからの並列処理](docs/managed_batch.md)に設定・状態・再実行手順を記載しています。
 
 従来のジョブJSONを使用する場合：
 ```bash
@@ -98,7 +100,7 @@ python examples/generate_sample.py
 ```bash
 python -m unittest discover -s tests -v
 ```
-93件のテストを使用しています。描画テストでも`assets/ICON.png`を使用します。管理状態・ARVE取得・2プロセスの重複着手防止・1000件の投入に加え、4テーブルの供給地点一致・取込完了状態・レポート管理への未投入・既存行の保持・ロールバック・366日分の実績を検証しています。1000件の検証ではPDFを生成せず、登録・キューの動作を確認しています。実DB接続・1000件のPDF所要時間・最大メモリ測定は実行環境で行ってください。
+113件のテストを使用しています。描画テストでも`assets/ICON.png`を使用します。管理状態・ARVE取得・2プロセスの重複着手防止・1000件の投入に加え、4テーブルの供給地点一致・取込完了状態・レポート管理への未投入・既存行の保持・ロールバック・366日分の実績を検証しています。1000件の検証ではPDFを生成せず、登録・キューの動作を確認しています。実DB接続・1000件のPDF所要時間・最大メモリ測定は実行環境で行ってください。
 
 ## 今回の整理
 No.別の描画を専用モジュールへ分割し、古いページ・部品描画ファイルは削除しました。未使用のグラフ書式・色定義・HTMLファイル経由の互換関数も削除しています。重複していた顧客サンプル設定は`examples/customer.json`に集約しました。古い確認用PNG・HTML・PDFとPythonキャッシュは配布ソースから除き、必要なロゴ・テスト・実行例を保持しています。

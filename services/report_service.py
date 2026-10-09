@@ -70,6 +70,44 @@ class ReportService:
         config = {**config, "target_month": report_month, "contract_kw": contract}
         return self.generate_frame(df, config, output, debug_dir)
 
+    def generate_query_results(
+        self,
+        customer_row,
+        daily_rows,
+        supply_point,
+        report_month,
+        output,
+        debug_dir=None,
+        **column_options,
+    ):
+        """既存SQLで取得済みの契約情報と日別48枠からPDFを作成する。
+
+        この入口ではDB接続・SQL実行を行わない。セッション内で取得結果を
+        辞書へ変換してから渡す。SQLの契約列名はASまたは対応表で指定できる。
+
+        Args:
+            customer_row (Mapping | sqlalchemy.Row): 契約情報の1行。
+            daily_rows (Iterable[Mapping]): 日付・48枠(kWh)を持つ全日分の取得行。
+            supply_point (str): 検索した供給地点特定番号。
+            report_month (str): 対象年月。YYYY-MM形式。
+            output (pathlib.Path): PDFの保存先。
+            debug_dir (pathlib.Path | None): 任意の確認用画像・HTML保存先。
+            **column_options: prepare_query_resultsのcustomer_columns、date_column、
+                slot_columns、quality_columns、configを任意指定する。
+
+        Returns:
+            dict: PDF保存先、バイト数、成功ステータス。
+
+        Raises:
+            ValueError: 取得列・実績・契約情報が不正な場合。
+        """
+        from services.query_result_service import prepare_query_results
+
+        frame, config = prepare_query_results(
+            customer_row, daily_rows, supply_point, report_month, **column_options
+        )
+        return self.generate_frame(frame, config, output, debug_dir)
+
     def generate_frame(self, df, config, output, debug_dir=None):
         """CSVやDBから得た共通DataFrameをメモリで描画する。
 

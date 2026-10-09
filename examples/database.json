@@ -1,12 +1,13 @@
 {
   "url_env": "REPORT_DATABASE_URL",
   "schema": "db_corp",
+  "management_schema": "corp",
   "daily_table": "t_ep_electricity_data_30min",
   "import_management_table": "t_30min_import_mng",
   "contract_table": "t_ep_contracted_power",
   "management_table": "t_power_report_mng_info",
   "customer_table": "t_arve_customer_info",
-  "pending_statuses": ["1", "5"],
+  "pending_statuses": ["2", "5"],
   "batch_user": "electricity_report_batch",
   "customer_columns": {
     "customer_number": "CMN_OldCustomerNum__c",

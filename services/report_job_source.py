@@ -1,9 +1,12 @@
 """管理テーブルの作成対象・状態と、ARVEの契約情報を取得する。"""
 
 from datetime import datetime
+import hashlib
+import json
+import re
 from zoneinfo import ZoneInfo
 
-from sqlalchemy import MetaData, Table, select, update
+from sqlalchemy import MetaData, Table, bindparam, select, text, update
 
 from services.database_source import DatabaseSource
 
@@ -16,6 +19,29 @@ CUSTOMER_COLUMNS = {
     "customer_number": "CMN_OldCustomerNum__c",
     "address": "CMN_DemandLocationAddress__c",
 }
+
+
+def normalize_report_ym(report_month):
+    """対象年月を検証し、管理テーブル用のYYYYMMへ揃える。
+
+    Args:
+        report_month (str): YYYY-MMまたはYYYYMMの対象年月。
+
+    Returns:
+        str: YYYYMM形式の6桁文字列。
+
+    Raises:
+        ValueError: 年月の形式または月が不正な場合。
+    """
+    from services.data_service import bounds
+
+    if not isinstance(report_month, str) or not re.fullmatch(
+        r"\d{4}-?\d{2}", report_month
+    ):
+        raise ValueError("対象年月はYYYY-MMまたはYYYYMMで指定してください")
+    report_ym = report_month.replace("-", "")
+    bounds(f"{report_ym[:4]}-{report_ym[4:]}")
+    return report_ym
 
 
 def customer_column_mapping(table, settings):
@@ -59,20 +85,23 @@ class ReportJobSource(DatabaseSource):
         Raises:
             ValueError: DB接続先や取得状態・更新者の設定が不正な場合。
         """
-        # 「2:作成中」は別の実行が処理している可能性があるため再取得しない。
-        self.pending_statuses = settings.get("pending_statuses", ["1", "5"])
+        # 上流が2で登録した対象と、前回エラー5の対象を処理する。
+        self.pending_statuses = settings.get("pending_statuses", ["2", "5"])
         if (
             not isinstance(self.pending_statuses, list)
             or not self.pending_statuses
-            or any(value not in ("1", "5") for value in self.pending_statuses)
+            or any(value not in ("2", "5") for value in self.pending_statuses)
         ):
-            raise ValueError("pending_statusesには作成依頼1・エラー5を指定してください")
+            raise ValueError("pending_statusesには作成対象2・エラー5を指定してください")
         self.batch_user = settings.get("batch_user", "electricity_report_batch")
         if not isinstance(self.batch_user, str) or not 1 <= len(self.batch_user) <= 50:
             raise ValueError("batch_userは1〜50文字で指定してください")
         super().__init__(settings)
         self.management = None
         self.customer = None
+        self._claim_connection = None
+        self._claim_key = None
+        self._lock_id = None
 
     def _management_table(self, connection):
         """管理テーブルを初回だけ反映する。
@@ -87,20 +116,26 @@ class ReportJobSource(DatabaseSource):
             self.management = Table(
                 self.settings.get("management_table", "t_power_report_mng_info"),
                 MetaData(),
-                schema=self.settings.get("schema", "db_corp"),
+                schema=self.settings.get(
+                    "management_schema", self.settings.get("schema", "db_corp")
+                ),
                 autoload_with=connection,
             )
         return self.management
 
-    def fetch_targets(self):
-        """作成依頼・エラーのレコードを軽い辞書の一覧で取得する。
+    def fetch_targets(self, report_month):
+        """指定年月の状態2・5のレコードを、軽い辞書の一覧で取得する。
 
         実績DataFrameや画像はここで取得しない。0件なら空配列を返す。
         取得時には状態を変更せず、実際のワーカー着手時にclaimする。
 
+        Args:
+            report_month (str): YYYY-MMまたはYYYYMMの対象年月。
+
         Returns:
             list[dict]: supply_point、target_year_month、company_id、syousapo_flg。
         """
+        report_ym = normalize_report_ym(report_month)
         with self.engine.connect() as connection:
             table = self._management_table(connection)
             point = self._column(table, MANAGEMENT_POINT)
@@ -108,14 +143,22 @@ class ReportJobSource(DatabaseSource):
             query = (
                 select(
                     point.label("supply_point"),
-                    month.label("target_year_month"),
                     self._column(table, "COMPANY_ID").label("company_id"),
                     self._column(table, "SYOUSAPO_FLG").label("syousapo_flg"),
                 )
-                .where(self._column(table, STATUS).in_(self.pending_statuses))
-                .order_by(point, month)
+                .where(
+                    month == bindparam("report_ym"),
+                    self._column(table, STATUS).in_(self.pending_statuses),
+                )
+                .order_by(point)
             )
-            return [dict(row) for row in connection.execute(query).mappings()]
+            # SELECTするのは提示SQLと同じ3列。対象月は検証済みの検索値を引き継ぐ。
+            return [
+                {**dict(row), "target_year_month": report_ym}
+                for row in connection.execute(
+                    query, {"report_ym": report_ym}
+                ).mappings()
+            ]
 
     def _key_conditions(self, table, target):
         """取得した管理レコードの複合主キーで更新条件を作る。
@@ -154,11 +197,12 @@ class ReportJobSource(DatabaseSource):
         return datetime.now(ZoneInfo("Asia/Tokyo")).replace(tzinfo=None)
 
     def claim(self, target):
-        """未着手の1件を原子的に「2:作成中」へ変更する。
+        """1件の処理権を取得し、状態2で作成を開始する。
 
-        状態条件付きUPDATEを1トランザクションで実行するため、複数の
-        バッチが同じ一覧を取得しても、同じレコードを二重処理しない。
-        この接続は描画・PDF生成前に返す。
+        状態2は取得対象でもあるため、状態更新だけでは二重着手を防げない。
+        PostgreSQLでは主キーごとのセッションアドバイザリロックを取得し、
+        finishまで接続を保持する。状態更新は短いトランザクションで確定する。
+        SQLiteのテスト実行では書込トランザクションをfinishまで保持する。
 
         Args:
             target (dict): fetch_targets()で取得した1件。
@@ -169,8 +213,35 @@ class ReportJobSource(DatabaseSource):
         Raises:
             RuntimeError: 複合主キーが重複し、複数行を更新した場合。
         """
-        with self.engine.begin() as connection:
+        if self._claim_connection is not None:
+            return False
+        connection = self.engine.connect()
+        self._claim_connection = connection
+        self._claim_key = (target["supply_point"], target["target_year_month"])
+        try:
             table = self._management_table(connection)
+            if self.engine.dialect.name == "postgresql":
+                # hash()はプロセスごとに変わるため、安定した64bitのキーを作る。
+                identity = json.dumps(
+                    ["electricity_report", table.schema, table.name, *self._claim_key]
+                ).encode("utf-8")
+                lock_id = int.from_bytes(
+                    hashlib.sha256(identity).digest()[:8], "big", signed=True
+                )
+                acquired = connection.execute(
+                    text("SELECT pg_try_advisory_lock(:lock_id)"), {"lock_id": lock_id}
+                ).scalar_one()
+                if not acquired:
+                    self.release_claim()
+                    return False
+                self._lock_id = lock_id
+            elif self.engine.dialect.name == "sqlite":
+                # SQLiteはテスト用。書込の確定までは他プロセスの着手を待たせる。
+                connection.exec_driver_sql("BEGIN IMMEDIATE")
+            else:
+                raise ValueError(
+                    "管理バッチはPostgreSQLまたはテスト用SQLiteに対応します"
+                )
             query = (
                 update(table)
                 .where(
@@ -195,7 +266,48 @@ class ReportJobSource(DatabaseSource):
             count = connection.execute(query).rowcount
             if count not in (0, 1):
                 raise RuntimeError("管理テーブルの複合主キーまたは更新件数が不正です")
-            return count == 1
+            if count == 0:
+                self.release_claim()
+                return False
+            if self.engine.dialect.name == "postgresql":
+                connection.commit()
+            return True
+        except BaseException:
+            self.release_claim()
+            raise
+
+    def release_claim(self):
+        """処理権と専用接続を解放する。未確定の更新はロールバックする。
+
+        finish後とワーカーのfinallyから呼ぶ。解放SQLに失敗した接続は破棄し、
+        ロックが残った接続をプールへ返さない。
+        """
+        connection = self._claim_connection
+        if connection is None:
+            return
+        try:
+            try:
+                connection.rollback()
+                if self._lock_id is not None:
+                    connection.execute(
+                        text("SELECT pg_advisory_unlock(:lock_id)"),
+                        {"lock_id": self._lock_id},
+                    )
+                    connection.commit()
+            except Exception:
+                connection.invalidate()
+        finally:
+            connection.close()
+            self._claim_connection = None
+            self._claim_key = None
+            self._lock_id = None
+
+    def close(self):
+        """処理権を解放してから、ワーカー専用のDBプールを閉じる。"""
+        try:
+            self.release_claim()
+        finally:
+            super().close()
 
     def finish(self, target, output=None, error=None):
         """作成中の1件を「3:完了」または「5:エラー」へ更新する。
@@ -227,7 +339,13 @@ class ReportJobSource(DatabaseSource):
             "UPDATED_BY": self.batch_user,
             "UPDATED_AT": now,
         }
-        with self.engine.begin() as connection:
+        connection = self._claim_connection
+        if connection is None or self._claim_key != (
+            target["supply_point"],
+            target["target_year_month"],
+        ):
+            raise RuntimeError("処理権がないため完了・エラーを更新できませんでした")
+        try:
             table = self._management_table(connection)
             query = (
                 update(table)
@@ -241,6 +359,9 @@ class ReportJobSource(DatabaseSource):
                 raise RuntimeError(
                     "管理状態が変わり、完了・エラーを更新できませんでした"
                 )
+            connection.commit()
+        finally:
+            self.release_claim()
 
     def load_customer(self, supply_point):
         """ARVEテーブルからNo.0の名義・住所・お客さま番号を取得する。

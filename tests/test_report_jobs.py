@@ -9,7 +9,7 @@ import tempfile
 import threading
 import time
 import unittest
-from unittest.mock import Mock, patch
+from unittest.mock import MagicMock, Mock, patch
 
 from sqlalchemy import Boolean, Column, DateTime, MetaData, String, Table, select
 
@@ -21,6 +21,7 @@ from services.report_job_source import (
     MANAGEMENT_POINT,
     MANAGEMENT_MONTH,
     STATUS,
+    normalize_report_ym,
 )
 
 POINT_VALUE = "0000000000000000000001"
@@ -38,7 +39,18 @@ def claim_in_process(settings, target):
     """
     source = ReportJobSource(settings)
     try:
-        return source.claim(target)
+        claimed = source.claim(target)
+        if claimed:
+            # 2が対象なので、処理権を保持したまま完了させてから解放する。
+            path = (
+                Path(
+                    os.environ["REPORT_JOBS_TEST_URL"].removeprefix("sqlite:///")
+                ).parent
+                / "test.pdf"
+            )
+            path.write_bytes(b"saved PDF bytes")
+            source.finish(target, output=path)
+        return claimed
     finally:
         source.close()
 
@@ -113,7 +125,7 @@ class ReportJobsTests(unittest.TestCase):
         }
         self.config_path.write_text(json.dumps(self.base_config), encoding="utf-8")
 
-    def insert_target(self, month="202606", status="1", point=POINT_VALUE, joined=True):
+    def insert_target(self, month="202606", status="2", point=POINT_VALUE, joined=True):
         """主キー・状態が指定された管理レコードを登録する。
 
         Args:
@@ -146,11 +158,12 @@ class ReportJobsTests(unittest.TestCase):
             )
         return target
 
-    def read_target(self, month="202606"):
+    def read_target(self, month="202606", point=POINT_VALUE):
         """管理レコードの実DB値を読み直す。
 
         Args:
             month (str): 対象年月。
+            point (str): 供給地点。
 
         Returns:
             dict: テーブルの全列の値。
@@ -159,7 +172,8 @@ class ReportJobsTests(unittest.TestCase):
             return dict(
                 connection.execute(
                     select(self.management).where(
-                        self.management.c[MANAGEMENT_MONTH] == month
+                        self.management.c[MANAGEMENT_MONTH] == month,
+                        self.management.c[MANAGEMENT_POINT] == point,
                     )
                 )
                 .mappings()
@@ -196,18 +210,19 @@ class ReportJobsTests(unittest.TestCase):
             )
 
     def test_select_pending_and_failed_only(self):
-        """1・5だけを取得し、2・3・4を除外して先頭ゼロ・企業ID・フラグを保つ。"""
-        for month, status in zip(
-            ["202601", "202602", "202603", "202604", "202605"], "12345"
-        ):
-            self.insert_target(month, status)
-        rows = self.source.fetch_targets()
+        """指定月の2・5だけを取得し、他の月・状態を除外する。"""
+        for index, status in enumerate("12345", start=1):
+            self.insert_target(point=f"{index:022}", status=status)
+        self.insert_target(month="202605", point=f"{9:022}", status="2")
+        self.insert_target(month="202605", point=f"{8:022}", status="5")
+        rows = self.source.fetch_targets("202606")
         self.assertEqual(
-            [row["target_year_month"] for row in rows], ["202601", "202605"]
+            [row["supply_point"] for row in rows], [f"{2:022}", f"{5:022}"]
         )
-        self.assertTrue(all(row["supply_point"] == POINT_VALUE for row in rows))
+        self.assertTrue(all(row["target_year_month"] == "202606" for row in rows))
         self.assertTrue(all(row["company_id"] == "COMPANY0000001" for row in rows))
         self.assertTrue(all(row["syousapo_flg"] for row in rows))
+        self.assertEqual(rows, self.source.fetch_targets("2026-06"))
 
     def test_two_processes_claim_same_key_once(self):
         """同じ主キーへ2プロセスから着手し、1件だけ成功することを確認する。"""
@@ -223,10 +238,10 @@ class ReportJobsTests(unittest.TestCase):
             ]
             results = [future.result(timeout=30) for future in futures]
         self.assertEqual(sorted(results), [False, True])
-        self.assertEqual(self.read_target()[STATUS], "2")
+        self.assertEqual(self.read_target()[STATUS], "3")
         self.assertIsNone(self.read_target()["ERROR_MESSAGE"])
-        self.assertIsNone(self.read_target()["FILE_NAME"])
-        self.assertEqual(self.read_target("202605")[STATUS], "1")
+        self.assertEqual(self.read_target()["FILE_NAME"], "test.pdf")
+        self.assertEqual(self.read_target("202605")[STATUS], "2")
 
     def test_success_updates_metadata_and_cannot_finish_twice(self):
         """PDFの保存先・作成日時と3を記録し、完了済み行を再更新しない。"""
@@ -256,7 +271,7 @@ class ReportJobsTests(unittest.TestCase):
         self.assertEqual(len(row["ERROR_MESSAGE"]), 100)
         self.assertIsNone(row["REPORT_CREATED_AT"])
         self.assertIsNone(row["FILE_PATH"])
-        self.assertEqual(self.source.fetch_targets(), [target])
+        self.assertEqual(self.source.fetch_targets("202606"), [target])
 
     def test_arve_customer_and_filter(self):
         """名義列を解決し、同じ供給地点でも高圧2以外の行は選択しない。"""
@@ -298,7 +313,9 @@ class ReportJobsTests(unittest.TestCase):
 
     def test_zero_jobs_does_not_start_workers(self):
         """0件なら空の結果となり、ブラウザー・子プロセスを起動しない。"""
-        jobs = batch.load_managed_jobs(self.settings, self.root, self.config_path)
+        jobs = batch.load_managed_jobs(
+            self.settings, self.root, self.config_path, "2026-06"
+        )
         self.assertEqual(jobs, [])
         with patch.object(batch, "ProcessPoolExecutor") as pool:
             self.assertEqual(list(batch.run_jobs(jobs, workers=2, managed=True)), [])
@@ -312,6 +329,8 @@ class ReportJobsTests(unittest.TestCase):
         argv = [
             "batch.py",
             "--from-management",
+            "--report-month",
+            "202606",
             "--db-config",
             str(database_config),
             "--config",
@@ -346,7 +365,9 @@ class ReportJobsTests(unittest.TestCase):
         """取得した1件からARVE名義・対象月・1日実績を渡し、保存後に3へ更新する。"""
         self.insert_target()
         self.prepare_customer()
-        jobs = batch.load_managed_jobs(self.settings, self.root, self.config_path)
+        jobs = batch.load_managed_jobs(
+            self.settings, self.root, self.config_path, "2026-06"
+        )
         service = Mock()
 
         def generate(source, point, month, config, output):
@@ -380,7 +401,9 @@ class ReportJobsTests(unittest.TestCase):
         """未加入時は企業IDを付け、syousapoなしの実保存名をDBに記録する。"""
         self.insert_target(joined=False)
         self.prepare_customer()
-        jobs = batch.load_managed_jobs(self.settings, self.root, self.config_path)
+        jobs = batch.load_managed_jobs(
+            self.settings, self.root, self.config_path, "2026-06"
+        )
         service = Mock()
 
         def generate(source, point, month, config, output):
@@ -428,10 +451,12 @@ class ReportJobsTests(unittest.TestCase):
 
     def test_failure_does_not_stop_next_job(self):
         """不正な1件を5へ戻し、次の1件は継続して完了できる。"""
-        self.insert_target("202613")
+        self.insert_target(point="0000000000000000000002")
         self.insert_target()
         self.prepare_customer()
-        jobs = batch.load_managed_jobs(self.settings, self.root, self.config_path)
+        jobs = batch.load_managed_jobs(
+            self.settings, self.root, self.config_path, "2026-06"
+        )
         service = Mock()
         service.generate_database.return_value = {"status": "succeeded", "bytes": 15}
         with patch.object(batch, "_source", self.source), patch.object(
@@ -441,14 +466,22 @@ class ReportJobsTests(unittest.TestCase):
         self.assertEqual(
             sorted(row["status"] for row in results), ["failed", "succeeded"]
         )
-        self.assertEqual(self.read_target("202613")[STATUS], "5")
+        with self.source.engine.connect() as connection:
+            status = connection.execute(
+                select(self.management.c[STATUS]).where(
+                    self.management.c[MANAGEMENT_POINT] == "0000000000000000000002"
+                )
+            ).scalar_one()
+        self.assertEqual(status, "5")
         self.assertEqual(self.read_target()[STATUS], "3")
         self.assertEqual(service.generate_database.call_count, 1)
 
     def test_already_claimed_job_is_skipped(self):
         """取得後に先に着手された対象は、ARVE取得・PDF生成を行わずスキップする。"""
         target = self.insert_target()
-        jobs = batch.load_managed_jobs(self.settings, self.root, self.config_path)
+        jobs = batch.load_managed_jobs(
+            self.settings, self.root, self.config_path, "2026-06"
+        )
         self.source.claim(target)
         service = Mock()
         with patch.object(batch, "_source", self.source), patch.object(
@@ -460,7 +493,9 @@ class ReportJobsTests(unittest.TestCase):
     def test_state_update_error_is_reported(self):
         """DB状態更新の障害を、通常の顧客エラーと区別して結果へ記録する。"""
         self.insert_target()
-        jobs = batch.load_managed_jobs(self.settings, self.root, self.config_path)
+        jobs = batch.load_managed_jobs(
+            self.settings, self.root, self.config_path, "2026-06"
+        )
         with patch.object(batch, "_source", self.source), patch.object(
             batch, "_service", Mock()
         ), patch.object(
@@ -472,10 +507,128 @@ class ReportJobsTests(unittest.TestCase):
         self.assertEqual(self.read_target()[STATUS], "2")
 
     def test_invalid_pending_states_rejected(self):
-        """他の実行が処理中の2を自動取得する設定は拒否する。"""
-        for statuses in (["2"], ["3"], ["4"], [], "1"):
+        """取得対象の2・5以外を指定する設定は拒否する。"""
+        for statuses in (["1"], ["3"], ["4"], [], "2"):
             with self.subTest(statuses=statuses), self.assertRaises(ValueError):
                 ReportJobSource({**self.settings, "pending_statuses": statuses})
+
+    def test_report_month_formats_and_validation(self):
+        """年月は2形式を受け付け、不正な形式や月をDB接続前に拒否する。"""
+        self.assertEqual(normalize_report_ym("202606"), "202606")
+        self.assertEqual(normalize_report_ym("2026-06"), "202606")
+        for value in (None, 202606, "2026-6", "202613", "202600", "2026-06-01"):
+            with self.subTest(value=value), self.assertRaises(ValueError):
+                normalize_report_ym(value)
+        with patch.object(self.source.engine, "connect") as connect:
+            with self.assertRaises(ValueError):
+                self.source.fetch_targets("202613")
+            connect.assert_not_called()
+
+    def test_management_cli_requires_report_month(self):
+        """対象年月を省略すると、DB取得やワーカー起動前にエラーにする。"""
+        database_config = self.root / "database.json"
+        database_config.write_text(json.dumps(self.settings))
+        argv = ["batch.py", "--from-management", "--db-config", str(database_config)]
+        with patch.object(sys, "argv", argv), patch.object(
+            batch, "load_managed_jobs"
+        ) as load, patch("sys.stderr"):
+            with self.assertRaises(SystemExit) as error:
+                batch.main()
+        self.assertEqual(error.exception.code, 2)
+        load.assert_not_called()
+
+    def test_management_schema_can_differ_from_data_schema(self):
+        """管理スキーマは独立して指定でき、省略時は共通設定を使う。"""
+        for settings, expected in (
+            ({"schema": "db_corp", "management_schema": "corp"}, "corp"),
+            ({"schema": "db_corp"}, "db_corp"),
+        ):
+            self.source.management = None
+            with patch.dict(self.source.settings, settings), patch(
+                "services.report_job_source.Table"
+            ) as table:
+                self.source._management_table(Mock())
+                self.assertEqual(table.call_args.kwargs["schema"], expected)
+        self.source.management = None
+
+    def test_postgres_lock_is_held_until_finish(self):
+        """PostgreSQLでは着手コミット後も同じ接続のロックを保持し、完了後に解放する。"""
+        target = self.insert_target(status="5")
+        self.source.management = self.management
+        connection = MagicMock()
+        connection.execute.return_value.scalar_one.return_value = True
+        connection.execute.return_value.rowcount = 1
+        engine = Mock()
+        engine.dialect.name = "postgresql"
+        engine.connect.return_value = connection
+        with patch.object(self.source, "engine", engine):
+            self.assertTrue(self.source.claim(target))
+            self.assertEqual(connection.commit.call_count, 1)
+            connection.close.assert_not_called()
+            self.assertFalse(self.source.claim(target))
+            engine.connect.assert_called_once()
+            self.source.finish(target, output=self.root / "report.pdf")
+        calls = connection.execute.call_args_list
+        self.assertIn("pg_try_advisory_lock", str(calls[0].args[0]))
+        self.assertIn("pg_advisory_unlock", str(calls[-1].args[0]))
+        self.assertEqual(calls[0].args[1], calls[-1].args[1])
+        self.assertEqual(connection.commit.call_count, 3)
+        connection.close.assert_called_once()
+        self.assertIsNone(self.source._claim_connection)
+
+    def test_postgres_locked_target_is_skipped_without_update(self):
+        """他ワーカーが処理中なら待機せず、状態更新もPDF生成も行わない。"""
+        target = self.insert_target()
+        self.source.management = self.management
+        connection = MagicMock()
+        connection.execute.return_value.scalar_one.return_value = False
+        engine = Mock()
+        engine.dialect.name = "postgresql"
+        engine.connect.return_value = connection
+        with patch.object(self.source, "engine", engine):
+            self.assertFalse(self.source.claim(target))
+        connection.execute.assert_called_once()
+        connection.close.assert_called_once()
+        self.assertIsNone(self.source._claim_connection)
+
+    def test_postgres_unlock_failure_discards_connection(self):
+        """解放SQLの失敗時には接続を破棄し、ロック付き接続を再利用しない。"""
+        target = self.insert_target()
+        self.source.management = self.management
+        connection = MagicMock()
+        connection.execute.return_value.scalar_one.return_value = True
+        connection.execute.return_value.rowcount = 1
+        engine = Mock()
+        engine.dialect.name = "postgresql"
+        engine.connect.return_value = connection
+        with patch.object(self.source, "engine", engine):
+            self.assertTrue(self.source.claim(target))
+            connection.execute.side_effect = RuntimeError("unlock failed")
+            self.source.release_claim()
+        connection.invalidate.assert_called_once()
+        connection.close.assert_called_once()
+        self.assertIsNone(self.source._claim_connection)
+
+    def test_default_workers_use_cpu_count(self):
+        """並列数を省略するとCPU数を使い、各対象を1件ずつ渡す。"""
+        from concurrent.futures import Future
+
+        jobs = [{"id": str(index)} for index in range(5)]
+
+        def completed(function, job):
+            future = Future()
+            future.set_result({"id": job["id"], "status": "succeeded"})
+            return future
+
+        with patch.object(batch, "cpu_workers", return_value=3), patch.object(
+            batch, "ProcessPoolExecutor"
+        ) as pool:
+            pool.return_value.__enter__.return_value.submit.side_effect = completed
+            results = list(batch.run_jobs(jobs, managed=True))
+        self.assertEqual(pool.call_args.kwargs["max_workers"], 3)
+        calls = pool.return_value.__enter__.return_value.submit.call_args_list
+        self.assertEqual([call.args[1] for call in calls], jobs)
+        self.assertEqual(len(results), len(jobs))
 
     def test_thousand_jobs_are_submitted_once_with_bounded_queue(self):
         """1000件を1件ずつ投入し、指定並列数2と待機上限4を守る。"""

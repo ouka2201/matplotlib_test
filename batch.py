@@ -134,7 +134,7 @@ def _run_managed_job(job):
     try:
         if _source is None:
             raise ValueError("管理テーブル入力にはDB取得サービスが必要です")
-        # 着手直前に状態条件付きUPDATEを行い、他のバッチとの二重処理を防ぐ。
+        # 主キーごとの処理権を取得する。状態2も対象なので更新だけには頼らない。
         claimed = _source.claim(target)
         if not claimed:
             return {"id": job["id"], "status": "skipped", "output": None}
@@ -181,6 +181,10 @@ def _run_managed_job(job):
                     f"{type(state_exc).__name__}: {state_exc}"
                 )
         return result
+    finally:
+        # 状態更新の障害時にも、次の1件へロックや接続を持ち越さない。
+        if _source is not None:
+            _source.release_claim()
 
 
 def _run_job(job):
@@ -287,7 +291,7 @@ def load_jobs(manifest, output_dir):
     return jobs
 
 
-def load_managed_jobs(settings, output_dir, config_path):
+def load_managed_jobs(settings, output_dir, config_path, report_month):
     """親プロセスで管理テーブルから作成対象だけを取得する。
 
     取得用DB接続は子プロセス起動前に閉じる。各ジョブには主キー・対象月・
@@ -297,6 +301,7 @@ def load_managed_jobs(settings, output_dir, config_path):
         settings (dict): 管理・ARVE・実績テーブルのDB設定。
         output_dir (pathlib.Path): 最終PDFの保存先。
         config_path (pathlib.Path): 共通の注記などを持つJSON。契約値はDBで置き換える。
+        report_month (str): 検索する対象年月。YYYY-MMまたはYYYYMM。
 
     Returns:
         list[dict]: 取得順の軽いジョブ一覧。対象0件なら空配列。
@@ -309,7 +314,7 @@ def load_managed_jobs(settings, output_dir, config_path):
         raise ValueError("共通設定JSONにはオブジェクトが必要です")
     source = ReportJobSource(settings)
     try:
-        targets = source.fetch_targets()
+        targets = source.fetch_targets(report_month)
     finally:
         source.close()
     return [
@@ -408,7 +413,7 @@ def main():
     source.add_argument(
         "--from-management",
         action="store_true",
-        help="管理テーブルから作成依頼・エラーを取得する",
+        help="管理テーブルから指定年月の作成対象2・エラー5を取得する",
     )
     parser.add_argument(
         "--config",
@@ -421,7 +426,10 @@ def main():
     parser.add_argument("--font-bold", type=Path)
     parser.add_argument("--browser", type=Path)
     parser.add_argument("--db-config", type=Path)
-    parser.add_argument("--report-month", help="DB取得の最終月。指定月を含む12か月")
+    parser.add_argument(
+        "--report-month",
+        help="管理入力では対象年月YYYY-MM/ YYYYMM（必須）。通常DB入力では最終月YYYY-MM",
+    )
     args = parser.parse_args()
     db_settings = (
         json.loads(args.db_config.read_text(encoding="utf-8"))
@@ -431,12 +439,19 @@ def main():
     if args.from_management:
         if db_settings is None:
             parser.error("管理テーブル入力には--db-configが必要です")
-        if args.report_month:
-            parser.error("管理テーブル入力の対象月はTARGET_YEAR_MONTHを使用します")
+        if not args.report_month:
+            parser.error("管理テーブル入力には--report-monthが必要です")
+        from services.report_job_source import normalize_report_ym
+
+        try:
+            normalize_report_ym(args.report_month)
+        except ValueError as exc:
+            parser.error(str(exc))
         jobs = load_managed_jobs(
             db_settings,
             args.output_dir,
             args.config or Path(__file__).parent / "examples" / "customer.json",
+            args.report_month,
         )
     else:
         if args.config:
@@ -445,7 +460,7 @@ def main():
     if any("supply_point" in job for job in jobs) and db_settings is None:
         parser.error("テーブル入力には--db-configが必要です")
     # CLIで対象月を指定した場合は、各DBジョブの月よりも優先する。
-    if args.report_month:
+    if args.report_month and not args.from_management:
         from services.data_service import bounds
 
         bounds(args.report_month)
