@@ -24,14 +24,7 @@ def setup_local_env():
     os.environ.setdefault("FLASK_ENV", "local")
     os.environ.setdefault("TZ", "Asia/Tokyo")
 
-    # --- DB ---
-    os.environ["DATABASE_URL"] = (
-        "postgresql://postgres:postgres@localhost:5432/postgres"
-    )
-    # os.environ.setdefault(
-    #     "DATABASE_URL",
-    #     "postgresql+psycopg2://postgres:EYr^3NmPBq@postgresql.cndx-corp-maint.svc.cluster.local:5432/epdb"
-    # )
+    # DATABASE_URL、TABLEAU_USERNAME、TABLEAU_PASSWORDは実行環境から受け取る。
 
     os.environ.setdefault("SQLALCHEMY_POOL_SIZE", "5")
     os.environ.setdefault("SQLALCHEMY_MAX_OVERFLOW", "10")
@@ -39,8 +32,6 @@ def setup_local_env():
 
     # --- Tableau ---
     os.environ.setdefault("TABLEAU_SERVER_URL", "http://10.191.33.99")
-    os.environ.setdefault("TABLEAU_USERNAME", "X0148401")
-    os.environ.setdefault("TABLEAU_PASSWORD", "imai1120")
     os.environ.setdefault("TABLEAU_SITE_NAME", "")
     os.environ.setdefault("API_VERSION", "3.21")
     os.environ.setdefault(

@@ -20,11 +20,8 @@ class ReportService:
         """
         # 顧客ごとに作り直す必要のないフォント・テンプレート・ブラウザーを準備する。
         self.charts = ChartService()
-        try:
-            self.html = HtmlRenderer()
-            self.printer = PdfPrinter(browser)
-        except Exception:
-            raise
+        self.html = HtmlRenderer()
+        self.printer = PdfPrinter(browser)
 
     def generate_query_results(
         self,
@@ -97,7 +94,4 @@ class ReportService:
 
     def close(self):
         """プロセス終了前にブラウザーを閉じる。"""
-        try:
-            self.printer.close()
-        finally:
-            self.charts.fonts.close()
+        self.printer.close()

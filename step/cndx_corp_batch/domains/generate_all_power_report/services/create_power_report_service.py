@@ -1,20 +1,35 @@
 import logging
+import logging.handlers
+import os
+from multiprocessing.util import Finalize
 from pathlib import Path
 
 from sqlalchemy import text
 
-from cndx_corp_batch.common.db import get_session, init_db
+from cndx_corp_batch.common.db import close_db, get_session, init_db
 from cndx_corp_batch.common.query import load_sql_file
 from cndx_corp_batch.common.time import get_current_time
 from cndx_corp_batch.common.utils import get_sysuser
 
 from .data_service import bounds
+from .database_source import NumericConversionError
+from .query_result_service import prepare_query_results
 from .report_service import ReportService
 
 _report_service = None
 _SQL_QUERIES = {}
-OUTPUT_PATH = "/"
-# OUTPUT_PATH = "/bd-fs-mnt/TenantShare/corp/electricity_vis_middle/power_report"
+OUTPUT_PATH = "/bd-fs-mnt/TenantShare/corp/electricity_vis_middle/power_report"
+
+
+def close_worker():
+    """ワーカーが所有するブラウザーとDB接続プールを終了する。"""
+    global _report_service
+    try:
+        if _report_service is not None:
+            _report_service.close()
+    finally:
+        _report_service = None
+        close_db()
 
 
 def multiprocessing_initializer(db_url, queue):
@@ -22,18 +37,19 @@ def multiprocessing_initializer(db_url, queue):
     global _report_service
     init_db(db_url)
 
-    _report_service = ReportService()
     _SQL_QUERIES["select_cust"] = text(load_sql_file("select_power_report_cust.sql"))
     _SQL_QUERIES["select_30min"] = text(load_sql_file("select_power_report_30min.sql"))
     _SQL_QUERIES["update_target"] = text(
         load_sql_file("update_power_report_target.sql")
     )
+    _report_service = ReportService()
+    Finalize(None, close_worker, exitpriority=10)
 
     queue_handler = logging.handlers.QueueHandler(queue)
-
-    root_logger = logging.getLogger()
-    root_logger.setLevel(logging.INFO)
-    root_logger.addHandler(queue_handler)
+    logger = logging.getLogger("batch.worker")
+    logger.handlers = [queue_handler]
+    logger.setLevel(logging.INFO)
+    logger.propagate = False
 
 
 def execute(row, report_ym):
@@ -70,12 +86,12 @@ def execute(row, report_ym):
         )
 
     file_name = (
-        f"{company_id}_{supply_point_number}_{report_ym_str}.pdf"
+        f"{company_id}_{supply_point_number}_syousapo_{report_ym_str}.pdf"
         if row.syousapo_flg
-        else f"{company_id}_{supply_point_number}_syousapo_{report_ym_str}.pdf"
+        else f"{company_id}_{supply_point_number}_{report_ym_str}.pdf"
     )
 
-    output = Path(OUTPUT_PATH, file_name)
+    output = Path(os.getenv("REPORT_OUTPUT_DIR", OUTPUT_PATH), file_name)
 
     update_params = {
         "file_name": file_name,
@@ -89,34 +105,10 @@ def execute(row, report_ym):
         "target_year_month": report_ym_str,
     }
 
-    from .query_result_service import prepare_query_results
-
-    logger.info(f"A")
-
     try:
         frame, config = prepare_query_results(
             customer, daily_rows, supply_point_number, report_ym_str
         )
-    except ValueError as e:
-        err_msg = str(e)
-        truncate_msg = err_msg[:97] + "..." if len(err_msg) > 100 else err_msg
-        update_params["error_message"] = truncate_msg
-        update_params["create_status"] = "4"
-        with get_session() as session:
-            session.execute(_SQL_QUERIES["update_target"], update_params)
-            session.commit()
-
-    except Exception as e:
-        err_msg = str(e)
-        truncate_msg = err_msg[:97] + "..." if len(err_msg) > 100 else err_msg
-        update_params["error_message"] = truncate_msg
-        update_params["create_status"] = "5"
-        with get_session() as session:
-            session.execute(_SQL_QUERIES["update_target"], update_params)
-            session.commit()
-    logger.info(f"B")
-    try:
-        # 最新の generate_frame を呼び出し
         _report_service.generate_frame(
             df=frame,
             config=config,
@@ -124,26 +116,24 @@ def execute(row, report_ym):
             debug_dir=None,
         )
 
-        with get_session() as session:
-            session.execute(_SQL_QUERIES["update_target"], update_params)
-            session.commit()
-
-        logger.info(f"{supply_point_number}レポート作成処理完了。")
-
-    except ValueError as e:
-        err_msg = str(e)
-        truncate_msg = err_msg[:97] + "..." if len(err_msg) > 100 else err_msg
-        update_params["error_message"] = truncate_msg
+    except NumericConversionError as exc:
+        update_params["error_message"] = str(exc)[:100]
         update_params["create_status"] = "4"
-        with get_session() as session:
-            session.execute(_SQL_QUERIES["update_target"], update_params)
-            session.commit()
-
-    except Exception as e:
-        err_msg = str(e)
-        truncate_msg = err_msg[:97] + "..." if len(err_msg) > 100 else err_msg
-        update_params["error_message"] = truncate_msg
+        logger.warning(
+            "LMMRCRC0401 %s 主キー=%s 列=%s 供給地点=%s 対象年月=%s",
+            exc, exc.primary_key, exc.column, supply_point_number, report_ym_str,
+        )
+    except Exception as exc:
+        message = str(exc)
+        update_params["error_message"] = message[:97] + "..." if len(message) > 100 else message
         update_params["create_status"] = "5"
-        with get_session() as session:
-            session.execute(_SQL_QUERIES["update_target"], update_params)
-            session.commit()
+        logger.exception(
+            "レポート作成エラー 供給地点=%s 対象年月=%s",
+            supply_point_number, report_ym_str,
+        )
+
+    with get_session() as session:
+        session.execute(_SQL_QUERIES["update_target"], update_params)
+
+    if update_params["create_status"] == "3":
+        logger.info("%s レポート作成処理完了。", supply_point_number)

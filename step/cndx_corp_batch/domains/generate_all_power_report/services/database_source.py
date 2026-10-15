@@ -15,6 +15,15 @@ CONTRACT_POINT = "QSQB_DCIS2_SPL_PT_SPC_NO"
 CONTRACT_POWER = "QSQB_DCIS2_HVPW_CTRT"
 
 
+class NumericConversionError(ValueError):
+    """数値変換できなかった行と列を保持する。供給地点は管理行で識別する。"""
+
+    def __init__(self, primary_key, column):
+        self.primary_key = str(primary_key)
+        self.column = column
+        super().__init__(f"数値変換エラー：{self.primary_key}")
+
+
 def expand_daily_rows(
     rows, report_month, supply_point, value_unit="kWh", quality_columns=()
 ):
@@ -63,7 +72,17 @@ def expand_daily_rows(
         if counts.isna().any() or not (counts == 0).all():
             raise ValueError(f"数値変換エラー： {column}")
     # 日別の横持ち48列を数値にする。空欄や数値以外はエラーとして扱う。
-    values = records[SLOTS].apply(pd.to_numeric, errors="raise").to_numpy(dtype=float)
+    try:
+        values = records[SLOTS].apply(pd.to_numeric, errors="raise").to_numpy(dtype=float)
+    except (ValueError, TypeError):
+        # 正常時は一括変換し、失敗した場合だけ原因の行・列を特定する。
+        for row in records.to_dict("records"):
+            for column in SLOTS:
+                try:
+                    pd.to_numeric(row[column], errors="raise")
+                except (ValueError, TypeError) as exc:
+                    raise NumericConversionError(row[DATE], column) from exc
+        raise
     # 日付×48枠の行列を作り、行ごとに00:00〜23:30を並べる。
     # 0〜47に30分を掛けるので、枠1は0分、枠48は1410分になる。
     timestamps = (

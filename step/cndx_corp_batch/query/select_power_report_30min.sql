@@ -52,4 +52,4 @@ SELECT
 FROM db_corp.t_ep_electricity_data_30min
 WHERE t01_kyo_ctn_tok_no = :supply_point_number
 AND t01_get_ymd >= :start_date
-AND t01_get_ymd <= :end_date;
+AND t01_get_ymd < :end_date;

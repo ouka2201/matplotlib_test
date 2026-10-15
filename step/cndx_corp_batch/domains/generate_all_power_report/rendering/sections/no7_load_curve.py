@@ -122,4 +122,4 @@ def draw_no7(page, s, context):
         "30分ごとの使用電力量", "\n30分ごとの使用電力量"
     ).replace("この対象期間は、", "\nこの対象期間は、")
     text(197.0, 179.6, footer_lines, size=5.5, linespacing=1.4)
-    text(278, 192, "発行元：東京電力エナジーパートナー株式会社", size=5.3, ha="right")
+    text(278, 190.5, "発行元：東京電力エナジーパートナー株式会社", size=5.3, ha="right")

@@ -214,9 +214,16 @@ class SecondPageCanvas(PageCanvas):
             (w - 4) / WIDTH * frame.width / box.width,
             (h - 3) / HEIGHT * frame.height / box.height,
         )
-        item.set_fontsize(item.get_fontsize() * scale * 0.99)
-        if item.get_fontsize() < 5.5:
-            raise ValueError("2ページ目の説明欄が長すぎます。説明文を短くしてください")
+        size = item.get_fontsize() * scale * 0.99
+        item.set_fontsize(max(5.5, size))
+        if size < 5.5:
+            # 余裕率で最小サイズを下回っても、5.5ptの実測が収まれば描画できる。
+            box = item.get_window_extent(self.fig.canvas.get_renderer())
+            if (
+                box.width > (w - 4) / WIDTH * frame.width
+                or box.height > (h - 3) / HEIGHT * frame.height
+            ):
+                raise ValueError("2ページ目の説明欄が長すぎます。説明文を短くしてください")
 
     def axes(self, x, y, w, h, ylabel, grid=True):
         """固定位置にグラフ用Axesを作り、縦軸と補助線を設定する。

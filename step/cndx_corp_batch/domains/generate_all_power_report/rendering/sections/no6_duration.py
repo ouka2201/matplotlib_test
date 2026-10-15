@@ -87,7 +87,8 @@ def draw_no6(page, s, context, duration_data=None):
     ordered, ticks, labels = duration_data
     # 大きな電力では桁区切りの目盛りが長くなるので、縦軸用の余白を増やす。
     left = 12.0 if ordered.kw.max() >= 1000 else 9.95
-    ax = axes(left, 12.0, 108.95 - left, 47.2, "電力(kW)")
+    chart_top = 14.0 if not context.get("has_full_year", True) else 12.0
+    ax = axes(left, chart_top, 108.95 - left, 59.2 - chart_top, "電力(kW)")
     rank = range(1, len(ordered) + 1)
     ax.fill_between(rank, ordered.kw, color=DURATION_BLUE)
     ax.plot(rank, ordered.kw, color=DURATION_BLUE, lw=0.4)

@@ -23,7 +23,8 @@ def draw_no4(page, series):
     text(147, 8, "月ごとの使用電力量［kWh］の推移をグラフ化したものです", size=7)
     if series.get("partial_period"):
         text(147, 12, f'集計対象：{series["actual_period"]}', size=5.5)
-    ax = chart_axes(154.9, 13.5, 125.1, 44.0, "電力量(kWh)")
+    chart_top = 15.0 if series.get("partial_period") else 13.5
+    ax = chart_axes(154.9, chart_top, 125.1, 57.5 - chart_top, "電力量(kWh)")
     count = len(month)
     values = month["kwh"].to_numpy()
     peak = int(values.argmax())

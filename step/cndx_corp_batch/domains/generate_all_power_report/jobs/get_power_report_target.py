@@ -23,6 +23,6 @@ class GetPowerReportTarget(BaseJob):
 
         with get_session() as session:
             sql_query = load_sql_file("select_power_report_target.sql")
-            result = session.execute(text(sql_query), params)
+            result = session.execute(text(sql_query), params).all()
             logger.info("レポート作成対象情報取得処理完了。")
             return result

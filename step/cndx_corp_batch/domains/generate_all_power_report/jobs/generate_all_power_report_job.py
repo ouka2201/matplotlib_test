@@ -28,7 +28,7 @@ class GenerateAllPowerReportJob(BaseJob):
         BaseJob (BaseJob)
     """
 
-    def __init__(self, context: BatchContext):
+    def __init__(self, context: BatchContext, batch_date=None):
         """
         Parameters:
             context (BatchContext): バッチコンテキスト
@@ -37,7 +37,7 @@ class GenerateAllPowerReportJob(BaseJob):
         self.context = context
 
         self.report_ymd = calc_offset_month(
-            get_current_time(),
+            batch_date if batch_date is not None else get_current_time(),
             self.context.config.cut_off_day,
             self.context.config.report_month_offset_before,
             self.context.config.report_month_offset_after,
@@ -52,17 +52,16 @@ class GenerateAllPowerReportJob(BaseJob):
         self.logger.info("電力見える化レポート一括作成バッチ実行開始。")
 
         # 30分値データ取込確認ジョブ
-        # self.register_report_job.execute()
+        self.register_report_job.execute()
 
         # レポート作成対象情報取得
         targets = self.get_report_target_job.execute()
 
-        count = cpu_workers()
-
-        output_count = targets.rowcount
-
-        manager = multiprocessing.Manager()
-        log_queue = manager.Queue()
+        output_count = len(targets)
+        if not targets:
+            self.logger.info("作成対象は0件です。")
+            return
+        count = min(cpu_workers(), output_count)
 
         console_handler = logging.StreamHandler()
         formatter = logging.Formatter(
@@ -70,22 +69,25 @@ class GenerateAllPowerReportJob(BaseJob):
         )
         console_handler.setFormatter(formatter)
 
-        listener = logging.handlers.QueueListener(log_queue, console_handler)
-        listener.start()
-
-        with ProcessPoolExecutor(
-            max_workers=count,
-            initializer=multiprocessing_initializer,
-            initargs=(self.context.config.db_url, log_queue),
-        ) as executor:
-            futures = [
-                executor.submit(execute, row, self.report_ymd) for row in targets
-            ]
-            for i, future in enumerate(futures, 1):
-                try:
-                    future.result()
-                    print((f"[] タスク " f"{i}/{output_count} 完了"))
-
-                except Exception as e:
-                    print((f"[] タスク " f"{i}/{output_count} エラー: {e}"))
+        with multiprocessing.Manager() as manager:
+            log_queue = manager.Queue()
+            listener = logging.handlers.QueueListener(log_queue, console_handler)
+            listener.start()
+            try:
+                with ProcessPoolExecutor(
+                    max_workers=count,
+                    initializer=multiprocessing_initializer,
+                    initargs=(self.context.config.db_url, log_queue),
+                ) as executor:
+                    futures = [
+                        executor.submit(execute, row, self.report_ymd) for row in targets
+                    ]
+                    for i, future in enumerate(futures, 1):
+                        try:
+                            future.result()
+                            self.logger.info("タスク %s/%s 処理終了", i, output_count)
+                        except Exception:
+                            self.logger.exception("タスク %s/%s エラー", i, output_count)
+            finally:
+                listener.stop()
         self.logger.info("電力見える化レポート一括作成バッチ実行完了。")

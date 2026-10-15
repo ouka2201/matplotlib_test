@@ -3,7 +3,7 @@
 import math
 from collections.abc import Mapping
 
-from .database_source import DATE, POINT, SLOTS, expand_daily_rows
+from .database_source import DATE, POINT, SLOTS, NumericConversionError, expand_daily_rows
 
 
 def row_to_dict(row):
@@ -76,7 +76,11 @@ def prepare_query_results(
         values[field] = customer[name.upper()]
 
     # 契約電力はkW。日別48枠のkWhだけを2倍し、契約電力を2倍しない。
-    contract = float(values["contract_kw"])
+    try:
+        contract = float(values["contract_kw"])
+    except (ValueError, TypeError) as exc:
+        # 契約電力テーブルの主キーは供給地点のみなので、DBの文言には重複記載しない。
+        raise NumericConversionError("", columns["contract_kw"]) from exc
     if not math.isfinite(contract) or contract <= 0:
         raise ValueError("契約電力は正の有限数(kW)が必要です")
     values["contract_kw"] = contract

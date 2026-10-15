@@ -28,14 +28,12 @@ def check_batch_ym(d: date, batch_days: int = 0):
 
     Args:
         d (date): システム日時
-        batch_days (int, optional): 締め日. Defaults to 0.
+        batch_days (int, optional): 対象月を切り替える日。指定日当日は含めない。
 
     Returns:
         _type_: _description_
     """
-    start_date = month_start(d)
-    batch_date = start_date + timedelta(batch_days - 1)
-    return start_date <= d <= batch_date
+    return d.day < batch_days
 
 
 def calc_offset_month(
@@ -45,9 +43,9 @@ def calc_offset_month(
 
     Args:
         d (date): システム日時
-        batch_days (int, optional): 締め日. Defaults to 0.
-        prev_month (int, optional): 締め日以前のOFFSET値. Defaults to 0.
-        after_month (int, optional): 締め日後のOFFSET値. Defaults to 0.
+        batch_days (int, optional): 対象月を切り替える日. Defaults to 0.
+        prev_month (int, optional): 切替日前のOFFSET値. Defaults to 0.
+        after_month (int, optional): 切替日以降のOFFSET値. Defaults to 0.
 
     Returns:
         date: 指定月分ずらした年月
