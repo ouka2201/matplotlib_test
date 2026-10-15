@@ -29,6 +29,57 @@ def load_footer_logo():
     return mpimg.imread(BytesIO(path.read_bytes()), format="png")
 
 
+def _wrap_notes(value, start, renderer, props, px_per_mm, width):
+    """文字幅と明示改行に従って、書式付きの文字を行に分ける。"""
+    lines = [[]]
+    line_width = 0
+    for index, char in enumerate(value):
+        if char == "\n":
+            lines.append([])
+            line_width = 0
+            continue
+        bold = start >= 0 and start <= index < start + len(EMPHASIS)
+        char_width = (
+            renderer.get_text_width_height_descent(char, props[bold], False)[0]
+            / px_per_mm
+        )
+        if line_width + char_width > width and lines[-1]:
+            lines.append([])
+            line_width = 0
+        lines[-1].append((char, bold, char_width))
+        line_width += char_width
+    return lines
+
+
+def _draw_note_lines(canvas, lines, x, y, size, line_height):
+    """同じ書式の連続文字をまとめ、各行の所定位置に描画する。"""
+    for row, line in enumerate(lines):
+        current_x = x
+        # 同じ書式の連続した文字をまとめて描き、1文字ずつの描画を避ける。
+        run, run_bold, run_width = "", False, 0
+        runs = []
+        for char, bold, char_width in line:
+            if run and bold != run_bold:
+                runs.append((run, run_bold, run_width))
+                run, run_width = "", 0
+            run += char
+            run_bold = bold
+            run_width += char_width
+        if run:
+            runs.append((run, run_bold, run_width))
+        for text, bold, text_width in runs:
+            canvas.text(
+                current_x,
+                y + row * line_height,
+                text,
+                fontsize=size,
+                fontweight="bold" if bold else "normal",
+                color="#202020",
+                va="top",
+            )
+            current_x += text_width
+
+
 def draw_no3(page, config):
     """1ページ目の仕様書No.3を、ロゴと仕様書の説明文で描画する。
 
@@ -72,49 +123,9 @@ def draw_no3(page, config):
             )
             for bold in (False, True)
         }
-        lines = [[]]
-        line_width = 0
-        for index, char in enumerate(value):
-            if char == "\n":
-                lines.append([])
-                line_width = 0
-                continue
-            bold = start >= 0 and start <= index < start + len(EMPHASIS)
-            char_width = (
-                renderer.get_text_width_height_descent(char, props[bold], False)[0]
-                / px_per_mm
-            )
-            if line_width + char_width > width and lines[-1]:
-                lines.append([])
-                line_width = 0
-            lines[-1].append((char, bold, char_width))
-            line_width += char_width
+        lines = _wrap_notes(value, start, renderer, props, px_per_mm, width)
         line_height = size * 25.4 / 72 * 1.3
         if len(lines) * line_height <= height:
             break
 
-    for row, line in enumerate(lines):
-        current_x = x
-        # 同じ書式の連続した文字をまとめて描き、1文字ずつの描画を避ける。
-        run, run_bold, run_width = "", False, 0
-        runs = []
-        for char, bold, char_width in line:
-            if run and bold != run_bold:
-                runs.append((run, run_bold, run_width))
-                run, run_width = "", 0
-            run += char
-            run_bold = bold
-            run_width += char_width
-        if run:
-            runs.append((run, run_bold, run_width))
-        for text, bold, text_width in runs:
-            canvas.text(
-                current_x,
-                y + row * line_height,
-                text,
-                fontsize=size,
-                fontweight="bold" if bold else "normal",
-                color="#202020",
-                va="top",
-            )
-            current_x += text_width
+    _draw_note_lines(canvas, lines, x, y, size, line_height)
