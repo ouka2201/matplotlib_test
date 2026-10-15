@@ -1,0 +1,32 @@
+{
+    "url_env": "REPORT_DATABASE_URL",
+    "schema": "db_corp",
+    "daily_table": "t_ep_electricity_data_30min",
+    "import_management_table": "t_30min_import_mng",
+    "contract_table": "t_ep_contracted_power",
+    "management_table": "t_power_report_mng_info",
+    "customer_table": "t_arve_customer_info",
+    "pending_statuses": [
+        "1",
+        "5"
+    ],
+    "batch_user": "electricity_report_batch",
+    "customer_columns": {
+        "customer_number": "cmn_oldcustomernum__c",
+        "address": "cmn_demandlocationaddress__c",
+        "company_id": "cmn_kigyoid_fk__c",
+        "record_type_id": "recordtypeid"
+    },
+    "seed_record_type_ids": {
+        "joined": "省エネサポートサービス",
+        "not_joined": "未加入"
+    },
+    "customer_filters": {
+        "CMN_BusinessType__c": "2"
+    },
+    "value_unit": "kWh",
+    "quality_columns": [
+        "t01_kskj_ksu",
+        "t01_fsij_ksu"
+    ]
+}

@@ -1,0 +1,15 @@
+SQLAlchemy==2.0.36
+psycopg2-binary==2.9.10
+tableauserverclient==0.36
+python-dateutil==2.9.0.post0
+python-dotenv==1.0.0
+pytz==2025.2
+PyMuPDF==1.24.2
+matplotlib==3.8.4
+numpy==2.3.5
+pandas==2.2.3
+Jinja2==3.1.6
+playwright==1.51.0
+tzdata==2026.4
+fonttools==4.61.1
+# pip install -r requirements.txt

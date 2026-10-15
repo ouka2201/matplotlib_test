@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>電力使用状況見える化レポート</title>
+<style>
+/* 文字はページPNGに含まれるので、HTMLへのフォント埋込みは不要。 */
+/* 印刷時の用紙はA4横。余白はpage内の配置で決める。 */ @page { size: A4 landscape; margin: 0; }
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+.page { position: relative; width: 297mm; height: 210mm; padding: 9mm; background: white; break-after: page; }
+/* 各ページの外周だけを黒枠で囲む。画像より手前に描画する。 */ .page::before { content: ''; position: absolute; top: 8mm; right: 8mm; bottom: 8mm; left: 8mm; border: .25mm solid #000; pointer-events: none; z-index: 10; }
+.page:last-child { break-after: auto; }
+* { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+/* matplotlibで完成したページPNGを、外枠内281×194mmに配置する。 */ .report-page-image { position: absolute; top: 8mm; left: 8mm; display: block; width: 281mm; height: 194mm; }
+/* 区切りの破線は1ページ目の左右中央だけに配置する。 */ #page-1::after { content: ''; position: absolute; top: 8mm; bottom: 8mm; left: 50%; border-left: .2mm dashed #727d81; pointer-events: none; }
+/* 画面で確認するときだけ背景と影を付ける。印刷時には適用しない。 */ @media screen { body { background: #e9eef0; } .page { margin: 5mm auto; box-shadow: 0 1mm 5mm #bcc8cc; } }
+</style>
+</head>
+<body>
+{# data-fitはPDF保存前のはみ出し検査で参照する。 #}<section class="page" data-fit id="page-1">
+{# srcはPNGのdata URI。画像ファイルのパスは参照しない。 #}<img class="report-page-image" src="{{ charts.first_page }}" alt="契約情報・日別最大電力・30分需要電力・月別電力量・月別最大電力">
+</section>
+<section class="page" data-fit id="page-2">
+<img class="report-page-image" src="{{ charts.second_page }}" alt="デュレーションカーブ・TOP50・ロードカーブ・集計表">
+</section>
+</body>
+</html>
