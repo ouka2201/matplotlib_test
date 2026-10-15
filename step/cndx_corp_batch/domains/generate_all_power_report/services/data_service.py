@@ -10,7 +10,7 @@ WEEKDAYS = "月火水木金土日"
 
 
 def bounds(target_month):
-    """対象月を最終月とする直近12か月の期間を求める。
+    """データ項目更新仕様説明書No.6：対象月を含む1年分の取得期間を求める。
 
     Args:
         target_month (str): 最終対象月。YYYYMM形式（例: 202606）。
@@ -26,49 +26,23 @@ def bounds(target_month):
     return end - pd.DateOffset(years=1), end, month
 
 
-def load_data(path, target_month):
-    """CSVの30分平均電力を読み込み、帳票に必要なデータを検証する。
-
-    タイムゾーン付き日時は日本時間へ変換する。日時の重複や
-    不正値は全入力行を検査し、その後で対象期間外の行を除外する。
-    直近12か月内の実績期間を使う。期間の前後に実績がなくても受け付け、
-    実績がある最初の日〜最後の日は、毎日48枠が連続することを確認する。
-
-    Args:
-        path (str | pathlib.Path): 入力CSVのパス。
-        target_month (str): 最終対象月。YYYY-MM形式（例: 2026-06）。
-
-    Returns:
-        pandas.DataFrame: timestamp・kw列を含む日時昇順のデータ。
-            timestampは日本時間のタイムゾーン情報なしの日時、kwは
-            各30分枠の平均電力で、単位はkW。
-
-    Raises:
-        ValueError: 必須列の不足、不正な日時・電力、重複日時、
-            実績期間内の欠損または30分刻みでない日時がある場合。
-        OSError: CSVファイルを読み込めない場合。
-    """
-    df = pd.read_csv(path, dtype={"timestamp": str})
-    # CSVとDBで検証条件をそろえるため、DataFrameの共通検証へ渡す。
-    return validate_data(df, target_month)
-
-
 def validate_data(df, target_month):
-    """DataFrameの30分平均電力を検証し、対象期間の昇順データを返す。
+    """処理7の実装補助：30分値の型変換と対象期間の抽出・日時順ソートを行う。
 
-    CSV入力とテーブル入力で同じ検証を使用する。呼び出し元のデータは変更しない。
+        日時は日本時間のタイムゾーン情報なしへ揃え、電力は換算済みのkWとして扱う。
+        欠損日・重複日時・負数・実績件数の検査は行わない。
 
-    Args:
-        df (pandas.DataFrame): timestampとkw列を持つデータ。
-        target_month (str): 最終対象月。YYYYMM形式。
+        Args:
+            df (pandas.DataFrame): timestamp・kw列を持つデータ。
+            target_month (str): レポート作成対象年月。YYYYMM形式。
 
-    Returns:
-        pandas.DataFrame: 直近12か月内の実績。期間は1日〜12か月。
-            最初と最後の日を含め、毎日48枠の連続したデータ。
+        Returns:
+            pandas.DataFrame: 対象月を含む直近12か月の取得済みデータ。日時昇順。
 
-    Raises:
-        ValueError: 必須列不足、不正値、重複、実績なし、期間途中の欠損がある場合。
-    """
+        Raises:
+            KeyError: timestamp・kw列がない場合。
+            ValueError: 日時・電力・対象年月を変換できない場合。
+        """
     # 検証中の型変換や並べ替えで、呼び出し元が持つDataFrameを変更しない。
     df = df.copy()
     # タイムゾーン無しは日本時間。混在形式は黙って解釈せず拒否する。
@@ -79,10 +53,7 @@ def validate_data(df, target_month):
             df["timestamp"].dt.tz_convert("Asia/Tokyo").dt.tz_localize(None)
         )
     # 内部の電力単位はkWに統一する。DB由来のkWhはこの関数へ来る前に換算済み。
-    try:
-        df["kw"] = pd.to_numeric(df["kw"], errors="raise")
-    except ValueError as e:
-        raise e
+    df["kw"] = pd.to_numeric(df["kw"], errors="raise")
 
     start, end, _ = bounds(target_month)
     df = (
@@ -120,7 +91,7 @@ def date_label(ts):
 
 
 def calendar_power(kw):
-    """No.1用に、30分使用電力量を四捨五入してから2倍する。
+    """帳票出力項目仕様説明書_No.1：30分使用電力量を四捨五入してから2倍する。
 
     内部データは換算済みのkWなので、0.5時間を掛けてkWhへ戻す。
     Pythonのround（偶数丸め）ではなく四捨五入を使用する。
@@ -137,7 +108,7 @@ def calendar_power(kw):
 
 
 def most_common_labels(counts, names):
-    """最多の区分を最大3件選び、半角スペースでつないだ文字列にする。
+    """帳票出力項目仕様説明書_No.6 項番19：最多の区分を最大3件、半角空白で連結する。
 
     同率の区分はcountsの表示順に選ぶ。仕様書No.6の月別・曜日別・
     時間帯別の特徴に共通で使用する。
@@ -154,7 +125,7 @@ def most_common_labels(counts, names):
 
 
 def peak_week_bounds(df, peak_timestamp):
-    """No.7のピークを含む期間を、取得済みの日付範囲内で求める。
+    """帳票出力項目仕様説明書_No.7 項番2：ピークを含む週を取得済みの日付範囲に収める。
 
     原則はピーク日の直前の日曜から土曜まで。取得期間の端では
     7日間を前後へ移し、取得範囲自体が7日未満なら全日を使用する。
@@ -182,7 +153,7 @@ def peak_week_bounds(df, peak_timestamp):
 
 
 def build_context(df, config):
-    """検証済みの電力データを集計し、帳票とグラフ用の値を作る。
+    """処理9～16／帳票出力項目仕様説明書_No.1～7：30分需要電力を集計する。
 
     電力量は平均電力×0.5時間でkWhへ換算する。同じ電力値の
     順位は日時の早い枠を優先する。期間端ではピークを含む7日間が

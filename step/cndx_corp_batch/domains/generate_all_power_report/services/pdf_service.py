@@ -1,4 +1,4 @@
-"""HTMLをメモリでレンダリングし、ChromiumでPDFへ変換する。"""
+"""処理18・19：帳票画像を配置してPDFを出力する。HTMLとChromiumは実装上の生成手段。"""
 
 from pathlib import Path
 from tempfile import NamedTemporaryFile

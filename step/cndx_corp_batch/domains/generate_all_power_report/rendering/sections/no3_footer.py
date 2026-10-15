@@ -1,4 +1,4 @@
-"""仕様書No.3のロゴ画像と、部分的に太字の説明文をmatplotlibで配置する。"""
+"""バッチ処理内容定義書11／帳票出力項目仕様説明書_No.3：TEPCOロゴ・最大電力／使用電力量説明。"""
 
 from functools import lru_cache
 from io import BytesIO
@@ -14,10 +14,10 @@ EMPHASIS = "料金の算定期間とは異なる場合があります"
 
 @lru_cache(maxsize=1)
 def load_footer_logo():
-    """同梱のTEPCOロゴPNGを読み込み、プロセス内で再利用する。
+    """帳票出力項目仕様説明書_No.3 項番1「ロゴ」：TEPCOロゴ画像を読み込む。
 
     顧客ごとの画像ファイル作成は行わない。ワーカープロセスごとに
-    一度だけ画像を読み、1000件の処理でも同じロゴを再利用する。
+    一度だけ画像を読み、月間10万件の作成で読み込みを繰り返さない。
 
     Returns:
         numpy.ndarray: matplotlibのimshowに渡すロゴ画像。
@@ -30,7 +30,7 @@ def load_footer_logo():
 
 
 def _wrap_notes(value, start, renderer, props, px_per_mm, width):
-    """文字幅と明示改行に従って、書式付きの文字を行に分ける。"""
+    """帳票No.3 項番2の実装補助：説明文を実測幅と明示改行で折り返す。"""
     lines = [[]]
     line_width = 0
     for index, char in enumerate(value):
@@ -52,7 +52,7 @@ def _wrap_notes(value, start, renderer, props, px_per_mm, width):
 
 
 def _draw_note_lines(canvas, lines, x, y, size, line_height):
-    """同じ書式の連続文字をまとめ、各行の所定位置に描画する。"""
+    """帳票No.3 項番2の実装補助：説明文の通常文字・強調文字を左揃えで描画する。"""
     for row, line in enumerate(lines):
         current_x = x
         # 同じ書式の連続した文字をまとめて描き、1文字ずつの描画を避ける。
@@ -81,23 +81,22 @@ def _draw_note_lines(canvas, lines, x, y, size, line_height):
 
 
 def draw_no3(page, config):
-    """1ページ目の仕様書No.3を、ロゴと仕様書の説明文で描画する。
+    """処理11／帳票出力項目仕様説明書_No.3：ロゴと最大電力・使用電力量説明を作成する。
 
-    ページの左上が原点、座標単位はmm。説明文の強調部分だけを
-    別のTextオブジェクトとして描画し、太字にする。
-    文字幅を実測して折り返し、外枠と中央の破線に収める。
+        項番1はTEPCOロゴ画像、項番2は最大電力・使用電力量・料金算定期間の固定説明文。
+        実装では説明文を実測幅で折り返し、文字サイズを5.7～5.5ptで調整する。
+        notesによる差し替えと部分太字は描画実装の設定であり、設計書の項目追加ではない。
 
-    Args:
-        page (FirstPageCanvas): 1ページ目の共通描画先。
-        config (dict): notesで説明文を任意に置き換えられる。省略時は仕様書の全文。
+        Args:
+            page (FirstPageCanvas): 帳票1ページ目の描画先。左上原点、単位mm。
+            config (dict): notes省略時は設計書の固定説明文を使用する。
 
-    Raises:
-        ValueError: 説明文が5.5pt以上で配置領域に収まらない場合。
-        OSError: ロゴ画像を読み込めない場合。
-    """
+        Raises:
+            OSError: TEPCOロゴ画像を読み込めない場合。
+        """
     canvas = page.canvas
     logo = load_footer_logo()
-    # ロゴは文字列の代用ではなくPNGを貼り付け、元の縦横比を保つ。
+    # 項番1「ロゴ」：TEPCOの画像を左側に貼り付ける。縦横比を保持する。
     logo_x, logo_y, logo_width = 2.4, 184.7, 26.5
     logo_height = logo_width * logo.shape[0] / logo.shape[1]
     canvas.imshow(
@@ -113,7 +112,7 @@ def draw_no3(page, config):
     fig.canvas.draw()
     renderer = fig.canvas.get_renderer()
     px_per_mm = canvas.get_window_extent(renderer).width / 281
-    # テキストと太字の幅を描画フォントで測る。ページのmm座標へ換算して折り返す。
+    # 項番2「最大電力・使用電力量説明」：固定文を左揃えで配置する。文字幅の調整は実装補助。
     for size in (5.7, 5.6, 5.5):
         props = {
             bold: font_manager.FontProperties(

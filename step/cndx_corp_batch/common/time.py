@@ -1,4 +1,4 @@
-# app/time.py
+# バッチ共通の日付計算。電力見える化レポートの対象年月は【補足】バッチ年月仕様を参照。
 from datetime import date, datetime, time, timedelta
 
 import pytz
@@ -28,10 +28,10 @@ def check_batch_ym(d: date, batch_days: int = 0):
 
     Args:
         d (date): システム日時
-        batch_days (int, optional): 対象月を切り替える日。指定日当日は含めない。
+        batch_days (int, optional): 対象月を切り替える日。電力見える化の既定設定は15日。
 
     Returns:
-        _type_: _description_
+        bool: 実行日が切替日より前ならTrue。切替日当日以降はFalse。
     """
     return d.day < batch_days
 
@@ -39,7 +39,7 @@ def check_batch_ym(d: date, batch_days: int = 0):
 def calc_offset_month(
     d: date, batch_days: int = 0, prev_month: int = 0, after_month: int = 0
 ):
-    """バッチ実行年月日判定を行い指定月分ずらした年月を取得する
+    """データ項目更新仕様説明書No.2：実行日の区分に応じてレポート作成対象年月を求める
 
     Args:
         d (date): システム日時

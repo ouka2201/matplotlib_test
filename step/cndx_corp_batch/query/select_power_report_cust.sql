@@ -1,3 +1,5 @@
+-- 処理6(1)／データ項目更新仕様説明書No.5：供給地点特定番号でARVEお客さま情報と契約電力を結合する。
+-- 帳票No.0のご契約名義・ご契約住所・お客さま番号・契約電力を取得する。
 SELECT
  A.cmn_demandlocationfullname_ref__c as customer_name,
  A.cmn_demandlocationaddress__c as address,

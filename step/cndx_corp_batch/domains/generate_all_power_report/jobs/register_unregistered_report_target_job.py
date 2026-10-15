@@ -9,12 +9,14 @@ from cndx_corp_batch.jobs.base import BaseJob
 
 
 class RegisterUnregisteredReportTargetJob(BaseJob):
+    """処理3／データ項目更新仕様説明書No.3：30分値データ取込確認。"""
     def __init__(self, context: BatchContext, target_year_month):
         super().__init__(context)
         self.context = context
         self.report_ym = target_year_month
 
     def execute(self):
+        """取込状態3（完了）かつ対象年月の管理情報がない供給地点を状態2（作成中）で登録する。"""
         logger = self.logger
 
         logger.info("30分値データ取込確認処理開始。")

@@ -1,4 +1,4 @@
-"""No.4：③月ごとの使用電力量の推移の描画。"""
+"""バッチ処理内容定義書12／帳票出力項目仕様説明書_No.4：③月ごとの使用電力量の推移。"""
 
 from ..styles import BLACK, ENERGY_BLUE, ENERGY_RED
 

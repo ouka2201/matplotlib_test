@@ -1,4 +1,4 @@
-"""No.1の見出し・カレンダー・TOP3を、ページへ直接描画する。"""
+"""バッチ処理内容定義書9／帳票出力項目仕様説明書_No.1：①日ごとの最大電力。"""
 
 import calendar
 from datetime import timedelta
@@ -41,7 +41,7 @@ def draw_no1(page, daily, config):
     by_day = {row.timestamp.day: row for _, row in daily.iterrows()}
     canvas = page.canvas
 
-    # 年月部分も白地に青文字。写真に写った選択時の背景色は描かない。
+    # 帳票No.1 項番1・2：固定タイトルとレポート作成対象年月を青文字で表示する。
     canvas.add_patch(
         Ellipse((3.7935, 59.9), 4.496, 4.3456, facecolor=TITLE_BLUE, edgecolor="none")
     )

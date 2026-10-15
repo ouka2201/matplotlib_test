@@ -1,4 +1,4 @@
-"""画像・HTML・PDFをメモリでつなぐ帳票生成サービス。"""
+"""処理6・9～19：帳票No.0～7の画像を配置して電力見える化レポートを作成する。"""
 
 from pathlib import Path
 
@@ -71,7 +71,7 @@ class ReportService:
         Returns:
             dict: PDF保存先、バイト数、成功ステータス。
         """
-        # 通常はNoneでファイルを作らない。明示指定された確認用フォルダーだけ使用する。
+        # 処理5・21の実装差：一時画像はメモリに保持する。debug_dir指定時だけ確認用画像を保存する。
         self.charts.output_dir = Path(debug_dir) if debug_dir else None
         if self.charts.output_dir:
             self.charts.output_dir.mkdir(parents=True, exist_ok=True)
@@ -88,8 +88,7 @@ class ReportService:
             return {"status": "succeeded", "output": str(output), "bytes": len(pdf)}
         finally:
             # 1顧客分の画像を解放してから次のジョブへ進む。
-            # 失敗時に残ったFigureも閉じ、1000件分の画像を蓄積しない。
-            self.charts.png_bytes.clear()
+            # 月間10万件を想定し、失敗時も1件ごとにFigureを閉じて画像を蓄積しない。
             plt.close("all")
 
     def close(self):

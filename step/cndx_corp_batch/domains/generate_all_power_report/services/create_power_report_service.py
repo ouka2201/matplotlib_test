@@ -18,6 +18,7 @@ from .report_service import ReportService
 
 _report_service = None
 _SQL_QUERIES = {}
+# バッチ処理内容定義書18・19：省サポ未加入・加入で共通のレポート出力先。
 OUTPUT_PATH = "/bd-fs-mnt/TenantShare/corp/electricity_vis_middle/power_report"
 
 
@@ -33,7 +34,7 @@ def close_worker():
 
 
 def multiprocessing_initializer(db_url, queue):
-    """子プロセスが起動した瞬間に1度だけ走る初期化処理"""
+    """LOOPの実装補足：各ワーカーでDB接続・SQL・PDF生成サービスを一度だけ準備する。"""
     global _report_service
     init_db(db_url)
 
@@ -53,6 +54,11 @@ def multiprocessing_initializer(db_url, queue):
 
 
 def execute(row, report_ym):
+    """処理6～26：1供給地点のデータ取得、帳票作成、管理情報更新を行う。
+
+    数値変換不可は4（完了（警告））、その他の生成失敗は5（エラー）で登録する。
+    運用上、生成前のDB取得例外は親処理へ通知し、この関数では管理状態を変更しない。
+    """
     logger = logging.getLogger("batch.worker")
 
     supply_point_number = row.supply_point_number
@@ -65,7 +71,7 @@ def execute(row, report_ym):
     params = {
         "supply_point_number": supply_point_number,
     }
-    # 契約情報設定(ARVEお客さま情報,EPデータ参照基盤契約電力)
+    # 処理6(1)／データ項目更新仕様説明書No.5：供給地点をキーに名義・住所・番号・契約電力を取得する。
     with get_session() as session:
         customer = dict(
             session.execute(_SQL_QUERIES["select_cust"], params).mappings().one()
@@ -79,18 +85,20 @@ def execute(row, report_ym):
         "end_date": end_date.strftime("%Y%m%d"),
     }
 
-    # グラフ用データ取得・変換(EPデータ参照基盤30分値から1年分の30分値を取得する。)
+    # 処理7(1)／データ項目更新仕様説明書No.6：対象月を含む1年分の取得年月日・48枠を取得する。
     with get_session() as session:
         daily_rows = (
             session.execute(_SQL_QUERIES["select_30min"], params).mappings().all()
         )
 
+    # 処理17～19：管理情報の企業ID・供給地点・加入フラグから省サポ別のPDF名を設定する。
     file_name = (
         f"{company_id}_{supply_point_number}_syousapo_{report_ym_str}.pdf"
         if row.syousapo_flg
         else f"{company_id}_{supply_point_number}_{report_ym_str}.pdf"
     )
 
+    # 実装補足：ローカル実行時はREPORT_OUTPUT_DIRで設計書の出力先を上書きできる。
     output = Path(os.getenv("REPORT_OUTPUT_DIR", OUTPUT_PATH), file_name)
 
     update_params = {
@@ -106,9 +114,11 @@ def execute(row, report_ym):
     }
 
     try:
+        # 処理7(2)～(4)・13(2)：48枠の数値・時刻変換と契約電力の数値変換を先に行う。
         frame, config = prepare_query_results(
             customer, daily_rows, supply_point_number, report_ym_str
         )
+        # 処理6(2)・9～16・18～19：帳票No.0～7を描画し、PDFを保存する。
         _report_service.generate_frame(
             df=frame,
             config=config,
@@ -117,6 +127,7 @@ def execute(row, report_ym):
         )
 
     except NumericConversionError as exc:
+        # 処理8・14・22～23／入力項目チェックNo.1～49：PDF作成をスキップし警告を記録する。
         update_params["error_message"] = str(exc)[:100]
         update_params["create_status"] = "4"
         logger.warning(
@@ -124,6 +135,7 @@ def execute(row, report_ym):
             exc, exc.primary_key, exc.column, supply_point_number, report_ym_str,
         )
     except Exception as exc:
+        # 処理24～26／データ項目更新仕様説明書No.9：想定外エラーの概要を100文字以内で記録する。
         message = str(exc)
         update_params["error_message"] = message[:97] + "..." if len(message) > 100 else message
         update_params["create_status"] = "5"
@@ -132,6 +144,7 @@ def execute(row, report_ym):
             supply_point_number, report_ym_str,
         )
 
+    # 処理20・22・25／データ項目更新仕様説明書No.7～9：生成結果に応じて状態3・4・5を更新する。
     with get_session() as session:
         session.execute(_SQL_QUERIES["update_target"], update_params)
 

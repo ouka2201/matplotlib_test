@@ -22,16 +22,21 @@ from .register_unregistered_report_target_job import RegisterUnregisteredReportT
 
 
 class GenerateAllPowerReportJob(BaseJob):
-    """電力見える化レポート一括作成メインJOB
+    """バッチ処理内容定義書1～4・LOOP：対象年月の決定、対象登録・取得、並列実行。
 
-    Args:
-        BaseJob (BaseJob)
+    供給地点特定番号ごとに1件ずつ、CPUコア数を上限として処理する。
+    個別処理の失敗後も後続対象を処理する運用とする。
     """
 
     def __init__(self, context: BatchContext, batch_date=None):
-        """
-        Parameters:
-            context (BatchContext): バッチコンテキスト
+        """処理1・2／データ項目更新仕様説明書No.1・2：実行日から対象年月を設定する。
+
+        【補足】バッチ年月仕様の既定値は、1～14日が実行月の3か月前、
+        15日～月末が2か月前。実装では環境設定と実行日引数で指定できる。
+
+        Args:
+            context (BatchContext): バッチ設定とログ出力先。
+            batch_date (date | None): バッチ実行年月日。省略時は日本時間の現在日時。
         """
         super().__init__(context)
         self.context = context
@@ -51,16 +56,18 @@ class GenerateAllPowerReportJob(BaseJob):
     def execute(self):
         self.logger.info("電力見える化レポート一括作成バッチ実行開始。")
 
-        # 30分値データ取込確認ジョブ
+        # 処理3：30分値の取込完了かつ管理情報未登録の対象を、状態2（作成中）で登録する。
         self.register_report_job.execute()
 
-        # レポート作成対象情報取得
+        # 処理4：対象年月の状態2（作成中）・5（エラー）を取得する。
         targets = self.get_report_target_job.execute()
 
         output_count = len(targets)
+        # LOOP：対象0件の場合は空振りとして終了し、ワーカーを起動しない。
         if not targets:
             self.logger.info("作成対象は0件です。")
             return
+        # LOOP：コア数分で並列処理する。対象件数より多くのプロセスは作らない。
         count = min(cpu_workers(), output_count)
 
         console_handler = logging.StreamHandler()
@@ -87,6 +94,7 @@ class GenerateAllPowerReportJob(BaseJob):
                             future.result()
                             self.logger.info("タスク %s/%s 処理終了", i, output_count)
                         except Exception:
+                            # 運用上の扱い：個別のDB取得等の例外を記録し、後続対象を継続する。
                             self.logger.exception("タスク %s/%s エラー", i, output_count)
             finally:
                 listener.stop()

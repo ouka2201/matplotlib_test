@@ -13,5 +13,6 @@ class BatchLogger(logging.LoggerAdapter):
             {
                 "batch_id": batch_id,
                 "batch_name": batch_name,
+                "job_name": "-",
             },
         )

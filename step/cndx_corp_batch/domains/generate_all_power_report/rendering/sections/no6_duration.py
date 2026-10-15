@@ -1,4 +1,4 @@
-"""No.6：⑤デュレーションカーブ、順位表、TOP50の特徴の描画。"""
+"""バッチ処理内容定義書15／帳票出力項目仕様説明書_No.6：⑤デュレーションカーブ。"""
 
 from datetime import timedelta
 
@@ -17,7 +17,7 @@ from ..styles import (
 
 
 def duration_axis(df, segments=46):
-    """電力降順のデータを等分し、各区間の中央日時を目盛りにする。
+    """帳票No.6 項番4：電力降順データを分割し、各区間の中央日時を横軸に表示する。
 
     区間の件数が偶数なら中央2枠のうち左側を選ぶ。日時を
     平均・補間せず、電力値と実際の発生日時の対応を保持する。
@@ -42,7 +42,8 @@ def duration_axis(df, segments=46):
     ordered = df.sort_values(["kw", "timestamp"], ascending=[False, True]).reset_index(
         drop=True
     )
-    # 電力順位の並び全体を46区間へ等分する。区間の件数差は最大1件。
+    # 設計書No.6 項番4は45分割。現実装の既定値は46分割（仕様差はこの処理では変更しない）。
+    # 区間の件数差は最大1件。
     groups = np.array_split(np.arange(len(ordered)), min(segments, len(ordered)))
     # 日時を平均せず、中央位置にある実データを選ぶ。偶数件なら中央2件の左側。
     centers = [group[(len(group) - 1) // 2] for group in groups]
@@ -51,14 +52,13 @@ def duration_axis(df, segments=46):
     return ordered, ticks, labels
 
 
-def draw_no6(page, s, context, duration_data=None):
+def draw_no6(page, s, context):
     """実績期間の電力順位と上位最大50枠の特徴を描画する。
 
     Args:
         page (SecondPageCanvas): 2ページ目の描画用ページ。
         s (dict): build_contextの全枠とTOP50の区分別集計。
         context (dict): 期間・順位表・特徴の表示用辞書。
-        duration_data (tuple | None): 46区間の日時。省略時は本モジュールで作る。
     """
     canvas = page.canvas
     text, title, note, axes, table = (
@@ -68,8 +68,7 @@ def draw_no6(page, s, context, duration_data=None):
         page.axes,
         page.table,
     )
-    if duration_data is None:
-        duration_data = duration_axis(s["df"])
+    duration_data = duration_axis(s["df"])
     title(0.9, 5, f'デュレーションカーブ（{context["period"]}）')
     frames = len(s["df"])
     days = frames // 48

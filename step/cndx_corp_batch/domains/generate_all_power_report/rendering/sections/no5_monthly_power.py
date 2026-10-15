@@ -1,4 +1,4 @@
-"""No.5：④最大電力の推移の描画。"""
+"""バッチ処理内容定義書13／帳票出力項目仕様説明書_No.5：④最大電力の推移。"""
 
 from ..styles import BLACK, POWER_BLUE, POWER_RED, format_number
 

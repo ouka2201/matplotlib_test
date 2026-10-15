@@ -1,4 +1,4 @@
-"""PNGをBytesIOで生成し、HTML埋込み用のdata URIを返す。"""
+"""処理6・9～16：帳票No.0～7を描画する。実装ではページ単位のPNGをメモリに保持する。"""
 
 import base64
 from io import BytesIO
@@ -27,7 +27,6 @@ class ChartService:
 
     Attributes:
         output_dir (pathlib.Path | None): PNGの任意保存先。Noneなら画像ファイルを作成しない。
-        png_bytes (dict[str, bytes]): 処理中の画像。レポートごとにクリアする。
     """
 
     def __init__(self, output_dir=None):
@@ -43,7 +42,6 @@ class ChartService:
         self.output_dir = Path(output_dir) if output_dir is not None else None
         if self.output_dir is not None:
             self.output_dir.mkdir(parents=True, exist_ok=True)
-        self.png_bytes = {}
         fm.fontManager.addfont(FONT_REG_PATH)
         fm.fontManager.addfont(FONT_BOLD_PATH)
         plt.rcParams.update(
@@ -81,42 +79,33 @@ class ChartService:
             with BytesIO() as buffer:
                 fig.savefig(buffer, format="png", dpi=190, facecolor="white")
                 data = buffer.getvalue()
-            # 完成ページのPNGだけを保持する。各No.の中間PNGは生成しない。
-            # HTMLへ渡すときはbase64のdata URIにするので、画像パスは不要。
-            self.png_bytes[name] = data
+            # 完成ページをdata URIで返す。サービス内にPNGの複製は保持しない。
             if self.output_dir is not None:
                 (self.output_dir / f"{name}.png").write_bytes(data)
             return "data:image/png;base64," + base64.b64encode(data).decode("ascii")
         finally:
             plt.close(fig)
 
-    def create_all(self, s, config, context=None):
+    def create_all(self, s, config, context):
         """全No.をページへ直接描画し、完成した2ページだけをPNG化する。
 
         各No.の文字・図形・グラフを同じページFigureへ描画する。
-        contextがなければ集計処理で作る。
 
         Args:
             s (dict): build_contextが返すseries。全枠・日別・月別・週別・TOP50の集計データ。
             config (dict): 契約情報と対象月の設定。customer_name、address、
                 customer_number、contract_kw、target_monthを用途に応じて使用する。
                 issuer、holidays、is_sampleは任意設定。
-            context (dict | None): build_contextが返す表示用の値。create_allでは省略時に生成する。
+            context (dict): build_contextが返す表示用の値。
 
         Returns:
             dict[str, str]: 画像名をキー、PNGのdata URIを値とする辞書。
                 first_page・second_pageのみ。文字や説明欄を含むページ全体の画像。
         """
-        # 再利用するサービスに前の顧客の画像を残さない。
-        self.png_bytes.clear()
         images = {}
         # 各グラフはページFigure内へ直接描き、使用しない個別PNGの二重生成を避ける。
         images["first_page"] = self.save("first_page", draw_first_page(s, config))
-        if context is None:
-            from .data_service import build_context
-
-            context, _ = build_context(s["df"], config)
         images["second_page"] = self.save(
-            "second_page", draw_second_page(s, config, context)
+            "second_page", draw_second_page(s, context)
         )
         return images

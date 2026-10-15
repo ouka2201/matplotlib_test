@@ -1,4 +1,4 @@
-"""No.0のタイトル・契約情報を、ページのmm座標へ直接描画する。"""
+"""バッチ処理内容定義書6／帳票出力項目仕様説明書_No.0：契約情報設定。"""
 
 from matplotlib.patches import Rectangle
 

@@ -1,4 +1,4 @@
-"""日別48列のテーブルから帳票用の30分データを作る。"""
+"""処理7／データ項目更新仕様説明書No.6：EPデータ参照基盤30分値を帳票用に変換する。"""
 
 import numpy as np
 import pandas as pd
@@ -16,7 +16,7 @@ CONTRACT_POWER = "QSQB_DCIS2_HVPW_CTRT"
 
 
 class NumericConversionError(ValueError):
-    """数値変換できなかった行と列を保持する。供給地点は管理行で識別する。"""
+    """入力項目チェックNo.1～49の数値変換不可。処理22・23の更新文言とログに使う。"""
 
     def __init__(self, primary_key, column):
         self.primary_key = str(primary_key)
@@ -27,24 +27,26 @@ class NumericConversionError(ValueError):
 def expand_daily_rows(
     rows, report_month, supply_point, value_unit="kWh", quality_columns=()
 ):
-    """日別48列を、1枠1行の日時・平均電力へ展開する。
+    """処理7(2)・(3)：V30分_使用_電力量_1～48を数値・時刻へ変換する。
 
     1→00:00、2→00:30、48→23:30。既定の保存値はkWhなので2倍して30分平均電力kWに変換する。
     月間電力量は平均電力×0.5時間を合計するため、元のkWh合計と一致する。
 
     Args:
         rows (Iterable[Mapping]): 日別レコード。物理列名は大文字・小文字どちらでもよい。
-        report_month (str): 指定月を含む12か月の最終月。YYYY-MM形式。
+        report_month (str): レポート作成対象年月。YYYYMM形式。指定月を含む12か月を対象とする。
         supply_point (str): 供給地点特定番号。先頭の0を保持する。
         value_unit (str): 保存値の単位。kW、kWh、Whのいずれか。
         quality_columns (Iterable[str]): 0件を要求する欠測・不正値件数列。指定時だけ検査する。
 
     Returns:
         pandas.DataFrame: 直近12か月内で実績のある期間のtimestamp・kw列。
-            1年未満を許容するが、実績期間内は毎日48枠が必要。
+            各取得行の48列を展開する。実績が1年未満の場合も取得した期間を返す。
 
     Raises:
-        ValueError: 日付・値・単位・品質件数が不正、日別行の重複や欠損がある場合。
+        NumericConversionError: 48枠に数値変換できない値がある場合。
+        ValueError: 取得年月日・単位・任意指定の品質件数が不正な場合。
+        KeyError: 取得年月日または48枠の列が不足している場合。
     """
     # 保存値はkWh。30分=0.5時間なので、平均電力kWはkWh÷0.5で求める。
     # kW・Whは別の入力データ源を扱う場合の換算方法。今回の既定値はkWh。
@@ -89,7 +91,7 @@ def expand_daily_rows(
         dates.to_numpy()[:, None] + np.arange(48)[None, :] * np.timedelta64(30, "m")
     ).reshape(-1)
     # 日時と電力を同じ行順で平坦化する。日付や枠の対応がずれないようにする。
-    # 共通検証で実績期間内の欠損・重複・負数を確認する。期間前後の不足は許容する。
+    # 実装補足：共通処理で型変換・期間抽出・日時順ソートを行う。欠損日・重複・負数の検査は行わない。
     frame = pd.DataFrame(
         {"timestamp": timestamps, "kw": values.reshape(-1) * factors[value_unit]}
     )

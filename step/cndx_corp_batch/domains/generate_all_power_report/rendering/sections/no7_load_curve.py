@@ -1,4 +1,4 @@
-"""No.7：⑥ロードカーブ、日別表、説明欄・注記の描画。"""
+"""バッチ処理内容定義書16／帳票出力項目仕様説明書_No.7：⑥ロードカーブ。"""
 
 from datetime import timedelta
 
@@ -80,7 +80,7 @@ def draw_no7(page, s, context):
     ax.xaxis.tick_top()
     ax.tick_params(axis="x", pad=2)
     text(190, 117, "橙：08〜12時・13〜18時 ／ 青：その他 ／ 赤：1位", size=5.5)
-    # 日別kWhは元の48枠の合計、最大kWは換算済み。端数を丸めず、再度2倍しない。
+    # 帳票No.7 項番7：電力量は日別48枠の合計、最大電力は最大枠の電力量×2。ここでは換算済み。
     rows = [
         [r["date"], format_number(r["kwh"]), format_number(r["kw"])]
         for r in context["week_rows"]
@@ -117,7 +117,7 @@ def draw_no7(page, s, context):
         ],
         advice=True,
     )
-    # 仕様書の注記全文を3行で描画する。1ページ目と同じ定義を使い、文面の差を防ぐ。
+    # 帳票No.7 項番10：最大電力・使用電力量説明。No.3 項番2と共通の固定文を使う。
     footer_lines = DEFAULT_NOTES.replace(
         "30分ごとの使用電力量", "\n30分ごとの使用電力量"
     ).replace("この対象期間は、", "\nこの対象期間は、")

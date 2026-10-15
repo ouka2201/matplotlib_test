@@ -10,7 +10,7 @@ from ..sections.no5_monthly_power import draw_no5
 
 
 def draw_first_page(series, config):
-    """No.0〜No.5を見本の配置で1枚のFigureに合成する。
+    """帳票レイアウト：帳票出力項目仕様説明書_No.0～5を1ページ目に配置する。
 
     Args:
         series (dict): build_contextによる集計結果。

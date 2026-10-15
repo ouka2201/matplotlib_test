@@ -1,4 +1,4 @@
-"""取得結果を、PDF用と30分平均電力へ変換する。"""
+"""処理6・7・13：契約情報と30分値の取得結果を、帳票設定と需要電力に変換する。"""
 
 import math
 from collections.abc import Mapping
@@ -48,7 +48,7 @@ def prepare_query_results(
     quality_columns=(),
     config=None,
 ):
-    """取得済みの情報と電力を変換する。
+    """データ項目更新仕様説明書No.5・6の取得値を、帳票No.0～7の共通入力に変換する。
 
     Args:
         customer_row (Mapping | sqlalchemy.Row):お客さま情報。
@@ -75,7 +75,7 @@ def prepare_query_results(
     for field, name in columns.items():
         values[field] = customer[name.upper()]
 
-    # 契約電力はkW。日別48枠のkWhだけを2倍し、契約電力を2倍しない。
+    # 処理13(2)／入力項目チェックNo.49：高圧契約電力を数値に変換する。単位はkWのまま扱う。
     try:
         contract = float(values["contract_kw"])
     except (ValueError, TypeError) as exc:

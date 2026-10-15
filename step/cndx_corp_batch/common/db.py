@@ -21,10 +21,13 @@ def init_db(db_url: str):
     )
 
 
-# def get_session():
-#     if _Session is None:
-#         raise RuntimeError("DB not initialized")
-#     return _Session()
+def close_db():
+    """このプロセスの接続プールを終了する。"""
+    global _engine, _Session
+    if _engine is not None:
+        _engine.dispose()
+    _engine = None
+    _Session = None
 
 
 @contextmanager
