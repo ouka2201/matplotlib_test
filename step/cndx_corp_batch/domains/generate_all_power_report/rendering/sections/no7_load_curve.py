@@ -18,7 +18,7 @@ def draw_no7(page, s, context):
 
     Args:
         page (SecondPageCanvas): 2ページ目の描画用ページ。
-        s (dict): build_contextの対象週・TOP50。値は換算済みkW。
+        s (dict): build_contextの対象週・TOP50。値はkWに換算済みである。
         context (dict): 週の期間と日別のkWh・最大kWを含む辞書。
     """
     text, title, note, axes, table = (
@@ -44,7 +44,7 @@ def draw_no7(page, s, context):
         ),
         size=6.8,
     )
-    # 通常は7日×48枠。期間選定側で7日未満になった場合も実データの件数で描画する。
+    # 通常は7日×48枠。期間を選ぶ処理で7日未満になった場合も実データの件数で描画する。
     ax = axes(12.55, 127.1, 206.8, 48.0, "電力(kW)")
     # 昼休みの12:00・12:30も青。No.6の1位の日時だけを赤で上書きする。
     colors = [
@@ -73,7 +73,7 @@ def draw_no7(page, s, context):
         xtlabels.extend(["0", "6", "12", "18"])
     ax.set_xticks(xt, xtlabels, fontsize=5.5)
     # 1時間は30分値2枠。6時間ごとの主目盛りを含め、薄い線を1時間間隔で描く。
-    # 補助線は棒の背面へ配置し、日境界の線より薄くする。
+    # 補助線は棒の背面へ配置し、日付の境界線より薄くする。
     ax.set_xticks(range(0, week_frames, 2), minor=True)
     ax.grid(axis="x", which="both", color="#e4e4e4", lw=0.25)
     ax.tick_params(axis="x", which="minor", length=0)

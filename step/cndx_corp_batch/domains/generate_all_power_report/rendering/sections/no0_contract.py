@@ -13,7 +13,7 @@ TEXT_COLOR = "#000000"
 def draw_no0(page, config):
     """No.0のタイトル帯と契約情報を、既存のページFigureに描画する。
 
-    左上原点・mm単位で位置と寸法を指定する。契約値の文字幅を
+    左上を原点とし、位置と寸法をmm単位で指定する。契約情報の文字幅を
     実測し、必要に応じて縮小する。Figureの作成・保存はページ側で行う。
 
     Args:
@@ -22,7 +22,7 @@ def draw_no0(page, config):
             is_sampleがTrueの場合は「架空データ」を表示する。
 
     Raises:
-        ValueError: 契約値が長すぎて5.4pt以上で収まらない場合。
+        ValueError: 契約情報の文字列が長すぎて5.4pt以上で収まらない場合。
         KeyError: 必須の契約設定がない場合。
     """
     canvas = page.canvas
@@ -56,7 +56,7 @@ def draw_no0(page, config):
         ("契約電力", f'{float(config["contract_kw"]):,.0f}kW'),
     ]
     value_texts = []
-    # 青いラベルと契約値を対応させ、4行を同じ間隔で並べる。
+    # 青いラベルと契約情報の値を対応させ、4行を同じ間隔で並べる。
     for index, (label, value) in enumerate(rows):
         top = 21.75 + index * 8.42
         canvas.add_patch(

@@ -10,7 +10,7 @@ def draw_no2(page, series):
 
     Args:
         page (FirstPageCanvas): 1ページ目の描画用ページ。
-        series (dict): build_contextが返すday。未丸めのkWを使用する。
+        series (dict): build_contextが返すday。丸める前のkW値を使用する。
     """
     text, title, note, chart_axes = page.text, page.title, page.note, page.chart_axes
     # 左下の日別グラフは、指定月内で最大電力が発生した日の48枠を表示する。
@@ -29,7 +29,7 @@ def draw_no2(page, series):
         size=6.8,
     )
     ax = chart_axes(11.85, 146.5, 78.5, 28.3, "電力(kW)")
-    # DBの30分使用電力量(kWh)は取得時に2倍してkwへ換算済み。
+    # DBの30分使用電力量(kWh)は取得時に2倍してkwへ換算している。
     # ここでは再換算せず、No.1の1位と同じ日の48枠をそのまま描く。
     values = day.kw.to_numpy()
     peak = int(values.argmax())

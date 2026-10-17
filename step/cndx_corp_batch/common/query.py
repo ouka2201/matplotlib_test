@@ -4,7 +4,7 @@ QUERY_PATH = Path(__file__).parent.parent / "query"
 
 
 def load_sql_file(file_name: str):
-    """SQLファイルを読み込む
+    """SQLファイルを読み込む。
 
     Args:
         file_name (str): ファイル名

@@ -13,7 +13,7 @@ def env_bool(
     required: bool = False,
 ) -> bool:
     """
-    環境変数を bool として取得する
+    環境変数を bool として取得する。
 
     True と判定する値:
         "1", "true", "t", "yes", "y", "on"
@@ -24,7 +24,7 @@ def env_bool(
     Args:
         key: 環境変数名
         default: 未設定時のデフォルト値
-        required: True の場合、未設定なら例外
+        required: True の場合、環境変数が未設定なら例外を送出する
 
     Raises:
         RuntimeError: required=True かつ未設定

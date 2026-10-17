@@ -16,7 +16,7 @@ CONTRACT_POWER = "QSQB_DCIS2_HVPW_CTRT"
 
 
 class NumericConversionError(ValueError):
-    """入力項目チェックNo.1～49の数値変換不可。処理22・23の更新文言とログに使う。"""
+    """入力項目チェックNo.1～49で数値に変換できなかったことを表す例外。処理22・23の更新文言とログに使う。"""
 
     def __init__(self, primary_key, column):
         self.primary_key = str(primary_key)
@@ -37,7 +37,7 @@ def expand_daily_rows(
         report_month (str): レポート作成対象年月。YYYYMM形式。指定月を含む12か月を対象とする。
         supply_point (str): 供給地点特定番号。先頭の0を保持する。
         value_unit (str): 保存値の単位。kW、kWh、Whのいずれか。
-        quality_columns (Iterable[str]): 0件を要求する欠測・不正値件数列。指定時だけ検査する。
+        quality_columns (Iterable[str]): 欠測・不正値の件数を持つ列。指定した場合に限り、件数が0であることを検査する。
 
     Returns:
         pandas.DataFrame: 直近12か月内で実績のある期間のtimestamp・kw列。
@@ -49,7 +49,7 @@ def expand_daily_rows(
         KeyError: 取得年月日または48枠の列が不足している場合。
     """
     # 保存値はkWh。30分=0.5時間なので、平均電力kWはkWh÷0.5で求める。
-    # kW・Whは別の入力データ源を扱う場合の換算方法。今回の既定値はkWh。
+    # kW・Whは別の入力データ源を扱う場合の換算方法。この処理の既定値はkWh。
     factors = {"kW": 1.0, "kWh": 2.0, "Wh": 0.002}
     if value_unit not in factors:
         raise ValueError("value_unitはkW、kWh、Whのいずれかです")
@@ -73,7 +73,7 @@ def expand_daily_rows(
         counts = pd.to_numeric(records[column.upper()], errors="raise")
         if counts.isna().any() or not (counts == 0).all():
             raise ValueError(f"数値変換エラー： {column}")
-    # 日別の横持ち48列を数値にする。空欄や数値以外はエラーとして扱う。
+    # 日別データの48列を数値に変換する。空欄や数値以外はエラーとして扱う。
     try:
         values = records[SLOTS].apply(pd.to_numeric, errors="raise").to_numpy(dtype=float)
     except (ValueError, TypeError):

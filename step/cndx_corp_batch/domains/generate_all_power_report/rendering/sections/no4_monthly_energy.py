@@ -10,7 +10,7 @@ def draw_no4(page, series):
 
     Args:
         page (FirstPageCanvas): 1ページ目の描画用ページ。
-        series (dict): build_contextの月別集計。値は換算済み。
+        series (dict): build_contextの月別集計。値は換算済みである。
     """
     text, title, note, chart_axes = page.text, page.title, page.note, page.chart_axes
     month = series["monthly"]

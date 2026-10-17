@@ -6,7 +6,7 @@ from pathlib import Path
 
 import matplotlib.image as mpimg
 
-# 実行時の作業フォルダーによらず、プロジェクト内の画像を参照する。
+# 実行時の作業フォルダーにかかわらず、プロジェクト内の画像を参照する。
 ICON_PATH = Path(__file__).resolve().parents[1] / "assets" / "ICON.png"
 ICON_SIZE_PX = (90, 89)  # 元画像の幅・高さ。帳票上の寸法はmmで指定する。
 ICON_WIDTH_MM = 7.5
@@ -16,7 +16,7 @@ ICON_WIDTH_MM = 7.5
 def load_advice_icon():
     """90×89ピクセルのICON.pngを読み込み、プロセス内で再利用する。
 
-    1000件の並列処理でも、各ワーカーは画像を一度だけ読み込む。
+    各ワーカーの初回処理で読み込み、以後のレポート作成でも同じ画像を使う。
     顧客別のアイコン画像や一時ファイルは作成しない。画像を差し替えた
     場合は、読み込み済みのワーカープロセスを起動し直す。
 
@@ -46,11 +46,11 @@ def load_advice_icon():
 def draw_advice_bulb(ax, x, y):
     """助言枠の左上に、ICON.pngを元の縦横比で描画する。
 
-    PNGはページFigureへ直接配置する。見本に合わせて幅7.5mmで描き、
+    PNGはページのFigureに直接配置する。見本に合わせて幅7.5mmで描き、
     上端は枠より4mm上、左端は枠より2.25mm左に置く。
 
     Args:
-        ax (matplotlib.axes.Axes): 左上原点・mm単位のページ配置用Axes。
+        ax (matplotlib.axes.Axes): 左上を原点とし、mm単位でページ内の位置を指定するAxes。
         x (float): 助言枠の左端（mm）。
         y (float): 助言枠の上端（mm）。
 

@@ -11,7 +11,7 @@ from cndx_corp_batch.domains.generate_all_power_report.jobs.generate_all_power_r
 
 
 def main(argv=None) -> int:
-    """バッチ起動・処理27の終了。個別対象の失敗はジョブ側で継続し、全体の例外のみ異常終了する。"""
+    """バッチ起動・処理27の終了。個別の対象で失敗してもジョブ側で後続の処理を続け、バッチ全体の例外が発生した場合のみ異常終了する。"""
     parser = argparse.ArgumentParser(description="電力見える化レポート一括作成")
     parser.add_argument("--batch-date", type=date.fromisoformat, help="バッチ実行日（YYYY-MM-DD）")
     args = parser.parse_args(argv)

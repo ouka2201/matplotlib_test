@@ -1,4 +1,4 @@
-"""30分平均電力（kW）を検証し、帳票用の値を作る。"""
+"""処理7・9～16：30分需要電力（kW）の型・期間を整え、帳票用の値を集計する。"""
 
 import calendar
 from datetime import timedelta
@@ -21,7 +21,7 @@ def bounds(target_month):
             翌月1日00:00で、集計には含めない。
     """
     month = pd.Timestamp(target_month + "01")
-    # 指定月の翌月1日を除外側の終端にする。そこから暦で1年戻り、うるう年にも対応する。
+    # 指定月の翌月1日を抽出範囲に含めない終了日時とする。そこから暦に従って1年戻り、うるう年にも対応する。
     end = month + pd.DateOffset(months=1)
     return end - pd.DateOffset(years=1), end, month
 
@@ -29,30 +29,30 @@ def bounds(target_month):
 def validate_data(df, target_month):
     """処理7の実装補助：30分値の型変換と対象期間の抽出・日時順ソートを行う。
 
-        日時は日本時間のタイムゾーン情報なしへ揃え、電力は換算済みのkWとして扱う。
-        欠損日・重複日時・負数・実績件数の検査は行わない。
+    日時は日本時間に揃えたうえでタイムゾーン情報を除き、電力は換算済みのkWとして扱う。
+    欠損日・重複日時・負数・実績件数の検査は行わない。
 
-        Args:
-            df (pandas.DataFrame): timestamp・kw列を持つデータ。
-            target_month (str): レポート作成対象年月。YYYYMM形式。
+    Args:
+        df (pandas.DataFrame): timestamp・kw列を持つデータ。
+        target_month (str): レポート作成対象年月。YYYYMM形式。
 
-        Returns:
-            pandas.DataFrame: 対象月を含む直近12か月の取得済みデータ。日時昇順。
+    Returns:
+        pandas.DataFrame: 対象月を含む直近12か月の取得済みデータ。日時昇順。
 
-        Raises:
-            KeyError: timestamp・kw列がない場合。
-            ValueError: 日時・電力・対象年月を変換できない場合。
-        """
-    # 検証中の型変換や並べ替えで、呼び出し元が持つDataFrameを変更しない。
+    Raises:
+        KeyError: timestamp・kw列がない場合。
+        ValueError: 日時・電力・対象年月を変換できない場合。
+    """
+    # 型変換や並べ替えで、呼び出し元のDataFrameを変更しない。
     df = df.copy()
-    # タイムゾーン無しは日本時間。混在形式は黙って解釈せず拒否する。
+    # タイムゾーンなしの日時は日本時間として扱い、タイムゾーン付きの日時は日本時間へ変換する。
 
     df["timestamp"] = pd.to_datetime(df["timestamp"], errors="raise")
     if df["timestamp"].dt.tz is not None:
         df["timestamp"] = (
             df["timestamp"].dt.tz_convert("Asia/Tokyo").dt.tz_localize(None)
         )
-    # 内部の電力単位はkWに統一する。DB由来のkWhはこの関数へ来る前に換算済み。
+    # 内部の電力単位はkWに統一する。DBから取得したkWh値は、この関数に渡す前に換算している。
     df["kw"] = pd.to_numeric(df["kw"], errors="raise")
 
     start, end, _ = bounds(target_month)
@@ -98,10 +98,10 @@ def calendar_power(kw):
     例: 201kW → 100.5kWh → 101kWh → 表示202kW。
 
     Args:
-        kw (float): 30分枠の平均電力。検証済みの非負・有限値。
+        kw (float): 30分枠の需要電力（kW）。この関数では非負・有限値の検査を行わない。
 
     Returns:
-        int: No.1のカレンダーとTOP3に表示する整数電力（kW）。
+        int: No.1のカレンダーとTOP3に表示する整数の電力値（kW）。
     """
     kwh = Decimal(str(kw)) / 2
     return int(kwh.quantize(Decimal("1"), rounding=ROUND_HALF_UP)) * 2
@@ -127,8 +127,8 @@ def most_common_labels(counts, names):
 def peak_week_bounds(df, peak_timestamp):
     """帳票出力項目仕様説明書_No.7 項番2：ピークを含む週を取得済みの日付範囲に収める。
 
-    原則はピーク日の直前の日曜から土曜まで。取得期間の端では
-    7日間を前後へ移し、取得範囲自体が7日未満なら全日を使用する。
+    原則として、ピーク日を含む日曜から土曜までを対象とする。取得期間の端では
+    7日間を前後へ移し、取得範囲が7日未満なら、取得したすべての日を使用する。
     この関数は範囲だけを求め、欠測枠の補完は行わない。
 
     Args:
@@ -155,8 +155,8 @@ def peak_week_bounds(df, peak_timestamp):
 def build_context(df, config):
     """処理9～16／帳票出力項目仕様説明書_No.1～7：30分需要電力を集計する。
 
-    電力量は平均電力×0.5時間でkWhへ換算する。同じ電力値の
-    順位は日時の早い枠を優先する。期間端ではピークを含む7日間が
+    電力量は平均電力×0.5時間でkWhへ換算する。電力値が同じ場合は、
+    日時の早い枠を上位とする。取得期間の端では、ピークを含む7日間が
     対象期間内に収まるよう週の開始日を調整する。
 
     Args:
@@ -169,7 +169,7 @@ def build_context(df, config):
         tuple[dict, dict]: 表示用辞書contextと集計データ辞書series。
             contextには期間、ピーク、順位表、週別表、TOP50の特徴を格納する。
             seriesにはdf（全枠）、day（対象月のピーク日の48枠）、
-            daily（日別最大。kwは未丸め値、display_kwはNo.1の表示値）、
+            daily（日別最大。kwは丸める前の値、display_kwはNo.1の表示値）、
             monthly（月別集計）、top（上位50枠）、
             week（ピークを含む最大7日間）、各区分の件数を格納する。
             対象月に実績がない場合はday・dailyが空、日別ピークはNone。
@@ -180,7 +180,7 @@ def build_context(df, config):
     df = df.sort_values("timestamp").copy()
     actual_start = df.timestamp.iloc[0].normalize()
     actual_end = df.timestamp.iloc[-1].normalize() + timedelta(days=1)
-    # 日別欄は指定月を使う。別の月に置き換えず、実績がなければ空で扱う。
+    # 日別欄は指定月を使う。別の月に置き換えず、実績がなければ空のデータとして扱う。
     last_month = df.loc[(df.timestamp >= month) & (df.timestamp < end)].copy()
     # 最大50枠。1日48枠だけの実績では48枠を使い、存在しない50位を作らない。
     top = df.sort_values(["kw", "timestamp"], ascending=[False, True]).head(50)
@@ -195,7 +195,7 @@ def build_context(df, config):
     )
     daily_idx = last_month.groupby(last_month.timestamp.dt.date)["kw"].idxmax()
     daily = last_month.loc[daily_idx].copy()
-    # No.1だけの表示値。集計・順位・No.2の48枠は、丸め前のkwを使用する。
+    # No.1でのみ使用する表示値。集計・順位・No.2の48枠は、丸め前のkwを使用する。
     daily["display_kw"] = daily.kw.map(calendar_power)
     # 実績のある月だけを年月順に並べる。存在しない月を0kWhとはみなさない。
     months = pd.period_range(actual_start, actual_end - timedelta(days=1), freq="M")
@@ -215,8 +215,8 @@ def build_context(df, config):
         .sort_values("timestamp")
         .copy()
     )
-    # 日別表は十進数で合計し、15501.023000000001のような計算誤差の桁を防ぐ。
-    # 表示桁で丸めず、入力値の小数部を保ったkWhを求める。
+    # 日別表は十進数で合計し、15501.023000000001のような計算誤差が末尾の桁に現れることを防ぐ。
+    # 表示用の桁数には丸めず、入力値の小数部を保ったkWhを求める。
     week_stats = week.groupby(week.timestamp.dt.date)["kw"].agg(
         kwh=lambda values: float(
             sum((Decimal(str(value)) for value in values), Decimal("0"))
@@ -270,7 +270,7 @@ def build_context(df, config):
         month_count, {p: f"{p.month:02d}月" for p in months}
     )
     # contextは見出し・説明文・表などに使う表示用データ。
-    # seriesはグラフで使うDataFrameや件数集計。用途を分けて描画処理へ渡す。
+    # seriesはグラフで使うDataFrameや件数の集計結果。用途を分けて描画処理へ渡す。
     context = {
         "customer": config,
         "target_month": month_str,

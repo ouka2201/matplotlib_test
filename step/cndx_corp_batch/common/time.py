@@ -24,7 +24,7 @@ def month_end(d: date):
 
 
 def check_batch_ym(d: date, batch_days: int = 0):
-    """バッチ実行年月日判定
+    """バッチ実行日が対象月の切替日より前かどうかを判定する。
 
     Args:
         d (date): システム日時
@@ -43,12 +43,12 @@ def calc_offset_month(
 
     Args:
         d (date): システム日時
-        batch_days (int, optional): 対象月を切り替える日. Defaults to 0.
-        prev_month (int, optional): 切替日前のOFFSET値. Defaults to 0.
-        after_month (int, optional): 切替日以降のOFFSET値. Defaults to 0.
+        batch_days (int, optional): 対象月を切り替える日。既定値は0。
+        prev_month (int, optional): 切替日前に遡る月数。既定値は0。
+        after_month (int, optional): 切替日以降に遡る月数。既定値は0。
 
     Returns:
-        date: 指定月分ずらした年月
+        date: 指定した月数だけ遡った日付
     """
     if check_batch_ym(d, batch_days):
         return d - relativedelta(months=prev_month)
@@ -57,7 +57,7 @@ def calc_offset_month(
 
 
 def get_current_time():
-    """システム日時取得
+    """現在のシステム日時を取得する。
 
     Returns:
         datetime: システム日時
@@ -71,7 +71,7 @@ def is_batch_executable(
     end_hour: int,
     end_minute: int,
 ) -> bool:
-    """API実行可能時間判定
+    """現在時刻にAPIを実行できるかどうかを判定する。
 
     Args:
         start_hour (int): 実行可能開始時

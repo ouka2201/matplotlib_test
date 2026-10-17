@@ -15,7 +15,7 @@ def customer_column_mapping(table, settings):
     """ARVEの名義・住所・お客さま番号の物理列名を共通で解決する。
 
     Args:
-        table (sqlalchemy.Table): 反映済みのARVEテーブル。
+        table (sqlalchemy.Table): DBの定義を反映したARVEテーブル。
         settings (dict): customer_columnsの任意指定を持つDB設定。
 
     Returns:

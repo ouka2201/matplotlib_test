@@ -10,7 +10,7 @@ def draw_no5(page, series, config):
 
     Args:
         page (FirstPageCanvas): 1ページ目の描画用ページ。
-        series (dict): build_contextの月別集計。値は換算済み。
+        series (dict): build_contextの月別集計。値は換算済みである。
         config (dict): 契約電力contract_kwを含む設定。
     """
     text, title, note, chart_axes = page.text, page.title, page.note, page.chart_axes
@@ -36,7 +36,7 @@ def draw_no5(page, series, config):
     )
     ax.set_xlim(-0.6, count - 0.4)
     ax.set_xticks(range(count), dates, rotation=90, fontsize=6)
-    # 換算済みの最大kWと、元からkWの契約値をそのまま使う。
+    # kWに換算済みの最大電力と、もともとkWで保持している契約電力をそのまま使う。
     contract = float(config["contract_kw"])
     ax.set_ylim(0, max(1, values.max(), contract) * 1.1)
     labels = ax.bar_label(

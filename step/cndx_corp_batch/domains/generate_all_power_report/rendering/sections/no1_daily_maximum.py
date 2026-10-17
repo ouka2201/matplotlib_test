@@ -23,9 +23,9 @@ TEXT = "#202020"
 def draw_no1(page, daily, config):
     """No.1のカレンダーとTOP3を、既存のページFigureに描画する。
 
-    左上原点・mm単位を使用する。対象月の4〜6週を固定領域に収め、
-    日曜・平日・土曜の背景を仕様色で表示する。TOP3は丸め前の最大値から
-    選び、同値では日時が早い日を優先する。表示電力はkWhを四捨五入して2倍する。
+    左上を原点とし、mm単位で配置する。対象月の4〜6週を固定領域に収め、
+    日曜・平日・土曜の背景を仕様で定められた色で表示する。TOP3は丸め前の最大値から
+    選び、値が同じ場合は、日時が早い日を優先する。表示電力はkWhを四捨五入して2倍する。
 
     Args:
         page (FirstPageCanvas): 1ページ目の共通描画先。
@@ -121,7 +121,7 @@ def draw_no1(page, daily, config):
             if not day:
                 continue
             item = by_day.get(day)
-            # 実績のない日には時刻・電力を捏造せず、その状態を表示する。
+            # 実績のない日には時刻や電力を補わず、実績がないことを表示する。
             labels = [
                 f"{month.month}/{day}",
                 item.timestamp.strftime("%H:%M") if item is not None else "--:--",

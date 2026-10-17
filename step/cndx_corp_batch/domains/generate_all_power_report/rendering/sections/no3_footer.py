@@ -16,7 +16,7 @@ EMPHASIS = "料金の算定期間とは異なる場合があります"
 def load_footer_logo():
     """帳票出力項目仕様説明書_No.3 項番1「ロゴ」：TEPCOロゴ画像を読み込む。
 
-    顧客ごとの画像ファイル作成は行わない。ワーカープロセスごとに
+    顧客ごとに画像ファイルを作成しない。ワーカープロセスごとに
     一度だけ画像を読み、月間10万件の作成で読み込みを繰り返さない。
 
     Returns:
@@ -30,7 +30,7 @@ def load_footer_logo():
 
 
 def _wrap_notes(value, start, renderer, props, px_per_mm, width):
-    """帳票No.3 項番2の実装補助：説明文を実測幅と明示改行で折り返す。"""
+    """帳票No.3 項番2の実装補助：実測した文字幅と説明文中の改行位置に従って折り返す。"""
     lines = [[]]
     line_width = 0
     for index, char in enumerate(value):
@@ -52,7 +52,7 @@ def _wrap_notes(value, start, renderer, props, px_per_mm, width):
 
 
 def _draw_note_lines(canvas, lines, x, y, size, line_height):
-    """帳票No.3 項番2の実装補助：説明文の通常文字・強調文字を左揃えで描画する。"""
+    """帳票No.3 項番2の実装補助：説明文の通常の文字と強調する文字を左揃えで描画する。"""
     for row, line in enumerate(lines):
         current_x = x
         # 同じ書式の連続した文字をまとめて描き、1文字ずつの描画を避ける。
@@ -83,17 +83,17 @@ def _draw_note_lines(canvas, lines, x, y, size, line_height):
 def draw_no3(page, config):
     """処理11／帳票出力項目仕様説明書_No.3：ロゴと最大電力・使用電力量説明を作成する。
 
-        項番1はTEPCOロゴ画像、項番2は最大電力・使用電力量・料金算定期間の固定説明文。
-        実装では説明文を実測幅で折り返し、文字サイズを5.7～5.5ptで調整する。
-        notesによる差し替えと部分太字は描画実装の設定であり、設計書の項目追加ではない。
+    項番1はTEPCOロゴ画像、項番2は最大電力・使用電力量・料金算定期間の固定説明文。
+    実装では説明文を実測幅で折り返し、文字サイズを5.7～5.5ptで調整する。
+    notesによる差し替えと部分太字は描画実装の設定であり、設計書の項目追加ではない。
 
-        Args:
-            page (FirstPageCanvas): 帳票1ページ目の描画先。左上原点、単位mm。
-            config (dict): notes省略時は設計書の固定説明文を使用する。
+    Args:
+        page (FirstPageCanvas): 帳票1ページ目の描画先。左上原点、単位mm。
+        config (dict): notesを省略した場合は設計書の固定説明文を使用する。
 
-        Raises:
-            OSError: TEPCOロゴ画像を読み込めない場合。
-        """
+    Raises:
+        OSError: TEPCOロゴ画像を読み込めない場合。
+    """
     canvas = page.canvas
     logo = load_footer_logo()
     # 項番1「ロゴ」：TEPCOの画像を左側に貼り付ける。縦横比を保持する。
@@ -112,7 +112,7 @@ def draw_no3(page, config):
     fig.canvas.draw()
     renderer = fig.canvas.get_renderer()
     px_per_mm = canvas.get_window_extent(renderer).width / 281
-    # 項番2「最大電力・使用電力量説明」：固定文を左揃えで配置する。文字幅の調整は実装補助。
+    # 項番2「最大電力・使用電力量説明」：固定文を左揃えで配置する。文字幅は描画処理で調整する。
     for size in (5.7, 5.6, 5.5):
         props = {
             bold: font_manager.FontProperties(

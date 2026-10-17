@@ -23,7 +23,7 @@ def row_to_dict(row):
 
 
 def _upper_row(row):
-    """取得列名を大文字へ揃える。
+    """取得した列名を大文字に揃える。
 
     Args:
         row (Mapping | sqlalchemy.Row): 列名を持つ取得行。
@@ -60,7 +60,7 @@ def prepare_query_results(
         date_column (str): SQLの取得年月日列。既定はT01_GET_YMD。
         slot_columns (Sequence[str] | None): 枠1〜48の順の取得列名。
             省略時はT01_30T_SYR01〜48。列の大小文字は区別しない。
-        quality_columns (Sequence[str]): 0件を要求する取得済み品質件数列。
+        quality_columns (Sequence[str]): 取得済みの品質件数を持つ列。件数が0であることを検査する。
         config (dict | None): 注記・休日等の共通設定。契約値と対象年月で上書きする。
 
     Returns:
@@ -79,7 +79,7 @@ def prepare_query_results(
     try:
         contract = float(values["contract_kw"])
     except (ValueError, TypeError) as exc:
-        # 契約電力テーブルの主キーは供給地点のみなので、DBの文言には重複記載しない。
+        # 契約電力テーブルの主キーは供給地点のみなので、DBに記録するメッセージには重複して記載しない。
         raise NumericConversionError("", columns["contract_kw"]) from exc
     if not math.isfinite(contract) or contract <= 0:
         raise ValueError("契約電力は正の有限数(kW)が必要です")

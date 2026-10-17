@@ -16,7 +16,7 @@ class RegisterUnregisteredReportTargetJob(BaseJob):
         self.report_ym = target_year_month
 
     def execute(self):
-        """取込状態3（完了）かつ対象年月の管理情報がない供給地点を状態2（作成中）で登録する。"""
+        """取込状態が3（完了）で、対象年月の管理情報がない供給地点を状態2（作成中）で登録する。"""
         logger = self.logger
 
         logger.info("30分値データ取込確認処理開始。")

@@ -1,4 +1,4 @@
-"""処理6・9～19：帳票No.0～7の画像を配置して電力見える化レポートを作成する。"""
+"""処理6・9～19：帳票No.0～7を2ページに描画し、電力見える化レポートをPDFで保存する。"""
 
 from pathlib import Path
 
@@ -33,8 +33,7 @@ class ReportService:
         debug_dir=None,
         **column_options,
     ):
-        """PDFを作成する。
-
+        """取得済みの契約情報・30分値を帳票用に変換し、PDFを作成する。
 
         Args:
             customer_row (Mapping | sqlalchemy.Row): 契約情報の1行。
@@ -42,7 +41,7 @@ class ReportService:
             supply_point (str): 供給地点特定番号。
             report_month (str): 対象年月。YYYYMM形式。
             output (pathlib.Path): PDFの保存先。
-            debug_dir (pathlib.Path | None): 任意の確認用画像・HTML保存先。
+            debug_dir (pathlib.Path | None): 確認用の画像・HTMLの保存先。指定は任意。
             **column_options: prepare_query_resultsのcustomer_columns、date_column、
                 slot_columns、quality_columns、configを任意指定する。
 
@@ -50,7 +49,8 @@ class ReportService:
             dict: PDF保存先、バイト数、成功ステータス。
 
         Raises:
-            ValueError: 取得列・実績・契約情報が不正な場合。
+            KeyError: 契約情報または30分値の必須列がない場合。
+            ValueError: 数値・日時を変換できない場合、または契約電力が正の有限数でない場合。
         """
         from .query_result_service import prepare_query_results
 
@@ -60,18 +60,19 @@ class ReportService:
         return self.generate_frame(frame, config, output, debug_dir)
 
     def generate_frame(self, df, config, output, debug_dir=None):
-        """CSVやDBから得た共通DataFrameをメモリで描画する。
+        """処理9～19：30分需要電力を集計し、帳票画像・HTMLを経由してPDFを保存する。
 
         Args:
-            df (pandas.DataFrame): timestamp・kw列を持つ30分データ。
+            df (pandas.DataFrame): timestamp・kw列を持つ30分需要電力。kwはkWhから換算済みの値。
             config (dict): 契約情報と対象月。
             output (pathlib.Path): 顧客固有のPDF保存先。
-            debug_dir (pathlib.Path | None): 任意の確認用ファイル保存先。
+            debug_dir (pathlib.Path | None): 確認用ファイルの保存先。指定は任意。
 
         Returns:
             dict: PDF保存先、バイト数、成功ステータス。
         """
-        # 処理5・21の実装差：一時画像はメモリに保持する。debug_dir指定時だけ確認用画像を保存する。
+        # 処理5・21の実装差：通常はワークディレクトリを作らず、ページ画像をHTMLに埋め込む。
+        # debug_dir指定時は確認用PNG・HTMLを保存する。確認用ファイルは自動削除しない。
         self.charts.output_dir = Path(debug_dir) if debug_dir else None
         if self.charts.output_dir:
             self.charts.output_dir.mkdir(parents=True, exist_ok=True)
@@ -87,8 +88,7 @@ class ReportService:
             save_pdf(pdf, output)
             return {"status": "succeeded", "output": str(output), "bytes": len(pdf)}
         finally:
-            # 1顧客分の画像を解放してから次のジョブへ進む。
-            # 月間10万件を想定し、失敗時も1件ごとにFigureを閉じて画像を蓄積しない。
+            # 描画途中で失敗した場合も、このワーカーに残ったFigureを閉じる。
             plt.close("all")
 
     def close(self):

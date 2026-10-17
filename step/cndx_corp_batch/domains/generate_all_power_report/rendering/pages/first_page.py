@@ -1,4 +1,4 @@
-"""1ページ目の合成。各No.の具体的な描画はsectionsで行う。"""
+"""1ページ目の合成。各帳票No.の描画はsections内の処理で行う。"""
 
 from ..canvas import FirstPageCanvas
 from ..sections.no0_contract import draw_no0
@@ -17,7 +17,7 @@ def draw_first_page(series, config):
         config (dict): 契約情報と対象年月。
 
     Returns:
-        matplotlib.figure.Figure: 1ページ目。保存とcloseは呼び出し側で行う。
+        matplotlib.figure.Figure: 1ページ目。保存とcloseによる終了処理は呼び出し側で行う。
     """
     page = FirstPageCanvas()
     # 全No.を同じFigureへ直接描画する。配置・寸法は各No.のファイルで調整する。

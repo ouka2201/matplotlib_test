@@ -1,6 +1,6 @@
 class BatchError(Exception):
     """
-    業務的に想定されたエラー
+    業務上想定されるエラー
     ・入力不備
     ・外部データ欠損
     ・業務ルール違反
@@ -10,7 +10,7 @@ class BatchError(Exception):
 
 class RetryableError(BatchError):
     """
-    再実行可能なエラー
+    再実行できるエラー
     ・一時的なネットワーク障害
     ・外部APIの一時エラー
     ・ロック競合

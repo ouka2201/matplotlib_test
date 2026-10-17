@@ -82,7 +82,7 @@ def draw_no6(page, s, context):
         text(6, 11, f'実績期間：{context["actual_period"]}', size=5.5)
     top_label = context.get("top_label", "TOP50")
     # 電力順位と日時ラベルの対応はduration_axisで決定済み。
-    # ここでは再ソートせず、そのまま曲線と横軸を描く。
+    # ここでは並べ替え直さず、そのまま曲線と横軸を描く。
     ordered, ticks, labels = duration_data
     # 大きな電力では桁区切りの目盛りが長くなるので、縦軸用の余白を増やす。
     left = 12.0 if ordered.kw.max() >= 1000 else 9.95
@@ -148,7 +148,7 @@ def draw_no6(page, s, context):
         advice=True,
     )
 
-    # 上部右側は横長の共通見出し、3グラフ、その下に結果と助言を配置。
+    # 右上に横長の共通見出しと3つのグラフを配置し、その下に結果と助言を配置する。
     canvas.add_patch(
         Rectangle((110.3, 12.5), 169.5, 7.9, facecolor="white", edgecolor=TITLE, lw=0.8)
     )

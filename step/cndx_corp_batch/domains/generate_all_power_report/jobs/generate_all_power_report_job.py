@@ -22,10 +22,10 @@ from .register_unregistered_report_target_job import RegisterUnregisteredReportT
 
 
 class GenerateAllPowerReportJob(BaseJob):
-    """バッチ処理内容定義書1～4・LOOP：対象年月の決定、対象登録・取得、並列実行。
+    """バッチ処理内容定義書1～4・LOOP：対象年月を決定し、作成対象を登録・取得して並列に処理する。
 
     供給地点特定番号ごとに1件ずつ、CPUコア数を上限として処理する。
-    個別処理の失敗後も後続対象を処理する運用とする。
+    個別の処理に失敗しても、後続の対象を処理する。
     """
 
     def __init__(self, context: BatchContext, batch_date=None):
@@ -56,14 +56,14 @@ class GenerateAllPowerReportJob(BaseJob):
     def execute(self):
         self.logger.info("電力見える化レポート一括作成バッチ実行開始。")
 
-        # 処理3：30分値の取込完了かつ管理情報未登録の対象を、状態2（作成中）で登録する。
+        # 処理3：30分値の取込が完了し、管理情報に未登録の対象を、状態2（作成中）で登録する。
         self.register_report_job.execute()
 
         # 処理4：対象年月の状態2（作成中）・5（エラー）を取得する。
         targets = self.get_report_target_job.execute()
 
         output_count = len(targets)
-        # LOOP：対象0件の場合は空振りとして終了し、ワーカーを起動しない。
+        # LOOP：対象が0件の場合は処理を終了し、ワーカーを起動しない。
         if not targets:
             self.logger.info("作成対象は0件です。")
             return
@@ -94,7 +94,7 @@ class GenerateAllPowerReportJob(BaseJob):
                             future.result()
                             self.logger.info("タスク %s/%s 処理終了", i, output_count)
                         except Exception:
-                            # 運用上の扱い：個別のDB取得等の例外を記録し、後続対象を継続する。
+                            # 運用上の扱い：個別のDB取得等で発生した例外を記録し、後続の対象の処理を続ける。
                             self.logger.exception("タスク %s/%s エラー", i, output_count)
             finally:
                 listener.stop()

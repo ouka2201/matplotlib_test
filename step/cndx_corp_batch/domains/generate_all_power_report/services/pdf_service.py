@@ -1,4 +1,4 @@
-"""処理18・19：帳票画像を配置してPDFを出力する。HTMLとChromiumは実装上の生成手段。"""
+"""処理18・19：帳票画像を配置してPDFを出力する。PDFの生成にはHTMLとChromiumを使用する。"""
 
 from pathlib import Path
 from tempfile import NamedTemporaryFile
@@ -54,7 +54,7 @@ class PdfPrinter:
             raise
 
     def print_html(self, html):
-        """HTML文字列を直接読み込み、PDFをメモリへ返す。
+        """HTML文字列を直接読み込み、PDFのバイト列を返す。
 
         Args:
             html (str): data URIの画像を含む完成HTML。
@@ -74,7 +74,7 @@ class PdfPrinter:
             # HTMLファイルを経由せず、メモリ上の文字列を直接読み込ませる。
             page.set_content(html, wait_until="load")
             page.emulate_media(media="print")
-            # ページPNGのデコードを待ち、画像欠落を防ぐ。
+            # ページPNGのデコードを待ち、画像が欠けることを防ぐ。
             page.evaluate("""async () => {
                 await Promise.all(Array.from(document.images, img => img.decode()));
             }""")
@@ -127,7 +127,7 @@ def save_pdf(data, output):
         ) as file:
             temporary = Path(file.name)
             file.write(data)
-        # 完全に書き終わってから最終名へ置き換える。途中失敗では既存PDFを保持する。
+        # 完全に書き終わってから最終名へ置き換える。途中で失敗した場合は既存のPDFを残す。
         temporary.replace(output)
     finally:
         if temporary is not None:

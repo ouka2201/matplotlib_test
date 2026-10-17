@@ -1,4 +1,4 @@
-"""ページ内のmm座標、見出し、注釈、グラフ・表の共通描画。"""
+"""ページ内のmm座標を使い、見出し・注釈・グラフ・表を描画する共通処理。"""
 
 import matplotlib.pyplot as plt
 from matplotlib.patches import Circle, Rectangle
@@ -9,10 +9,10 @@ from .styles import BLACK, HEIGHT, TITLE, WIDTH
 
 
 class PageCanvas:
-    """ページのFigureと、左上原点のmm座標を保持する。"""
+    """ページのFigureと、左上を原点とするmm座標を保持する。"""
 
     def __init__(self):
-        """外枠内281×194mmのFigureと、左上原点の配置用Axesを準備する。"""
+        """外枠内281×194mmのFigureと、左上を原点とする配置用Axesを準備する。"""
         self.fig = plt.figure(
             figsize=(WIDTH / 25.4, HEIGHT / 25.4), dpi=190, facecolor="white"
         )
@@ -49,7 +49,7 @@ class PageCanvas:
 
 
 class FirstPageCanvas(PageCanvas):
-    """1ページ目の描画形式。各No.の配置はsections側で指定する。"""
+    """1ページ目の描画形式。各帳票No.の配置はsections内の描画処理で指定する。"""
 
     def title(self, x, y, number, label):
         """丸い節番号と青い見出しを描画する。
@@ -112,7 +112,7 @@ class FirstPageCanvas(PageCanvas):
             ha="center" if centered else "left",
             linespacing=1.35,
         )
-        # 画像中の文字はブラウザー側で検査できないため、実際の描画幅で調整。
+        # 画像中の文字はブラウザー側で検査できないため、実際の描画幅を測って調整する。
         self.fig.canvas.draw()
         renderer = self.fig.canvas.get_renderer()
         box = item.get_window_extent(renderer)
@@ -157,7 +157,7 @@ class FirstPageCanvas(PageCanvas):
 
 
 class SecondPageCanvas(PageCanvas):
-    """2ページ目の描画形式。各No.の配置はsections側で指定する。"""
+    """2ページ目の描画形式。各帳票No.の配置はsections内の描画処理で指定する。"""
 
     def title(self, y, number, label):
         """丸い節番号と青い見出しを描画する。
@@ -217,7 +217,7 @@ class SecondPageCanvas(PageCanvas):
         size = item.get_fontsize() * scale * 0.99
         item.set_fontsize(max(5.5, size))
         if size < 5.5:
-            # 余裕率で最小サイズを下回っても、5.5ptの実測が収まれば描画できる。
+            # 余裕を持たせた計算で最小サイズを下回っても、5.5ptで実測した文字が欄内に収まれば描画する。
             box = item.get_window_extent(self.fig.canvas.get_renderer())
             if (
                 box.width > (w - 4) / WIDTH * frame.width
@@ -286,7 +286,7 @@ class SecondPageCanvas(PageCanvas):
             cell.set_linewidth(0.4)
             cell.set_facecolor("#e5e5e5" if headers is not None and r == 0 else "white")
             cell.PAD = 0.035
-        # 順位表は幅が狭いため、日付や小数を隣の列へはみ出させない。
+        # 順位表は幅が狭いため、日付や小数が隣の列にはみ出さないようにする。
         renderer = self.fig.canvas.get_renderer()
         table_width = ax.get_window_extent(renderer).width
         for (_, column), cell in t.get_celld().items():

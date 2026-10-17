@@ -18,7 +18,7 @@ from .report_service import ReportService
 
 _report_service = None
 _SQL_QUERIES = {}
-# バッチ処理内容定義書18・19：省サポ未加入・加入で共通のレポート出力先。
+# バッチ処理内容定義書18・19：省サポの加入・未加入にかかわらず共通で使用するレポート出力先。
 OUTPUT_PATH = "/bd-fs-mnt/TenantShare/corp/electricity_vis_middle/power_report"
 
 
@@ -54,10 +54,10 @@ def multiprocessing_initializer(db_url, queue):
 
 
 def execute(row, report_ym):
-    """処理6～26：1供給地点のデータ取得、帳票作成、管理情報更新を行う。
+    """処理6～26：1つの供給地点についてデータを取得し、帳票を作成して管理情報を更新する。
 
-    数値変換不可は4（完了（警告））、その他の生成失敗は5（エラー）で登録する。
-    運用上、生成前のDB取得例外は親処理へ通知し、この関数では管理状態を変更しない。
+    数値に変換できない場合は4（完了（警告））、その他の生成失敗は5（エラー）として登録する。
+    運用上、生成前のDB取得で発生した例外は親処理へ通知し、この関数では管理状態を変更しない。
     """
     logger = logging.getLogger("batch.worker")
 
@@ -91,7 +91,7 @@ def execute(row, report_ym):
             session.execute(_SQL_QUERIES["select_30min"], params).mappings().all()
         )
 
-    # 処理17～19：管理情報の企業ID・供給地点・加入フラグから省サポ別のPDF名を設定する。
+    # 処理17～19：管理情報の企業ID・供給地点・加入フラグから省サポの加入状況に応じたPDF名を設定する。
     file_name = (
         f"{company_id}_{supply_point_number}_syousapo_{report_ym_str}.pdf"
         if row.syousapo_flg
@@ -135,7 +135,7 @@ def execute(row, report_ym):
             exc, exc.primary_key, exc.column, supply_point_number, report_ym_str,
         )
     except Exception as exc:
-        # 処理24～26／データ項目更新仕様説明書No.9：想定外エラーの概要を100文字以内で記録する。
+        # 処理24～26／データ項目更新仕様説明書No.9：想定外のエラーの概要を100文字以内で記録する。
         message = str(exc)
         update_params["error_message"] = message[:97] + "..." if len(message) > 100 else message
         update_params["create_status"] = "5"
@@ -144,7 +144,7 @@ def execute(row, report_ym):
             supply_point_number, report_ym_str,
         )
 
-    # 処理20・22・25／データ項目更新仕様説明書No.7～9：生成結果に応じて状態3・4・5を更新する。
+    # 処理20・22・25／データ項目更新仕様説明書No.7～9：生成結果に応じて状態を3・4・5のいずれかに更新する。
     with get_session() as session:
         session.execute(_SQL_QUERIES["update_target"], update_params)
 
