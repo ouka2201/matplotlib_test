@@ -1,3 +1,5 @@
+from typing import Any
+
 from sqlalchemy import text
 
 from cndx_corp_batch.common.context import BatchContext
@@ -10,12 +12,13 @@ from cndx_corp_batch.jobs.base import BaseJob
 
 class RegisterUnregisteredReportTargetJob(BaseJob):
     """処理3／データ項目更新仕様説明書No.3：30分値データ取込確認。"""
-    def __init__(self, context: BatchContext, target_year_month):
+
+    def __init__(self, context: BatchContext, target_year_month: Any) -> None:
         super().__init__(context)
         self.context = context
         self.report_ym = target_year_month
 
-    def execute(self):
+    def execute(self) -> Any:
         """取込状態が3（完了）で、対象年月の管理情報がない供給地点を状態2（作成中）で登録する。"""
         logger = self.logger
 

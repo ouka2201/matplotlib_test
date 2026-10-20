@@ -1,5 +1,7 @@
 """管理テーブルの作成対象・状態と、ARVEの契約情報を取得する。"""
 
+from typing import Any
+
 # 管理テーブルの主キーは「供給地点特定番号＋対象年月」。
 MANAGEMENT_POINT = "supply_point_number"
 MANAGEMENT_MONTH = "target_year_month"
@@ -11,7 +13,7 @@ CUSTOMER_COLUMNS = {
 }
 
 
-def customer_column_mapping(table, settings):
+def customer_column_mapping(table: Any, settings: Any) -> Any:
     """ARVEの名義・住所・お客さま番号の物理列名を共通で解決する。
 
     Args:

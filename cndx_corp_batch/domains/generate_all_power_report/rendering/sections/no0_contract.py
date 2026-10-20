@@ -1,5 +1,7 @@
 """バッチ処理内容定義書6／帳票出力項目仕様説明書_No.0：契約情報設定。"""
 
+from typing import Any
+
 from matplotlib.patches import Rectangle
 
 from ..styles import WIDTH
@@ -10,7 +12,7 @@ LABEL_BLUE = "#41aed6"
 TEXT_COLOR = "#000000"
 
 
-def draw_no0(page, config):
+def draw_no0(page: Any, config: Any):
     """No.0のタイトル帯と契約情報を、既存のページFigureに描画する。
 
     左上を原点とし、位置と寸法をmm単位で指定する。契約情報の文字幅を
@@ -53,7 +55,7 @@ def draw_no0(page, config):
         ("ご契約名義", str(config["customer_name"])),
         ("ご契約住所", str(config["address"])),
         ("お客さま番号", str(config["customer_number"])),
-        ("契約電力", f'{float(config["contract_kw"]):,.0f}kW'),
+        ("契約電力", f"{float(config['contract_kw']):,.0f}kW"),
     ]
     value_texts = []
     # 青いラベルと契約情報の値を対応させ、4行を同じ間隔で並べる。

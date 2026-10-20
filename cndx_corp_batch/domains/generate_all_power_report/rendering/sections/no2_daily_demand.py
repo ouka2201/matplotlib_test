@@ -1,11 +1,12 @@
 """バッチ処理内容定義書10／帳票出力項目仕様説明書_No.2：②30分ごとの需要電力の推移。"""
 
 from datetime import timedelta
+from typing import Any
 
 from ..styles import DAILY_BLUE, DAILY_RED
 
 
-def draw_no2(page, series):
+def draw_no2(page: Any, series: Any):
     """No.1で1位になった日の48枠と、ピークの時間帯を描画する。
 
     Args:

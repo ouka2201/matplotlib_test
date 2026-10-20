@@ -31,7 +31,7 @@ DEFAULT_NOTES = (
 )
 
 
-def format_number(value):
+def format_number(value: float) -> str:
     """電力・電力量を桁区切りで表示し、不要な末尾の0を省く。
 
     No.5の仕様には整数への丸めがないため、小数部のある値も

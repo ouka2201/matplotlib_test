@@ -18,7 +18,7 @@ from cndx_corp_batch.domains.generate_all_power_report.services.data_service imp
     validate_data,
     build_context,
 )
-from cndx_corp_batch.domains.generate_all_power_report.services.database_source import (
+from cndx_corp_batch.domains.generate_all_power_report.services.database_source_service import (
     expand_daily_rows,
     POINT,
     DATE,

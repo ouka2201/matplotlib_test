@@ -3,6 +3,7 @@
 import base64
 from io import BytesIO
 from pathlib import Path
+from typing import Any
 
 import matplotlib
 import matplotlib.font_manager as fm
@@ -26,17 +27,19 @@ class ChartService:
     """日本語のグラフと帳票ページをPNGへ変換するサービス。
 
     Attributes:
-        output_dir (pathlib.Path | None): PNGを保存する場合の出力先。Noneなら画像ファイルを作成しない。
+        output_dir (pathlib.Path | None): PNGを保存する場合の出力先。
+            Noneなら画像ファイルを作成しない。
     """
 
-    def __init__(self, output_dir=None):
+    def __init__(self, output_dir: Any = None) -> None:
         """PNGの出力先と、日本語を描画するフォントを設定する。
 
         matplotlibの全体設定を変更する。複数顧客の帳票を並列生成する
         場合は、ワーカーごとにプロセスを分ける。
 
         Args:
-            output_dir (str | pathlib.Path | None): デバッグ用の出力先。省略時はメモリ内で生成するだけで、ファイルに保存しない。
+            output_dir (str | pathlib.Path | None): デバッグ用の出力先。
+                省略時はメモリ内で生成するだけで、ファイルに保存しない。
 
         """
         self.output_dir = Path(output_dir) if output_dir is not None else None
@@ -58,7 +61,7 @@ class ChartService:
             }
         )
 
-    def save(self, name, fig):
+    def save(self, name: Any, fig: Any) -> Any:
         """Figureを白背景のPNGに変換し、HTMLに埋め込む画像URIを返す。
 
         190dpiのPNGをメモリ内で生成する。output_dir指定時はファイルにも保存する。
@@ -75,7 +78,8 @@ class ChartService:
             OSError: PNGの生成または確認用ファイルへの書き込みに失敗した場合。
         """
         try:
-            # PNGをメモリへ描画する。getvalueでbytesを取り出した後、バッファはwithで閉じる。
+            # PNGをメモリへ描画する。getvalueでbytesを取り出し、
+            # バッファはwithで閉じる。
             with BytesIO() as buffer:
                 fig.savefig(buffer, format="png", dpi=190, facecolor="white")
                 data = buffer.getvalue()
@@ -86,13 +90,14 @@ class ChartService:
         finally:
             plt.close(fig)
 
-    def create_all(self, s, config, context):
+    def create_all(self, s: Any, config: Any, context: Any) -> Any:
         """すべての帳票No.をページへ直接描画し、完成した2ページだけをPNG化する。
 
         各No.の文字・図形・グラフを同じページFigureへ描画する。
 
         Args:
-            s (dict): build_contextが返すseries。すべての30分枠と、日別・月別・週別・TOP50の集計データ。
+            s (dict): build_contextが返すseries。
+                すべての30分枠と日別・月別・週別・TOP50の集計データ。
             config (dict): 契約情報と対象月の設定。customer_name、address、
                 customer_number、contract_kw、target_monthを用途に応じて使用する。
                 issuer、holidays、is_sampleは任意設定。
@@ -105,7 +110,5 @@ class ChartService:
         images = {}
         # 帳票No.0～5を1ページ目、No.6・7を2ページ目に描画する。
         images["first_page"] = self.save("first_page", draw_first_page(s, config))
-        images["second_page"] = self.save(
-            "second_page", draw_second_page(s, context)
-        )
+        images["second_page"] = self.save("second_page", draw_second_page(s, context))
         return images

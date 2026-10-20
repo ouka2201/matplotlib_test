@@ -25,7 +25,7 @@ from sqlalchemy import (
 from ..domains.generate_all_power_report.services.data_service import (
     bounds,
 )
-from ..domains.generate_all_power_report.services.database_source import (
+from ..domains.generate_all_power_report.services.database_source_service import (
     CONTRACT_POINT,
     CONTRACT_POWER,
     DATE,

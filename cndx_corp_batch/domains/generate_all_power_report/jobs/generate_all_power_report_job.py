@@ -4,6 +4,7 @@ import multiprocessing
 from concurrent.futures import (
     ProcessPoolExecutor,
 )
+from typing import Any
 
 from cndx_corp_batch.common.context import BatchContext
 from cndx_corp_batch.common.time import (
@@ -17,7 +18,7 @@ from ..services.create_power_report_service import (
     execute,
     multiprocessing_initializer,
 )
-from .get_power_report_target import GetPowerReportTarget
+from .get_power_report_target_job import GetPowerReportTargetJob
 from .register_unregistered_report_target_job import RegisterUnregisteredReportTargetJob
 
 
@@ -28,7 +29,7 @@ class GenerateAllPowerReportJob(BaseJob):
     個別の処理に失敗しても、後続の対象を処理する。
     """
 
-    def __init__(self, context: BatchContext, batch_date=None):
+    def __init__(self, context: BatchContext, batch_date: Any = None) -> None:
         """処理1・2／データ項目更新仕様説明書No.1・2：実行日から対象年月を設定する。
 
         【補足】バッチ年月仕様の既定値は、1～14日が実行月の3か月前、
@@ -51,12 +52,13 @@ class GenerateAllPowerReportJob(BaseJob):
         self.register_report_job = RegisterUnregisteredReportTargetJob(
             context, self.report_ymd
         )
-        self.get_report_target_job = GetPowerReportTarget(context, self.report_ymd)
+        self.get_report_target_job = GetPowerReportTargetJob(context, self.report_ymd)
 
-    def execute(self):
+    def execute(self) -> Any:
         self.logger.info("電力見える化レポート一括作成バッチ実行開始。")
 
-        # 処理3：30分値の取込が完了し、管理情報に未登録の対象を、状態2（作成中）で登録する。
+        # 処理3：30分値の取込が完了した対象を、
+        # 管理情報へ状態2（作成中）で登録する。
         self.register_report_job.execute()
 
         # 処理4：対象年月の状態2（作成中）・5（エラー）を取得する。
@@ -87,15 +89,18 @@ class GenerateAllPowerReportJob(BaseJob):
                     initargs=(self.context.config.db_url, log_queue),
                 ) as executor:
                     futures = [
-                        executor.submit(execute, row, self.report_ymd) for row in targets
+                        executor.submit(execute, row, self.report_ymd)
+                        for row in targets
                     ]
                     for i, future in enumerate(futures, 1):
                         try:
                             future.result()
                             self.logger.info("タスク %s/%s 処理終了", i, output_count)
                         except Exception:
-                            # 運用上の扱い：個別のDB取得等で発生した例外を記録し、後続の対象の処理を続ける。
-                            self.logger.exception("タスク %s/%s エラー", i, output_count)
+                            # 個別の例外を記録し、後続の対象の処理を続ける。
+                            self.logger.exception(
+                                "タスク %s/%s エラー", i, output_count
+                            )
             finally:
                 listener.stop()
         self.logger.info("電力見える化レポート一括作成バッチ実行完了。")

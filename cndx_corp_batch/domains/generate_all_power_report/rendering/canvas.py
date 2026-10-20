@@ -1,5 +1,7 @@
 """ページ内のmm座標を使い、見出し・注釈・グラフ・表を描画する共通処理。"""
 
+from typing import Any
+
 import matplotlib.pyplot as plt
 from matplotlib.patches import Circle, Rectangle
 from matplotlib.ticker import FuncFormatter, MaxNLocator
@@ -11,7 +13,7 @@ from .styles import BLACK, HEIGHT, TITLE, WIDTH
 class PageCanvas:
     """ページのFigureと、左上を原点とするmm座標を保持する。"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """外枠内281×194mmのFigureと、左上を原点とする配置用Axesを準備する。"""
         self.fig = plt.figure(
             figsize=(WIDTH / 25.4, HEIGHT / 25.4), dpi=190, facecolor="white"
@@ -20,7 +22,16 @@ class PageCanvas:
         self.canvas.set(xlim=(0, WIDTH), ylim=(HEIGHT, 0))
         self.canvas.axis("off")
 
-    def text(self, x, y, value, size=7, color=BLACK, bold=False, **kwargs):
+    def text(
+        self,
+        x: float,
+        y: float,
+        value: str,
+        size: float = 7,
+        color: str = BLACK,
+        bold: bool = False,
+        **kwargs: Any,
+    ) -> Any:
         """ページの固定座標に文字列を描画する。
 
         Args:
@@ -51,7 +62,7 @@ class PageCanvas:
 class FirstPageCanvas(PageCanvas):
     """1ページ目の描画形式。各帳票No.の配置はsections内の描画処理で指定する。"""
 
-    def title(self, x, y, number, label):
+    def title(self, x: float, y: float, number: int, label: str) -> Any:
         """丸い節番号と青い見出しを描画する。
 
         Args:
@@ -74,7 +85,16 @@ class FirstPageCanvas(PageCanvas):
         )
         self.text(x + 5, y - 0.1, label, size=11.5, color=TITLE, bold=True)
 
-    def note(self, x, y, w, h, lines, advice=False, centered=False):
+    def note(
+        self,
+        x: float,
+        y: float,
+        w: float,
+        h: float,
+        lines: list[str],
+        advice: bool = False,
+        centered: bool = False,
+    ) -> Any:
         """黄色の結果欄または青色の助言欄を描画する。
 
         描画した文字幅と高さを確認し、必要に応じて縮小する。
@@ -85,7 +105,8 @@ class FirstPageCanvas(PageCanvas):
             w (float): 描画領域の幅（mm）。
             h (float): 描画領域の高さ（mm）。
             lines (list[str]): 説明欄に表示する行ごとの文字列。
-            advice (bool): TrueならICON.png付きの青い助言欄、Falseなら黄色い結果欄を描く。
+            advice (bool): TrueならICON.png付きの青い助言欄、
+                Falseなら黄色い結果欄を描く。
             centered (bool): Trueなら説明文を中央揃えにする。
 
         Raises:
@@ -127,7 +148,7 @@ class FirstPageCanvas(PageCanvas):
         if item.get_fontsize() < 5.5:
             raise ValueError("1ページ目の説明欄が長すぎます。説明文を短くしてください")
 
-    def chart_axes(self, x, y, w, h, ylabel):
+    def chart_axes(self, x: float, y: float, w: float, h: float, ylabel: str) -> Any:
         """固定位置にグラフ用Axesを作り、縦軸の基本書式を設定する。
 
         Args:
@@ -159,7 +180,7 @@ class FirstPageCanvas(PageCanvas):
 class SecondPageCanvas(PageCanvas):
     """2ページ目の描画形式。各帳票No.の配置はsections内の描画処理で指定する。"""
 
-    def title(self, y, number, label):
+    def title(self, y: float, number: int, label: str) -> Any:
         """丸い節番号と青い見出しを描画する。
 
         Args:
@@ -175,7 +196,9 @@ class SecondPageCanvas(PageCanvas):
         )
         self.text(7, y, label, size=11.5, color=TITLE, bold=True)
 
-    def note(self, x, y, w, h, lines, advice=False):
+    def note(
+        self, x: Any, y: Any, w: Any, h: Any, lines: Any, advice: Any = False
+    ) -> Any:
         """黄色の結果欄または青色の助言欄を描画する。
 
         描画した文字幅と高さを確認し、必要に応じて縮小する。
@@ -186,7 +209,8 @@ class SecondPageCanvas(PageCanvas):
             w (float): 描画領域の幅（mm）。
             h (float): 描画領域の高さ（mm）。
             lines (list[str]): 説明欄に表示する行ごとの文字列。
-            advice (bool): TrueならICON.png付きの青い助言欄、Falseなら黄色い結果欄を描く。
+            advice (bool): TrueならICON.png付きの青い助言欄、
+                Falseなら黄色い結果欄を描く。
 
         Raises:
             ValueError: 説明文を5.5pt以上で説明欄に収められない場合。
@@ -217,15 +241,20 @@ class SecondPageCanvas(PageCanvas):
         size = item.get_fontsize() * scale * 0.99
         item.set_fontsize(max(5.5, size))
         if size < 5.5:
-            # 余裕を持たせた計算で最小サイズを下回っても、5.5ptで実測した文字が欄内に収まれば描画する。
+            # 余裕を持たせた計算で最小サイズを下回っても、
+            # 5.5ptで実測した文字が欄内に収まれば描画する。
             box = item.get_window_extent(self.fig.canvas.get_renderer())
             if (
                 box.width > (w - 4) / WIDTH * frame.width
                 or box.height > (h - 3) / HEIGHT * frame.height
             ):
-                raise ValueError("2ページ目の説明欄が長すぎます。説明文を短くしてください")
+                raise ValueError(
+                    "2ページ目の説明欄が長すぎます。説明文を短くしてください"
+                )
 
-    def axes(self, x, y, w, h, ylabel, grid=True):
+    def axes(
+        self, x: Any, y: Any, w: Any, h: Any, ylabel: Any, grid: Any = True
+    ) -> Any:
         """固定位置にグラフ用Axesを作り、縦軸と補助線を設定する。
 
         Args:
@@ -253,7 +282,17 @@ class SecondPageCanvas(PageCanvas):
             ax.set_axisbelow(True)
         return ax
 
-    def table(self, x, y, w, h, headers, rows, widths, size):
+    def table(
+        self,
+        x: Any,
+        y: Any,
+        w: Any,
+        h: Any,
+        headers: Any,
+        rows: Any,
+        widths: Any,
+        size: Any,
+    ) -> Any:
         """固定寸法の領域に、罫線付きの集計表を描画する。
 
         Args:
@@ -281,7 +320,7 @@ class SecondPageCanvas(PageCanvas):
         )
         t.auto_set_font_size(False)
         t.set_fontsize(size)
-        for (r, c), cell in t.get_celld().items():
+        for (r, _c), cell in t.get_celld().items():
             cell.set_edgecolor("#202020")
             cell.set_linewidth(0.4)
             cell.set_facecolor("#e5e5e5" if headers is not None and r == 0 else "white")

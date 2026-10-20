@@ -3,6 +3,7 @@
 from functools import lru_cache
 from io import BytesIO
 from pathlib import Path
+from typing import Any
 
 import matplotlib.image as mpimg
 from matplotlib import font_manager, rcParams
@@ -13,7 +14,7 @@ EMPHASIS = "料金の算定期間とは異なる場合があります"
 
 
 @lru_cache(maxsize=1)
-def load_footer_logo():
+def load_footer_logo() -> Any:
     """帳票出力項目仕様説明書_No.3 項番1「ロゴ」：TEPCOロゴ画像を読み込む。
 
     顧客ごとに画像ファイルを作成しない。ワーカープロセスごとに
@@ -29,7 +30,14 @@ def load_footer_logo():
     return mpimg.imread(BytesIO(path.read_bytes()), format="png")
 
 
-def _wrap_notes(value, start, renderer, props, px_per_mm, width):
+def _wrap_notes(
+    value: Any,
+    start: Any,
+    renderer: Any,
+    props: Any,
+    px_per_mm: Any,
+    width: Any,
+) -> Any:
     """帳票No.3 項番2の実装補助：実測した文字幅と説明文中の改行位置に従って折り返す。"""
     lines = [[]]
     line_width = 0
@@ -51,7 +59,14 @@ def _wrap_notes(value, start, renderer, props, px_per_mm, width):
     return lines
 
 
-def _draw_note_lines(canvas, lines, x, y, size, line_height):
+def _draw_note_lines(
+    canvas: Any,
+    lines: Any,
+    x: Any,
+    y: Any,
+    size: Any,
+    line_height: Any,
+):
     """帳票No.3 項番2の実装補助：説明文の通常の文字と強調する文字を左揃えで描画する。"""
     for row, line in enumerate(lines):
         current_x = x
@@ -80,7 +95,7 @@ def _draw_note_lines(canvas, lines, x, y, size, line_height):
             current_x += text_width
 
 
-def draw_no3(page, config):
+def draw_no3(page: Any, config: Any) -> Any:
     """処理11／帳票出力項目仕様説明書_No.3：ロゴと最大電力・使用電力量説明を作成する。
 
     項番1はTEPCOロゴ画像、項番2は最大電力・使用電力量・料金算定期間の固定説明文。
@@ -112,7 +127,8 @@ def draw_no3(page, config):
     fig.canvas.draw()
     renderer = fig.canvas.get_renderer()
     px_per_mm = canvas.get_window_extent(renderer).width / 281
-    # 項番2「最大電力・使用電力量説明」：固定文を左揃えで配置する。文字幅は描画処理で調整する。
+    # 項番2「最大電力・使用電力量説明」：固定文を左揃えで配置する。
+    # 文字幅は描画処理で調整する。
     for size in (5.7, 5.6, 5.5):
         props = {
             bold: font_manager.FontProperties(

@@ -1,9 +1,11 @@
 """バッチ処理内容定義書12／帳票出力項目仕様説明書_No.4：③月ごとの使用電力量の推移。"""
 
+from typing import Any
+
 from ..styles import BLACK, ENERGY_BLUE, ENERGY_RED
 
 
-def draw_no4(page, series):
+def draw_no4(page: Any, series: Any):
     """No.4のグラフ・見出し・結果欄・助言欄を描画する。
 
     配置・色・説明文を変更するときは、この関数を編集する。
@@ -22,7 +24,7 @@ def draw_no4(page, series):
     title(142.0, 0.9, 3, f"月ごとの使用電力量の推移（{period}）")
     text(147, 8, "月ごとの使用電力量［kWh］の推移をグラフ化したものです", size=7)
     if series.get("partial_period"):
-        text(147, 12, f'集計対象：{series["actual_period"]}', size=5.5)
+        text(147, 12, f"集計対象：{series['actual_period']}", size=5.5)
     chart_top = 15.0 if series.get("partial_period") else 13.5
     ax = chart_axes(154.9, chart_top, 125.1, 57.5 - chart_top, "電力量(kWh)")
     count = len(month)

@@ -2,11 +2,18 @@
 
 import math
 from collections.abc import Mapping
+from typing import Any
 
-from .database_source import DATE, POINT, SLOTS, NumericConversionError, expand_daily_rows
+from .database_source_service import (
+    DATE,
+    POINT,
+    SLOTS,
+    NumericConversionError,
+    expand_daily_rows,
+)
 
 
-def row_to_dict(row):
+def row_to_dict(row: Any) -> Any:
     """取得結果を辞書型へ変換する。
 
     Args:
@@ -22,7 +29,7 @@ def row_to_dict(row):
         return dict(mapping)
 
 
-def _upper_row(row):
+def _upper_row(row: Any) -> Any:
     """取得した列名を大文字に揃える。
 
     Args:
@@ -37,17 +44,17 @@ def _upper_row(row):
 
 
 def prepare_query_results(
-    customer_row,
-    daily_rows,
-    supply_point,
-    report_month,
+    customer_row: Any,
+    daily_rows: Any,
+    supply_point: Any,
+    report_month: Any,
     *,
-    customer_columns=None,
-    date_column=DATE,
-    slot_columns=None,
-    quality_columns=(),
-    config=None,
-):
+    customer_columns: Any = None,
+    date_column: Any = DATE,
+    slot_columns: Any = None,
+    quality_columns: Any = (),
+    config: Any = None,
+) -> Any:
     """データ項目更新仕様説明書No.5・6の取得値を、帳票No.0～7の共通入力に変換する。
 
     Args:
@@ -60,7 +67,8 @@ def prepare_query_results(
         date_column (str): SQLの取得年月日列。既定はT01_GET_YMD。
         slot_columns (Sequence[str] | None): 枠1〜48の順の取得列名。
             省略時はT01_30T_SYR01〜48。列の大小文字は区別しない。
-        quality_columns (Sequence[str]): 取得済みの品質件数を持つ列。件数が0であることを検査する。
+        quality_columns (Sequence[str]): 取得済みの品質件数を持つ列。
+            件数が0であることを検査する。
         config (dict | None): 注記・休日等の共通設定。契約値と対象年月で上書きする。
 
     Returns:
@@ -75,11 +83,13 @@ def prepare_query_results(
     for field, name in columns.items():
         values[field] = customer[name.upper()]
 
-    # 処理13(2)／入力項目チェックNo.49：高圧契約電力を数値に変換する。単位はkWのまま扱う。
+    # 処理13(2)／入力項目チェックNo.49：高圧契約電力を数値に変換する。
+    # 単位はkWのまま扱う。
     try:
         contract = float(values["contract_kw"])
     except (ValueError, TypeError) as exc:
-        # 契約電力テーブルの主キーは供給地点のみなので、DBに記録するメッセージには重複して記載しない。
+        # 契約電力テーブルの主キーは供給地点のみなので、
+        # DBに記録するメッセージには重複して記載しない。
         raise NumericConversionError("", columns["contract_kw"]) from exc
     if not math.isfinite(contract) or contract <= 0:
         raise ValueError("契約電力は正の有限数(kW)が必要です")
@@ -96,7 +106,12 @@ def prepare_query_results(
             POINT: row.get(POINT, supply_point),
             DATE: row[date_column.upper()],
         }
-        normalized.update({dest: row[name.upper()] for dest, name in zip(SLOTS, slots)})
+        normalized.update(
+            {
+                dest: row[name.upper()]
+                for dest, name in zip(SLOTS, slots, strict=False)
+            }
+        )
         rows.append(normalized)
     frame = expand_daily_rows(
         rows,

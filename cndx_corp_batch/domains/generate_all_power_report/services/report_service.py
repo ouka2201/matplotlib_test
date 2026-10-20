@@ -1,6 +1,7 @@
 """処理6・9～19：帳票No.0～7を2ページに描画し、電力見える化レポートをPDFで保存する。"""
 
 from pathlib import Path
+from typing import Any
 
 import matplotlib.pyplot as plt
 
@@ -12,7 +13,7 @@ from .pdf_service import HtmlRenderer, PdfPrinter, save_pdf
 class ReportService:
     """ワーカープロセス専用の帳票生成サービス。スレッド間で共有しない。"""
 
-    def __init__(self, browser=None):
+    def __init__(self, browser: Any = None) -> None:
         """テンプレート、Chromiumを一度だけ初期化する。
 
         Args:
@@ -25,14 +26,14 @@ class ReportService:
 
     def generate_query_results(
         self,
-        customer_row,
-        daily_rows,
-        supply_point,
-        report_month,
-        output,
-        debug_dir=None,
-        **column_options,
-    ):
+        customer_row: Any,
+        daily_rows: Any,
+        supply_point: Any,
+        report_month: Any,
+        output: Any,
+        debug_dir: Any = None,
+        **column_options: Any,
+    ) -> Any:
         """取得済みの契約情報・30分値を帳票用に変換し、PDFを作成する。
 
         Args:
@@ -50,7 +51,8 @@ class ReportService:
 
         Raises:
             KeyError: 契約情報または30分値の必須列がない場合。
-            ValueError: 数値・日時を変換できない場合、または契約電力が正の有限数でない場合。
+            ValueError: 数値・日時を変換できない場合、または契約電力が
+                正の有限数でない場合。
         """
         from .query_result_service import prepare_query_results
 
@@ -59,11 +61,14 @@ class ReportService:
         )
         return self.generate_frame(frame, config, output, debug_dir)
 
-    def generate_frame(self, df, config, output, debug_dir=None):
+    def generate_frame(
+        self, df: Any, config: Any, output: Any, debug_dir: Any = None
+    ) -> Any:
         """処理9～19：30分需要電力を集計し、帳票画像・HTMLを経由してPDFを保存する。
 
         Args:
-            df (pandas.DataFrame): timestamp・kw列を持つ30分需要電力。kwはkWhから換算済みの値。
+            df (pandas.DataFrame): timestamp・kw列を持つ30分需要電力。
+                kwはkWhから換算済みの値。
             config (dict): 契約情報と対象月。
             output (pathlib.Path): 顧客固有のPDF保存先。
             debug_dir (pathlib.Path | None): 確認用ファイルの保存先。指定は任意。
@@ -71,7 +76,8 @@ class ReportService:
         Returns:
             dict: PDF保存先、バイト数、成功ステータス。
         """
-        # 処理5・21の実装差：通常はワークディレクトリを作らず、ページ画像をHTMLに埋め込む。
+        # 処理5・21の実装差：通常はワークディレクトリを作らず、
+        # ページ画像をHTMLに埋め込む。
         # debug_dir指定時は確認用PNG・HTMLを保存する。確認用ファイルは自動削除しない。
         self.charts.output_dir = Path(debug_dir) if debug_dir else None
         if self.charts.output_dir:
@@ -91,6 +97,6 @@ class ReportService:
             # 描画途中で失敗した場合も、このワーカーに残ったFigureを閉じる。
             plt.close("all")
 
-    def close(self):
+    def close(self) -> Any:
         """プロセス終了前にブラウザーを閉じる。"""
         self.printer.close()

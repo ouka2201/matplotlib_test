@@ -18,7 +18,7 @@ from cndx_corp_batch.domains.generate_all_power_report.services import (
     create_power_report_service as worker_module,
     report_service as report_service_module,
 )
-from cndx_corp_batch.domains.generate_all_power_report.services.database_source import (
+from cndx_corp_batch.domains.generate_all_power_report.services.database_source_service import (
     NumericConversionError,
 )
 from cndx_corp_batch.domains.generate_all_power_report.services.query_result_service import (

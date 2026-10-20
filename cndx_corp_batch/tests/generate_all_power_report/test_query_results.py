@@ -2,7 +2,7 @@
 
 import pytest
 
-from cndx_corp_batch.domains.generate_all_power_report.services.database_source import (
+from cndx_corp_batch.domains.generate_all_power_report.services.database_source_service import (
     DATE,
     SLOTS,
     NumericConversionError,

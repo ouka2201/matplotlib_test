@@ -1,11 +1,13 @@
 """2ページ目の合成。No.6を上段、No.7を下段に配置する。"""
 
+from typing import Any
+
 from ..canvas import SecondPageCanvas
 from ..sections.no6_duration import draw_no6
 from ..sections.no7_load_curve import draw_no7
 
 
-def draw_second_page(series, context):
+def draw_second_page(series: Any, context: Any) -> Any:
     """帳票レイアウト：帳票出力項目仕様説明書_No.6・7を2ページ目に配置する。
 
     Args:
@@ -13,7 +15,8 @@ def draw_second_page(series, context):
         context (dict): 期間・順位表・日別表などの表示用辞書。
 
     Returns:
-        matplotlib.figure.Figure: 2ページ目。保存とcloseによる終了処理は呼び出し側で行う。
+        matplotlib.figure.Figure: 2ページ目。
+            保存とcloseによる終了処理は呼び出し側で行う。
     """
     page = SecondPageCanvas()
     draw_no6(page, series, context)

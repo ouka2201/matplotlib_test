@@ -2,6 +2,7 @@
 
 from pathlib import Path
 from tempfile import NamedTemporaryFile
+from typing import Any
 
 from jinja2 import Environment, FileSystemLoader, StrictUndefined, select_autoescape
 from playwright.sync_api import sync_playwright
@@ -10,7 +11,7 @@ from playwright.sync_api import sync_playwright
 class HtmlRenderer:
     """画像を配置するHTMLテンプレートをプロセス内で再利用する。"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """レンダリングに必要な静的情報を読み込む。
 
         文字はmatplotlibでページPNGに含めるため、HTML側のフォント設定は不要。
@@ -22,7 +23,7 @@ class HtmlRenderer:
         )
         self.template = env.get_template("report.html")
 
-    def render(self, context):
+    def render(self, context: Any) -> Any:
         """表示用辞書からHTML文字列を作る。
 
         Args:
@@ -37,7 +38,7 @@ class HtmlRenderer:
 class PdfPrinter:
     """1プロセス内でChromiumを再利用する同期PDFプリンター。"""
 
-    def __init__(self, executable=None):
+    def __init__(self, executable: Any = None) -> None:
         """ブラウザーを起動する。
 
         Args:
@@ -53,7 +54,7 @@ class PdfPrinter:
             self.playwright.stop()
             raise
 
-    def print_html(self, html):
+    def print_html(self, html: Any) -> Any:
         """HTML文字列を直接読み込み、PDFのバイト列を返す。
 
         Args:
@@ -99,7 +100,7 @@ class PdfPrinter:
         finally:
             context.close()
 
-    def close(self):
+    def close(self) -> Any:
         """ブラウザーとPlaywrightを終了する。"""
         try:
             self.browser.close()
@@ -107,7 +108,7 @@ class PdfPrinter:
             self.playwright.stop()
 
 
-def save_pdf(data, output):
+def save_pdf(data: Any, output: Any) -> Any:
     """PDFを固有の一時ファイルへ書き、成功時だけ保存先と置き換える。
 
     Args:
@@ -127,7 +128,8 @@ def save_pdf(data, output):
         ) as file:
             temporary = Path(file.name)
             file.write(data)
-        # 完全に書き終わってから最終名へ置き換える。途中で失敗した場合は既存のPDFを残す。
+        # 完全に書き終わってから最終名へ置き換える。
+        # 途中で失敗した場合は既存のPDFを残す。
         temporary.replace(output)
     finally:
         if temporary is not None:

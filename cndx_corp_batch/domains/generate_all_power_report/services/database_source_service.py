@@ -1,5 +1,7 @@
 """処理7／データ項目更新仕様説明書No.6：EPデータ参照基盤30分値を帳票用に変換する。"""
 
+from typing import Any
+
 import numpy as np
 import pandas as pd
 
@@ -18,15 +20,19 @@ CONTRACT_POWER = "QSQB_DCIS2_HVPW_CTRT"
 class NumericConversionError(ValueError):
     """入力項目チェックNo.1～49で数値に変換できなかったことを表す例外。処理22・23の更新文言とログに使う。"""
 
-    def __init__(self, primary_key, column):
+    def __init__(self, primary_key: Any, column: Any) -> None:
         self.primary_key = str(primary_key)
         self.column = column
         super().__init__(f"数値変換エラー：{self.primary_key}")
 
 
 def expand_daily_rows(
-    rows, report_month, supply_point, value_unit="kWh", quality_columns=()
-):
+    rows: Any,
+    report_month: Any,
+    supply_point: Any,
+    value_unit: Any = "kWh",
+    quality_columns: Any = (),
+) -> Any:
     """処理7(2)・(3)：V30分_使用_電力量_1～48を数値・時刻へ変換する。
 
     1→00:00、2→00:30、48→23:30。既定の保存値はkWhなので2倍して30分平均電力kWに変換する。
@@ -34,10 +40,12 @@ def expand_daily_rows(
 
     Args:
         rows (Iterable[Mapping]): 日別レコード。物理列名は大文字・小文字どちらでもよい。
-        report_month (str): レポート作成対象年月。YYYYMM形式。指定月を含む12か月を対象とする。
+        report_month (str): レポート作成対象年月。YYYYMM形式。
+            指定月を含む12か月を対象とする。
         supply_point (str): 供給地点特定番号。先頭の0を保持する。
         value_unit (str): 保存値の単位。kW、kWh、Whのいずれか。
-        quality_columns (Iterable[str]): 欠測・不正値の件数を持つ列。指定した場合に限り、件数が0であることを検査する。
+        quality_columns (Iterable[str]): 欠測・不正値の件数を持つ列。
+            指定した場合に限り、件数が0であることを検査する。
 
     Returns:
         pandas.DataFrame: 直近12か月内で実績のある期間のtimestamp・kw列。
@@ -75,7 +83,9 @@ def expand_daily_rows(
             raise ValueError(f"数値変換エラー： {column}")
     # 日別データの48列を数値に変換する。空欄や数値以外はエラーとして扱う。
     try:
-        values = records[SLOTS].apply(pd.to_numeric, errors="raise").to_numpy(dtype=float)
+        values = (
+            records[SLOTS].apply(pd.to_numeric, errors="raise").to_numpy(dtype=float)
+        )
     except (ValueError, TypeError):
         # 正常時は一括変換し、失敗した場合だけ原因の行・列を特定する。
         for row in records.to_dict("records"):
@@ -91,7 +101,8 @@ def expand_daily_rows(
         dates.to_numpy()[:, None] + np.arange(48)[None, :] * np.timedelta64(30, "m")
     ).reshape(-1)
     # 日時と電力を同じ行順で平坦化する。日付や枠の対応がずれないようにする。
-    # 実装補足：共通処理で型変換・期間抽出・日時順ソートを行う。欠損日・重複・負数の検査は行わない。
+    # 実装補足：共通処理で型変換・期間抽出・日時順ソートを行う。
+    # 欠損日・重複・負数の検査は行わない。
     frame = pd.DataFrame(
         {"timestamp": timestamps, "kw": values.reshape(-1) * factors[value_unit]}
     )

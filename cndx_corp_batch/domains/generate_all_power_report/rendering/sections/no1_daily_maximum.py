@@ -2,6 +2,7 @@
 
 import calendar
 from datetime import timedelta
+from typing import Any
 
 import pandas as pd
 from matplotlib.patches import Ellipse, Rectangle
@@ -20,7 +21,7 @@ NOTE_BG = "#fff2cc"
 TEXT = "#202020"
 
 
-def draw_no1(page, daily, config):
+def draw_no1(page: Any, daily: Any, config: Any):
     """No.1のカレンダーとTOP3を、既存のページFigureに描画する。
 
     左上を原点とし、mm単位で配置する。対象月の4〜6週を固定領域に収め、

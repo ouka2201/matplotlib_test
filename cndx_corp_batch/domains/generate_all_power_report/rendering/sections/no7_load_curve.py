@@ -1,6 +1,7 @@
 """バッチ処理内容定義書16／帳票出力項目仕様説明書_No.7：⑥ロードカーブ。"""
 
 from datetime import timedelta
+from typing import Any
 
 from ...services.data_service import date_label
 from ..styles import (
@@ -13,7 +14,7 @@ from ..styles import (
 )
 
 
-def draw_no7(page, s, context):
+def draw_no7(page: Any, s: Any, context: Any):
     """No.6の1位を含む週の電力を時系列で描画する。
 
     Args:
@@ -30,7 +31,7 @@ def draw_no7(page, s, context):
     )
     peak = s["top"].iloc[0].timestamp
     peak_text = f"{peak:%m月%d日%H:%M}〜{peak + timedelta(minutes=30):%H:%M}"
-    title(107.2, 6, f'ロードカーブ（{context["week_period"]}）')
+    title(107.2, 6, f"ロードカーブ（{context['week_period']}）")
     week = s["week"]
     week_days = week.timestamp.dt.normalize().nunique()
     week_frames = len(week)
@@ -80,7 +81,8 @@ def draw_no7(page, s, context):
     ax.xaxis.tick_top()
     ax.tick_params(axis="x", pad=2)
     text(190, 117, "橙：08〜12時・13〜18時 ／ 青：その他 ／ 赤：1位", size=5.5)
-    # 帳票No.7 項番7：電力量は日別48枠の合計、最大電力は最大枠の電力量×2。ここでは換算済み。
+    # 帳票No.7 項番7：電力量は日別48枠の合計、
+    # 最大電力は最大枠の電力量×2。ここでは換算済み。
     rows = [
         [r["date"], format_number(r["kwh"]), format_number(r["kw"])]
         for r in context["week_rows"]
@@ -102,7 +104,10 @@ def draw_no7(page, s, context):
         11.3,
         [
             f"ピークは、{peak_text}に発生しています",
-            f"当該日を含む{'一週間' if week_days == 7 else week_label}の電力の使い方に注目してください",
+            (
+                f"当該日を含む{'一週間' if week_days == 7 else week_label}の"
+                "電力の使い方に注目してください"
+            ),
         ],
     )
     note(

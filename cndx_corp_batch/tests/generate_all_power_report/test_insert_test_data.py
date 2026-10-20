@@ -6,8 +6,8 @@ from types import SimpleNamespace
 from unittest.mock import Mock, patch
 
 from cndx_corp_batch.common.logger import BatchLogger
-from cndx_corp_batch.domains.generate_all_power_report.jobs.get_power_report_target import (
-    GetPowerReportTarget,
+from cndx_corp_batch.domains.generate_all_power_report.jobs.get_power_report_target_job import (
+    GetPowerReportTargetJob,
 )
 from cndx_corp_batch.domains.generate_all_power_report.jobs.register_unregistered_report_target_job import (
     RegisterUnregisteredReportTargetJob,
@@ -66,7 +66,7 @@ def test_get_target_job_returns_rows_for_the_requested_month():
         "cndx_corp_batch.domains.generate_all_power_report.jobs.get_power_report_target.load_sql_file",
         return_value="SELECT SQL",
     ):
-        result = GetPowerReportTarget(context(), date(2026, 3, 1)).run()
+        result = GetPowerReportTargetJob(context(), date(2026, 3, 1)).run()
 
     assert result == [("0001", "C001", False)]
     assert session.execute.call_args.args[1] == {"report_ym": "202603"}

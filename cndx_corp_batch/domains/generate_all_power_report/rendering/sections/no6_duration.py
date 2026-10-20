@@ -1,6 +1,7 @@
 """バッチ処理内容定義書15／帳票出力項目仕様説明書_No.6：⑤デュレーションカーブ。"""
 
 from datetime import timedelta
+from typing import Any
 
 import numpy as np
 from matplotlib.patches import Rectangle
@@ -16,7 +17,7 @@ from ..styles import (
 )
 
 
-def duration_axis(df, segments=46):
+def duration_axis(df: Any, segments: Any = 46):
     """帳票No.6 項番4：電力降順データを分割し、各区間の中央日時を横軸に表示する。
 
     区間の件数が偶数なら中央2枠のうち左側を選ぶ。日時を
@@ -24,7 +25,8 @@ def duration_axis(df, segments=46):
     データ件数が分割数より少ない場合は、各データを1区間とする。
 
     Args:
-        df (pandas.DataFrame): timestamp（30分枠の開始日時）とkw（平均電力）を持つデータ。
+        df (pandas.DataFrame): timestamp（30分枠の開始日時）と
+            kw（平均電力）を持つデータ。
         segments (int): 分割数。正の整数を指定する。既定値は46。
 
     Returns:
@@ -42,7 +44,8 @@ def duration_axis(df, segments=46):
     ordered = df.sort_values(["kw", "timestamp"], ascending=[False, True]).reset_index(
         drop=True
     )
-    # 設計書No.6 項番4は45分割。現実装の既定値は46分割（仕様差はこの処理では変更しない）。
+    # 設計書No.6 項番4は45分割。現実装の既定値は46分割とする。
+    # この仕様差はこの処理では変更しない。
     # 区間の件数差は最大1件。
     groups = np.array_split(np.arange(len(ordered)), min(segments, len(ordered)))
     # 日時を平均せず、中央位置にある実データを選ぶ。偶数件なら中央2件の左側。
@@ -52,7 +55,7 @@ def duration_axis(df, segments=46):
     return ordered, ticks, labels
 
 
-def draw_no6(page, s, context):
+def draw_no6(page: Any, s: Any, context: Any) -> Any:
     """実績期間の電力順位と上位最大50枠の特徴を描画する。
 
     Args:
@@ -69,7 +72,7 @@ def draw_no6(page, s, context):
         page.table,
     )
     duration_data = duration_axis(s["df"])
-    title(0.9, 5, f'デュレーションカーブ（{context["period"]}）')
+    title(0.9, 5, f"デュレーションカーブ（{context['period']}）")
     frames = len(s["df"])
     days = frames // 48
     text(
@@ -79,7 +82,7 @@ def draw_no6(page, s, context):
         size=7,
     )
     if not context.get("has_full_year", True):
-        text(6, 11, f'実績期間：{context["actual_period"]}', size=5.5)
+        text(6, 11, f"実績期間：{context['actual_period']}", size=5.5)
     top_label = context.get("top_label", "TOP50")
     # 電力順位と日時ラベルの対応はduration_axisで決定済み。
     # ここでは並べ替え直さず、そのまま曲線と横軸を描く。
@@ -124,7 +127,7 @@ def draw_no6(page, s, context):
             4.2,
         )
     else:
-        text(1.05, 102, f'50位の実績なし（全{context["count"]}コマ）', size=5.5)
+        text(1.05, 102, f"50位の実績なし（全{context['count']}コマ）", size=5.5)
     peak = s["top"].iloc[0].timestamp
     note(
         40.0,
@@ -132,7 +135,10 @@ def draw_no6(page, s, context):
         68.0,
         6.0,
         [
-            f"ピークは、{peak:%m月%d日%H:%M}〜{peak + timedelta(minutes=30):%H:%M}に発生しています",
+            (
+                f"ピークは、{peak:%m月%d日%H:%M}〜"
+                f"{peak + timedelta(minutes=30):%H:%M}に発生しています"
+            ),
         ],
     )
     note(
@@ -200,7 +206,7 @@ def draw_no6(page, s, context):
             fontsize=5.2,
             rotation=90 if key == "month_count" else 0,
         )
-        for bar, value in zip(bars, vals):
+        for bar, value in zip(bars, vals, strict=False):
             if value:
                 ax.text(
                     bar.get_x() + bar.get_width() / 2,
@@ -217,9 +223,9 @@ def draw_no6(page, s, context):
         15.7,
         [
             f"{top_label}を見ると、以下の特徴があります",
-            f'月別で多いのは{context["top_month"]}',
-            f'曜日別で多いのは{context["top_weekdays"]}',
-            f'時間帯別で多いのは{context["top_hours"]}',
+            f"月別で多いのは{context['top_month']}",
+            f"曜日別で多いのは{context['top_weekdays']}",
+            f"時間帯別で多いのは{context['top_hours']}",
         ],
     )
     note(

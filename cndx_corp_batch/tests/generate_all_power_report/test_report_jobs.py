@@ -7,8 +7,8 @@ from unittest.mock import Mock, patch
 import pytest
 
 from cndx_corp_batch.common.logger import BatchLogger
-from cndx_corp_batch.domains.generate_all_power_report.jobs.get_power_report_target import (
-    GetPowerReportTarget,
+from cndx_corp_batch.domains.generate_all_power_report.jobs.get_power_report_target_job import (
+    GetPowerReportTargetJob,
 )
 from cndx_corp_batch.domains.generate_all_power_report.jobs.register_unregistered_report_target_job import (
     RegisterUnregisteredReportTargetJob,
@@ -63,7 +63,7 @@ def test_get_target_job_returns_only_the_db_result():
         "cndx_corp_batch.domains.generate_all_power_report.jobs.get_power_report_target.load_sql_file",
         return_value="SELECT_SQL",
     ):
-        result = GetPowerReportTarget(context(), date(2026, 6, 1)).run()
+        result = GetPowerReportTargetJob(context(), date(2026, 6, 1)).run()
     assert result == expected
     assert session.execute.call_args.args[1] == {"report_ym": "202606"}
 

@@ -1,9 +1,11 @@
 """バッチ処理内容定義書13／帳票出力項目仕様説明書_No.5：④最大電力の推移。"""
 
+from typing import Any
+
 from ..styles import BLACK, POWER_BLUE, POWER_RED, format_number
 
 
-def draw_no5(page, series, config):
+def draw_no5(page: Any, series: Any, config: Any):
     """No.5のグラフ・見出し・結果欄・助言欄を描画する。
 
     配置・色・説明文を変更するときは、この関数を編集する。
@@ -23,7 +25,7 @@ def draw_no5(page, series, config):
     title(142.0, 97.0, 4, f"最大電力の推移（{period}）")
     text(147, 105, "月ごとの最大電力［kW］の推移をグラフ化したものです", size=7)
     if series.get("partial_period"):
-        text(147, 110, f'集計対象：{series["actual_period"]}', size=5.5)
+        text(147, 110, f"集計対象：{series['actual_period']}", size=5.5)
     ax = chart_axes(153.5, 115.1, 126.5, 52.4, "電力(kW)")
     count = len(month)
     values = month["max"].to_numpy()

@@ -3,13 +3,14 @@
 import calendar
 from datetime import timedelta
 from decimal import ROUND_HALF_UP, Decimal
+from typing import Any
 
 import pandas as pd
 
 WEEKDAYS = "月火水木金土日"
 
 
-def bounds(target_month):
+def bounds(target_month: Any) -> Any:
     """データ項目更新仕様説明書No.6：対象月を含む1年分の取得期間を求める。
 
     Args:
@@ -22,12 +23,13 @@ def bounds(target_month):
     """
     # SQLのYYYYMMと、手動実行時に使われるYYYY-MMの両方を受け付ける。
     month = pd.Timestamp(str(target_month).replace("-", "") + "01")
-    # 指定月の翌月1日を抽出範囲に含めない終了日時とする。そこから暦に従って1年戻り、うるう年にも対応する。
+    # 指定月の翌月1日を抽出範囲に含めない終了日時とする。
+    # そこから暦に従って1年戻り、うるう年にも対応する。
     end = month + pd.DateOffset(months=1)
     return end - pd.DateOffset(years=1), end, month
 
 
-def validate_data(df, target_month):
+def validate_data(df: Any, target_month: Any) -> Any:
     """処理7の実装補助：30分値の型変換と対象期間の抽出・日時順ソートを行う。
 
     日時は日本時間に揃えたうえでタイムゾーン情報を除き、電力は換算済みのkWとして扱う。
@@ -46,14 +48,16 @@ def validate_data(df, target_month):
     """
     # 型変換や並べ替えで、呼び出し元のDataFrameを変更しない。
     df = df.copy()
-    # タイムゾーンなしの日時は日本時間として扱い、タイムゾーン付きの日時は日本時間へ変換する。
+    # タイムゾーンなしの日時は日本時間として扱い、
+    # タイムゾーン付きの日時は日本時間へ変換する。
 
     df["timestamp"] = pd.to_datetime(df["timestamp"], errors="raise")
     if df["timestamp"].dt.tz is not None:
         df["timestamp"] = (
             df["timestamp"].dt.tz_convert("Asia/Tokyo").dt.tz_localize(None)
         )
-    # 内部の電力単位はkWに統一する。DBから取得したkWh値は、この関数に渡す前に換算している。
+    # 内部の電力単位はkWに統一する。
+    # DBから取得したkWh値は、この関数に渡す前に換算している。
     df["kw"] = pd.to_numeric(df["kw"], errors="raise")
 
     start, end, _ = bounds(target_month)
@@ -65,7 +69,7 @@ def validate_data(df, target_month):
     return df
 
 
-def time_range(ts):
+def time_range(ts: Any) -> Any:
     """30分枠の開始時刻と終了時刻を表示用の文字列にする。
 
     日付をまたぐ場合は「23:30〜00:00」のように表示する。
@@ -79,7 +83,7 @@ def time_range(ts):
     return f"{ts:%H:%M}〜{ts + timedelta(minutes=30):%H:%M}"
 
 
-def date_label(ts):
+def date_label(ts: Any) -> Any:
     """日時を日本語の曜日付き日付に変換する。
 
     Args:
@@ -91,7 +95,7 @@ def date_label(ts):
     return f"{ts:%Y/%m/%d}（{WEEKDAYS[ts.weekday()]}）"
 
 
-def calendar_power(kw):
+def calendar_power(kw: Any) -> Any:
     """帳票出力項目仕様説明書_No.1：30分使用電力量を四捨五入してから2倍する。
 
     内部データは換算済みのkWなので、0.5時間を掛けてkWhへ戻す。
@@ -108,7 +112,7 @@ def calendar_power(kw):
     return int(kwh.quantize(Decimal("1"), rounding=ROUND_HALF_UP)) * 2
 
 
-def most_common_labels(counts, names):
+def most_common_labels(counts: Any, names: Any) -> Any:
     """帳票出力項目仕様説明書_No.6 項番19：最多の区分を最大3件、半角空白で連結する。
 
     同率の区分はcountsの表示順に選ぶ。仕様書No.6の月別・曜日別・
@@ -125,7 +129,7 @@ def most_common_labels(counts, names):
     return " ".join(names[key] for key in leaders)
 
 
-def peak_week_bounds(df, peak_timestamp):
+def peak_week_bounds(df: Any, peak_timestamp: Any) -> Any:
     """帳票出力項目仕様説明書_No.7 項番2：ピークを含む週を取得済みの日付範囲に収める。
 
     原則として、ピーク日を含む日曜から土曜までを対象とする。取得期間の端では
@@ -153,7 +157,7 @@ def peak_week_bounds(df, peak_timestamp):
     return start, start + timedelta(days=7)
 
 
-def build_context(df, config):
+def build_context(df: Any, config: Any) -> Any:
     """処理9～16／帳票出力項目仕様説明書_No.1～7：30分需要電力を集計する。
 
     電力量は平均電力×0.5時間でkWhへ換算する。電力値が同じ場合は、
@@ -161,7 +165,8 @@ def build_context(df, config):
     対象期間内に収まるよう週の開始日を調整する。
 
     Args:
-        df (pandas.DataFrame): timestamp（30分枠の開始日時）とkw（平均電力）を持つデータ。
+        df (pandas.DataFrame): timestamp（30分枠の開始日時）と
+            kw（平均電力）を持つデータ。
         config (dict): 契約情報と対象月の設定。customer_name、address、
             customer_number、contract_kw、target_monthを用途に応じて使用する。
             issuer、holidays、is_sampleは任意設定。
@@ -216,7 +221,7 @@ def build_context(df, config):
         .sort_values("timestamp")
         .copy()
     )
-    # 日別表は十進数で合計し、15501.023000000001のような計算誤差が末尾の桁に現れることを防ぐ。
+    # 日別表は十進数で合計し、計算誤差が末尾の桁に現れることを防ぐ。
     # 表示用の桁数には丸めず、入力値の小数部を保ったkWhを求める。
     week_stats = week.groupby(week.timestamp.dt.date)["kw"].agg(
         kwh=lambda values: float(
@@ -259,7 +264,9 @@ def build_context(df, config):
                     "kind": (
                         "holiday"
                         if ts.weekday() == 6
-                        else "saturday" if ts.weekday() == 5 else "weekday"
+                        else "saturday"
+                        if ts.weekday() == 5
+                        else "weekday"
                     ),
                 }
             )
@@ -338,7 +345,10 @@ def build_context(df, config):
             {"date": date_label(pd.Timestamp(d)), "kwh": r["kwh"], "kw": r["max"]}
             for d, r in week_stats.iterrows()
         ],
-        "notes": "最大電力は30分間の平均電力の最大値です。使用電力量は各枠の平均電力×0.5時間を合計しています。",
+        "notes": (
+            "最大電力は30分間の平均電力の最大値です。"
+            "使用電力量は各枠の平均電力×0.5時間を合計しています。"
+        ),
         "is_sample": bool(config.get("is_sample", False)),
     }
     series = {
