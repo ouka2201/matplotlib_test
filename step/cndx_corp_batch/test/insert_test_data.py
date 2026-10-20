@@ -233,10 +233,10 @@ def init_sqlite_tables(engine, settings):
 
 
 def prepare_row(table, values):
-    """実列の型・長さ・必須列を検証し、INSERT用の1行へ変換する。
+    """実際のテーブルにある列の型・長さと必須列を検証し、INSERT用の1行へ変換する。
 
     Args:
-        table (sqlalchemy.Table): 反映済みテーブル。
+        table (sqlalchemy.Table): DBの定義を反映したテーブル。
         values (dict): 大小文字を問わない物理列名と登録値。
 
     Returns:
@@ -337,10 +337,10 @@ def make_daily_rows(point, serial, start, end, options, settings):
 
 
 def seed_database(settings, options):
-    """4テーブルへ整合した架空データを1トランザクションで登録する。
+    """相互に整合する架空データを、1つのトランザクションで4つのテーブルに登録する。
 
     一度に保持する実績は供給地点1件のINSERTチャンクだけ。skip指定では
-    既存行を変更せず、存在しないキーだけINSERTする。例外は全INSERTを
+    既存行を変更せず、存在しないキーだけINSERTする。例外が発生した場合は、すべてのINSERTを
     ロールバックする。init-sqliteで作成したテーブル自体は残る。
 
     Args:
@@ -410,7 +410,7 @@ def seed_database(settings, options):
             "end": (end - pd.Timedelta(days=1)).strftime("%Y-%m-%d"),
             "tables": {kind: {"inserted": 0, "skipped": 0} for kind in TABLE_NAMES},
         }
-        # 1つの接続・トランザクションで4テーブルを登録し、部分登録を残さない。
+        # 1つの接続・トランザクションで4テーブルを登録し、一部のテーブルだけに登録された状態を残さない。
         with source.engine.begin() as connection:
             metadata = MetaData()
             tables = {
@@ -558,7 +558,7 @@ def seed_database(settings, options):
                 if chunk and not options.dry_run:
                     connection.execute(daily.insert(), chunk)
                 # 先にARVE・契約・実績を登録し、最後に取込完了を登録する。
-                # レポート管理へのINSERTは、取込確認の別処理に委ねる。
+                # レポート管理へのINSERTは、別の取込確認処理で行う。
                 insert_one(
                     "import_management",
                     {

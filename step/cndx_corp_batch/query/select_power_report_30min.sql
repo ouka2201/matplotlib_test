@@ -1,5 +1,5 @@
 -- 処理7(1)／データ項目更新仕様説明書No.6：対象月を含む1年分の取得年月日と30分使用電力量48枠を取得する。
--- start_dateは開始月1日を含み、end_dateは対象月の翌月1日を含まない（いずれもYYYYMMDD）。
+-- start_date（開始月1日）は抽出範囲に含め、end_date（対象月の翌月1日）は含めない。いずれもYYYYMMDD形式。
 SELECT
   t01_kyo_ctn_tok_no,
   t01_get_ymd,
