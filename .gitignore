@@ -6,3 +6,4 @@ output/
 .coverage.*
 .pytest_cache/
 htmlcov/
+.pytest_tmp/

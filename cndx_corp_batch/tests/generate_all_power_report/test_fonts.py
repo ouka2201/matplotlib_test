@@ -5,7 +5,8 @@ from pathlib import Path
 from cndx_corp_batch.domains.generate_all_power_report.services.pdf_service import HtmlRenderer
 
 
-ROOT = Path(__file__).resolve().parents[1]
+# テストディレクトリからバッチのルートへ移動する。
+ROOT = Path(__file__).resolve().parents[2]
 FONT_DIR = ROOT / "domains" / "generate_all_power_report" / "rendering" / "font"
 
 
