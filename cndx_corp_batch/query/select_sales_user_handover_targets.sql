@@ -7,6 +7,6 @@ SELECT
     h.handover_to_user_id,
     h.report_data_flg
 FROM db_corp.t_sales_user_handover_info AS h
-WHERE h.handover_status = '1'
+WHERE h.handover_status = :handover_status
   AND h.handover_schedule_date = :batch_date
 ORDER BY h.insert_datetime ASC NULLS LAST, h.updated_at ASC NULLS LAST

@@ -9,8 +9,8 @@
 プロジェクトルートから `DATABASE_URL` を設定して実行します。
 
 ```powershell
-python -m cndx_corp_batch.entrypoints.sales_user_handover
-python -m cndx_corp_batch.entrypoints.sales_user_handover --batch-date 2026-12-21
+python -m cndx_corp_batch.entrypoints.sales_user_handover_batch
+python -m cndx_corp_batch.entrypoints.sales_user_handover_batch --batch-date 2026-12-21
 ```
 
 引数を省略した場合は、日本時間の実行日を使用します。

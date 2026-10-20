@@ -7,5 +7,5 @@ WHERE corporate_number = :corporate_number
   AND handover_from_user_id = :handover_from_user_id
   AND handover_to_org_id = :handover_to_org_id
   AND handover_to_user_id = :handover_to_user_id
-  AND handover_status = '1'
+  AND handover_status = :planned_status
   AND handover_schedule_date = :batch_date
