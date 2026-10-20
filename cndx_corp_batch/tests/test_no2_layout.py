@@ -1,4 +1,4 @@
-"""No.2の48本の棒・配色・日時表記を仕様書と照合する。"""
+"""No.2の48本の棒グラフ、配色、日時表記を仕様書と照合する。"""
 
 from pathlib import Path
 import sys
@@ -13,15 +13,20 @@ from matplotlib.colors import to_rgba
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from services.data_service import bounds, build_context
-from rendering.pages.first_page import draw_first_page
+from cndx_corp_batch.domains.generate_all_power_report.services.data_service import (
+    bounds,
+    build_context,
+)
+from cndx_corp_batch.domains.generate_all_power_report.rendering.pages.first_page import (
+    draw_first_page,
+)
 
 
 class No2LayoutTests(unittest.TestCase):
-    """No.2の描画結果を、文字と棒のデータで検証する。"""
+    """No.2の描画結果を、文字と棒グラフのデータで検証する。"""
 
     def test_48_bars_colors_labels_and_midnight(self):
-        """仕様色、0〜23の目盛り、曜日付き日付、日跨ぎのピーク表示を確認する。"""
+        """仕様色、0〜23時の目盛り、曜日付きの日付、日付をまたぐピーク表示を確認する。"""
         start, end, _ = bounds("2026-06")
         df = pd.DataFrame(
             {

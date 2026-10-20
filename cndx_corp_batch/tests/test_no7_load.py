@@ -1,4 +1,4 @@
-"""仕様書No.7の週選定、時間帯色、日別kWhと最大kWを検証する。"""
+"""仕様書No.7の週の選定、時間帯の色、日別kWh、最大kWを検証する。"""
 
 from pathlib import Path
 import sys
@@ -10,23 +10,31 @@ from matplotlib.colors import to_rgba
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from rendering.sections.no6_duration import duration_axis
-from services.data_service import bounds, build_context, peak_week_bounds
-from rendering.styles import DEFAULT_NOTES
-from rendering.pages.second_page import draw_second_page
+from cndx_corp_batch.domains.generate_all_power_report.rendering.sections.no6_duration import (
+    duration_axis,
+)
+from cndx_corp_batch.domains.generate_all_power_report.services.data_service import (
+    bounds,
+    build_context,
+    peak_week_bounds,
+)
+from cndx_corp_batch.domains.generate_all_power_report.rendering.styles import DEFAULT_NOTES
+from cndx_corp_batch.domains.generate_all_power_report.rendering.pages.second_page import (
+    draw_second_page,
+)
 
 
 class No7LoadTests(unittest.TestCase):
-    """通常週・期間端・7日未満と、昼休みを含む棒の値を確認する。"""
+    """通常週・期間の端・7日未満の場合と、昼休みを含む棒の値を確認する。"""
 
     def fixture(self):
-        """1.25kWhの年間データに、同率の23:30ピークを2日分設定する。
+        """1.25kWhの年間データに、同率となる23:30のピークを2日分設定する。
 
         Returns:
             tuple: 設定、表示用context、描画用series。
         """
         start, end, _ = bounds("2026-06")
-        # 入力はDB取得後のkW。1.25kWh×2=2.5kW。
+        # 入力はDB取得後のkWで、1.25kWh×2=2.5kWに換算済みとする。
         frame = pd.DataFrame(
             {
                 "timestamp": pd.date_range(start, end, freq="30min", inclusive="left"),
@@ -46,7 +54,7 @@ class No7LoadTests(unittest.TestCase):
         return config, context, series
 
     def test_week_bounds_normal_edges_exactly_seven_and_short_period(self):
-        """日曜始まりを基本に、開始端・終了端・7日未満の範囲を確認する。"""
+        """日曜始まりを基本に、開始端・終了端・7日未満の場合の範囲を確認する。"""
         cases = [
             ("2025-07-01", "2026-06-30", "2025-07-16", "2025-07-13", "2025-07-20"),
             ("2025-07-01", "2026-06-30", "2025-07-02", "2025-07-01", "2025-07-08"),
@@ -72,7 +80,7 @@ class No7LoadTests(unittest.TestCase):
                 )
 
     def test_week_rows_preserve_energy_and_converted_power(self):
-        """元kWhの48枠合計と換算後の最大kWを、端数を保持して照合する。"""
+        """元データの48枠合計と換算後の最大kWを、端数を保持したまま照合する。"""
         _, context, series = self.fixture()
         self.assertEqual(context["week_period"], "2026年06月14日〜2026年06月20日")
         self.assertEqual(len(series["week"]), 336)
@@ -88,11 +96,11 @@ class No7LoadTests(unittest.TestCase):
         self.assertEqual(peak_row["kw"], 201.4)
 
     def test_load_colors_dates_table_and_specification_notes(self):
-        """全336枠の色、唯一の1位、上側日時、表の端数と注記全文を確認する。"""
+        """全336枠の色、1位が1件であること、上側に表示する日時、表の端数、注記全文を確認する。"""
         config, context, series = self.fixture()
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore", message="Glyph .* missing from font")
-            fig = draw_second_page(series, config, context, duration_axis(series["df"]))
+            fig = draw_second_page(series, context)
         try:
             ax = fig.axes[7]
             self.assertEqual(len(ax.patches), 336)
@@ -101,7 +109,7 @@ class No7LoadTests(unittest.TestCase):
             )
             peak = pd.Timestamp("2026-06-19 23:30")
             for bar, timestamp in zip(ax.patches, series["week"].timestamp):
-                # 全枠を確認することで07:30/08:00、11:30/12:00、12:30/13:00、17:30/18:00を含む。
+                # 全枠を確認し、07:30/08:00、11:30/12:00、12:30/13:00、17:30/18:00も対象にする。
                 expected = (
                     "#e15759"
                     if timestamp == peak

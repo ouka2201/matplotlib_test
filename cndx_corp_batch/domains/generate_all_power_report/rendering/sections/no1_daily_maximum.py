@@ -36,7 +36,7 @@ def draw_no1(page, daily, config):
         ValueError: TOP3の文字が4.9pt以上で説明欄に収まらない場合。
         KeyError: 対象月の日別データまたは必須設定がない場合。
     """
-    month = pd.Timestamp(config["target_month"] + "01")
+    month = pd.Timestamp(str(config["target_month"]).replace("-", "") + "01")
     weeks = calendar.Calendar(firstweekday=6).monthdayscalendar(month.year, month.month)
     by_day = {row.timestamp.day: row for _, row in daily.iterrows()}
     canvas = page.canvas

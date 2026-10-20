@@ -45,13 +45,22 @@ python -m cndx_corp_batch.entrypoints.generate_all_power_report --batch-date 202
 
 ```powershell
 python -m pip install -r cndx_corp_batch/test/requirements.txt
-python -m pytest -c cndx_corp_batch/test/pytest.ini
+python -m pytest cndx_corp_batch/tests -q
+```
+
+分岐カバレッジを計測する場合は、次を実行します。対象は
+`cndx_corp_batch.domains.generate_all_power_report` で、未カバー行を端末に表示し、
+`output/coverage.xml` にXMLレポートを出力します。設計書のC0/C1目標に合わせて、
+合計カバレッジが90%未満の場合は未達として表示します。
+
+```powershell
+python -m pytest cndx_corp_batch/tests -q --cov --cov-report=term-missing --cov-report=xml --cov-fail-under=90
 ```
 
 数値変換時の状態・ログ、後続対象の継続、ファイル名、期間境界、対象登録、
 15日の月切替、環境変数、実行日引数、終了処理を確認します。
 追加のpytestでは、48枠の時刻対応・単位換算、エラーの行と列、12か月の境界、
 列名の大小文字、枠列の不足を確認します。既存のunittest形式の16件も一緒に実行します。
-本体の `requirements.txt` の依存ライブラリも必要ですが、テストでChromiumは起動しません。
-`test/test_generate_all_power_report.py` はDBに接続するローカル実行用スクリプトのため、
-`conftest.py` で自動収集から除外しています。
+本体の依存ライブラリもテスト用requirementsからインストールされます。テストでChromiumは起動しません。
+`cndx_corp_batch/test/test_generate_all_power_report.py` のDB接続用スクリプトは、
+対象を `cndx_corp_batch/tests` に限定しているため自動収集されません。

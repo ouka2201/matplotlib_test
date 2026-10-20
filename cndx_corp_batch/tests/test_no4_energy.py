@@ -1,4 +1,4 @@
-"""仕様書No.4の月間電力量、最小値の点線、順位とコメントを検証する。"""
+"""仕様書No.4の月間電力量、最小値の点線、順位、コメントを検証する。"""
 
 from pathlib import Path
 import sys
@@ -13,15 +13,20 @@ from matplotlib.colors import to_rgba
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from services.data_service import bounds, build_context
-from rendering.pages.first_page import draw_first_page
+from cndx_corp_batch.domains.generate_all_power_report.services.data_service import (
+    bounds,
+    build_context,
+)
+from cndx_corp_batch.domains.generate_all_power_report.rendering.pages.first_page import (
+    draw_first_page,
+)
 
 
 class No4EnergyTests(unittest.TestCase):
-    """③の月別kWhグラフを、原値の合計と仕様の表示条件で照合する。"""
+    """③の月別kWhグラフを、元データの合計値と仕様の表示条件で照合する。"""
 
     def setUp(self):
-        """30分枠ごとの1.25kWhに相当する12か月の平均電力を用意する。"""
+        """30分枠ごとに1.25kWhとなる、12か月分の平均電力を用意する。"""
         start, end, _ = bounds("2026-06")
         self.frame = pd.DataFrame(
             {
@@ -38,7 +43,7 @@ class No4EnergyTests(unittest.TestCase):
         }
 
     def test_month_totals_keep_fractional_kwh(self):
-        """48枠×日数の月合計に端数を保持し、年月順と最少月を確認する。"""
+        """48枠×日数で求めた月合計の端数を保持し、年月順と最小値の月を確認する。"""
         self.frame.loc[
             self.frame.timestamp == pd.Timestamp("2026-06-01 00:00"), "kw"
         ] += 4.5
@@ -54,7 +59,7 @@ class No4EnergyTests(unittest.TestCase):
         self.assertEqual(context["energy_min_month"], "2026年02月")
 
     def draw(self, values):
-        """月間値を指定し、グラフを含むページを実際の描画関数で作る。
+        """月間値を指定し、グラフを含むページを実際の描画関数で生成する。
 
         Args:
             values (list[float]): 年月順の12か月の使用電力量。
@@ -69,7 +74,7 @@ class No4EnergyTests(unittest.TestCase):
             return draw_first_page(series, self.config)
 
     def test_bar_colors_minimum_line_top3_and_comments(self):
-        """平均と異なる最小値で点線を引き、仕様色・上位順位・月の文言を確認する。"""
+        """平均と異なる最小値に点線を引き、仕様色・上位順位・月の文言を確認する。"""
         values = [300, 500, 400, 240, 220, 150, 270, 180, 100, 260, 250, 230]
         fig = self.draw(values)
         try:
@@ -105,7 +110,7 @@ class No4EnergyTests(unittest.TestCase):
             plt.close(fig)
 
     def test_equal_months_rank_by_earlier_month(self):
-        """最多・最少が同値の月では早い年月を選び、順位は3か月だけ表示する。"""
+        """最多・最少が同値の月では早い年月を選び、順位を3か月だけ表示する。"""
         fig = self.draw([100] * 12)
         try:
             ax = fig.axes[1]

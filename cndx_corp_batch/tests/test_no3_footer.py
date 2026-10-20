@@ -1,4 +1,4 @@
-"""No.3の画像貼り付けと、注記・部分太字・文字領域を検証する。"""
+"""No.3の画像配置、注記、部分太字、文字領域を検証する。"""
 
 from pathlib import Path
 import sys
@@ -12,15 +12,18 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from rendering.canvas import FirstPageCanvas
-from rendering.sections.no3_footer import draw_no3, load_footer_logo
+from cndx_corp_batch.domains.generate_all_power_report.rendering.canvas import FirstPageCanvas
+from cndx_corp_batch.domains.generate_all_power_report.rendering.sections.no3_footer import (
+    draw_no3,
+    load_footer_logo,
+)
 
 
 class No3FooterTests(unittest.TestCase):
-    """仕様書の注記を全文表示し、太字と画像が領域に収まることを確認する。"""
+    """仕様書の注記を全文表示し、太字部分と画像が領域に収まることを確認する。"""
 
     def test_logo_note_emphasis_and_bounds(self):
-        """ロゴの縦横比、注記全文、強調箇所と実描画のはみ出しを確認する。"""
+        """ロゴの縦横比、注記全文、強調箇所、実描画のはみ出しがないことを確認する。"""
         page = FirstPageCanvas()
         fig, ax = page.fig, page.canvas
         try:
@@ -59,13 +62,13 @@ class No3FooterTests(unittest.TestCase):
             plt.close(fig)
 
     def test_logo_is_loaded_once_and_cached(self):
-        """プロセス内でロゴを一度だけ読み込み、画像ファイルの生成をしない。"""
+        """プロセス内でロゴを一度だけ読み込み、画像ファイルを生成しないことを確認する。"""
         load_footer_logo.cache_clear()
         original = Path.read_bytes
         calls = []
 
         def read(path):
-            """ロゴ読み込みの回数を記録して、元のPNGバイト列を返す。
+            """ロゴの読み込み回数を記録し、元のPNGバイト列を返す。
 
             Args:
                 path (pathlib.Path): 読み込む画像ファイル。

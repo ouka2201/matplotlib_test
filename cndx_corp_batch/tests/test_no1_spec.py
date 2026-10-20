@@ -1,4 +1,4 @@
-"""No.1の四捨五入、順位、カレンダーの仕様を検証する。"""
+"""No.1の四捨五入・順位・カレンダーの仕様を検証する。"""
 
 import calendar
 from pathlib import Path
@@ -14,9 +14,15 @@ from matplotlib.colors import to_rgba
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from services.data_service import bounds, build_context, calendar_power
-from rendering.canvas import FirstPageCanvas
-from rendering.sections.no1_daily_maximum import draw_no1
+from cndx_corp_batch.domains.generate_all_power_report.services.data_service import (
+    bounds,
+    build_context,
+    calendar_power,
+)
+from cndx_corp_batch.domains.generate_all_power_report.rendering.canvas import FirstPageCanvas
+from cndx_corp_batch.domains.generate_all_power_report.rendering.sections.no1_daily_maximum import (
+    draw_no1,
+)
 
 
 class No1SpecTests(unittest.TestCase):
@@ -44,7 +50,7 @@ class No1SpecTests(unittest.TestCase):
                 "kw": 10.0,
             }
         )
-        df.loc[0, "kw"] = 400.0  # 指定月の外なのでNo.1の順位には含めない。
+        df.loc[0, "kw"] = 400.0  # 対象月の外なので、No.1の順位には含めない。
         for stamp, kw in [
             ("2026-06-01 09:00", 201.0),
             ("2026-06-02 10:00", 201.4),
@@ -71,7 +77,7 @@ class No1SpecTests(unittest.TestCase):
         self.assertEqual(cells[0]["kw"], 202)
 
     def test_dynamic_rows_backgrounds_dates_and_rank_text(self):
-        """4・5・6週の月で、曜日別の仕様色、MM/DD、TOP3の書式を確認する。"""
+        """4・5・6週になる月について、曜日別の仕様色、MM/DD、TOP3の書式を確認する。"""
         for target_month, expected_rows in [
             ("2015-02", 4),
             ("2026-06", 5),
@@ -101,7 +107,7 @@ class No1SpecTests(unittest.TestCase):
                         month.year, month.month
                     )
                     self.assertEqual(len(weeks), expected_rows)
-                    # 先頭は丸印、次が7曜日。以降が日付セル、最後がTOP3背景。
+                    # 先頭は丸印、続いて7曜日、その後に日付セル、最後にTOP3の背景が並ぶ。
                     cells = fig.axes[0].patches[8:-1]
                     self.assertEqual(len(cells), 7 * expected_rows)
                     for index, patch in enumerate(cells):

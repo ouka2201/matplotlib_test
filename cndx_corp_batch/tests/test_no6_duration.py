@@ -1,4 +1,4 @@
-"""仕様書No.6の順位表、TOP50集計、表示と年間コマ数を検証する。"""
+"""仕様書No.6の順位表、TOP50集計、表示、年間コマ数を検証する。"""
 
 from pathlib import Path
 import sys
@@ -10,13 +10,21 @@ from matplotlib.colors import to_rgba
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from rendering.sections.no6_duration import duration_axis
-from services.data_service import bounds, build_context, most_common_labels
-from rendering.pages.second_page import draw_second_page
+from cndx_corp_batch.domains.generate_all_power_report.rendering.sections.no6_duration import (
+    duration_axis,
+)
+from cndx_corp_batch.domains.generate_all_power_report.services.data_service import (
+    bounds,
+    build_context,
+    most_common_labels,
+)
+from cndx_corp_batch.domains.generate_all_power_report.rendering.pages.second_page import (
+    draw_second_page,
+)
 
 
 class No6DurationTests(unittest.TestCase):
-    """同値・0時台・日跨ぎ・うるう年を含めて帳票の値を照合する。"""
+    """同値・0時台・日付またぎ・うるう年を含む帳票の値を照合する。"""
 
     def fixture(self, month="2026-06"):
         """1年分のデータに、同値の50枠と23:30の年間ピークを設定する。
@@ -34,7 +42,7 @@ class No6DurationTests(unittest.TestCase):
                 "kw": 2.0,
             }
         )
-        # 00:00と00:30の50枠を作る。kWhからの換算後の小数kWを渡す。
+        # 00:00と00:30の50枠を作り、kWhから換算した小数のkWを設定する。
         for day in range(25):
             for minute in (0, 30):
                 stamp = start + pd.Timedelta(days=day, minutes=minute)
@@ -50,7 +58,7 @@ class No6DurationTests(unittest.TestCase):
         return config, context, series
 
     def draw(self, config, context, series):
-        """日本語フォントの警告を除き、2ページ目をメモリ上へ描く。
+        """日本語フォントの警告を除き、2ページ目をメモリ上に描画する。
 
         Args:
             config (dict): レポートの設定。
@@ -62,12 +70,10 @@ class No6DurationTests(unittest.TestCase):
         """
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore", message="Glyph .* missing from font")
-            return draw_second_page(
-                series, config, context, duration_axis(series["df"])
-            )
+            return draw_second_page(series, context)
 
     def test_rank50_matches_unrounded_top50_and_midnight_hour(self):
-        """50位を同じTOP50から選び、同値の日時順・小数・0時台を確認する。"""
+        """50位を同じTOP50から選び、同値時の日時順・小数表示・0時台を確認する。"""
         _, context, series = self.fixture()
         self.assertEqual(len(series["top"]), 50)
         self.assertEqual(
@@ -88,7 +94,7 @@ class No6DurationTests(unittest.TestCase):
             self.assertEqual(series[key].sum(), 50)
 
     def test_same_count_features_use_display_order_and_three_labels(self):
-        """4件同率でも先頭3件だけを半角スペースでつなぐ。"""
+        """4件が同率の場合も、先頭3件だけを半角スペースで連結する。"""
         counts = pd.Series([5, 5, 1, 5, 5], index=[23, 0, 1, 2, 3])
         self.assertEqual(
             most_common_labels(counts, {i: f"{i:02d}時" for i in counts.index}),
@@ -100,13 +106,13 @@ class No6DurationTests(unittest.TestCase):
         )
 
     def test_tables_colors_axes_and_midnight_peak_message(self):
-        """表の列・50位の独立行、グラフの色と46日時、日跨ぎ文を確認する。"""
+        """表の列構成、50位の独立行、グラフの色、46個の日時、日付またぎの文言を確認する。"""
         config, context, series = self.fixture()
         fig = self.draw(config, context, series)
         try:
             top_table = fig.axes[2].tables[0].get_celld()
             rank50_table = fig.axes[3].tables[0].get_celld()
-            self.assertEqual(len(top_table), 44)  # 見出し＋10行、各4列。
+            self.assertEqual(len(top_table), 44)  # 見出し1行と10行×4列。
             self.assertEqual(
                 [top_table[0, i].get_text().get_text() for i in range(4)],
                 ["順位", "年月日", "時分", "電力(kW)"],

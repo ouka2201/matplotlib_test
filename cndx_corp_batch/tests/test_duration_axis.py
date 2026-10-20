@@ -6,16 +6,18 @@ import numpy as np
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from rendering.sections.no6_duration import duration_axis
+from cndx_corp_batch.domains.generate_all_power_report.rendering.sections.no6_duration import (
+    duration_axis,
+)
 
 
 class DurationAxisTests(unittest.TestCase):
-    """デュレーションカーブの並び順と中央日時選定を確認するテスト。"""
+    """デュレーションカーブの並び順と中央日時の選定を確認する。"""
 
     def test_46_labels_keep_power_timestamp_pairing(self):
         """46区間の中央日時と電力の対応、および分割件数の均等性を確認する。"""
         dates = pd.date_range("2025-07-01", periods=17520, freq="30min")
-        # 入力順とは異なる電力順で日時との対応を確認する。
+        # 入力順と電力順が異なる場合も、日時との対応を保つことを確認する。
         df = pd.DataFrame({"timestamp": dates, "kw": np.arange(len(dates))[::-1]})
         ordered, ticks, labels = duration_axis(df)
         self.assertEqual(len(ticks), 46)

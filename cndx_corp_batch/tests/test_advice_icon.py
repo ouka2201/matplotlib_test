@@ -1,4 +1,4 @@
-"""ICON.pngのサイズ・透過・再利用と、両ページへの配置を検証する。"""
+"""ICON.pngのサイズ・透過状態・再利用と、両ページへの配置を検証する。"""
 
 from pathlib import Path
 import sys
@@ -14,15 +14,18 @@ import numpy as np
 from PIL import Image
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from rendering import icons
-from rendering.canvas import FirstPageCanvas, SecondPageCanvas
+from cndx_corp_batch.domains.generate_all_power_report.rendering import icons
+from cndx_corp_batch.domains.generate_all_power_report.rendering.canvas import (
+    FirstPageCanvas,
+    SecondPageCanvas,
+)
 
 
 class AdviceIconTests(unittest.TestCase):
-    """実際のPNGを使い、図形から画像への変更による不具合を確認する。"""
+    """実際のPNGを使い、図形から画像へ変更した影響を確認する。"""
 
     def setUp(self):
-        """運用画像と独立した90×89の透過PNGを一時フォルダーに作る。"""
+        """実際の運用画像とは別に、90×89ピクセルの透過PNGを一時フォルダーへ作成する。"""
         self.folder = tempfile.TemporaryDirectory()
         self.addCleanup(self.folder.cleanup)
         self.path = Path(self.folder.name) / "ICON.png"
@@ -37,7 +40,7 @@ class AdviceIconTests(unittest.TestCase):
         self.addCleanup(plt.close, "all")
 
     def test_png_alpha_and_cache(self):
-        """透過を保持し、2回目以降はファイルを読み直さない。"""
+        """透過状態を保持し、2回目以降はファイルを読み直さないことを確認する。"""
         first = icons.load_advice_icon()
         self.assertEqual(first.shape, (89, 90, 4))
         self.assertEqual(first[0, 0, 3], 0)
@@ -46,7 +49,7 @@ class AdviceIconTests(unittest.TestCase):
         self.assertIs(icons.load_advice_icon(), first)
 
     def test_missing_png_has_actionable_error(self):
-        """画像がない場合は必要なファイル名・サイズ・配置先を示す。"""
+        """画像がない場合に、必要なファイル名・サイズ・配置先を示すことを確認する。"""
         self.path.unlink()
         with self.assertRaises(FileNotFoundError) as caught:
             icons.load_advice_icon()
@@ -54,13 +57,13 @@ class AdviceIconTests(unittest.TestCase):
         self.assertIn(str(self.path), str(caught.exception))
 
     def test_wrong_size_is_rejected(self):
-        """幅と高さが逆の場合も、不正サイズとして明確に拒否する。"""
+        """幅と高さが入れ替わっている場合も、不正なサイズとして拒否することを確認する。"""
         Image.new("RGBA", (89, 90)).save(self.path)
         with self.assertRaisesRegex(ValueError, "現在のサイズ: 幅89×高さ90"):
             icons.load_advice_icon()
 
     def test_both_pages_use_png_without_changing_canvas(self):
-        """両ページの青い枠に画像を配置し、mm座標と元の縦横比を保つ。"""
+        """両ページの青い枠に画像を配置し、mm座標と元画像の縦横比を維持することを確認する。"""
         for canvas_class in (FirstPageCanvas, SecondPageCanvas):
             with self.subTest(page=canvas_class.__name__):
                 page = canvas_class()
@@ -79,7 +82,7 @@ class AdviceIconTests(unittest.TestCase):
                 plt.close(page.fig)
 
     def test_yellow_note_does_not_require_icon(self):
-        """黄色い結果欄は画像を読み込まず、PNGがなくても描画できる。"""
+        """黄色い結果欄では画像を読み込まず、PNGがなくても描画できることを確認する。"""
         self.path.unlink()
         for canvas_class in (FirstPageCanvas, SecondPageCanvas):
             page = canvas_class()

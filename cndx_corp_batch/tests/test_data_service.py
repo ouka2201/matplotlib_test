@@ -6,14 +6,23 @@ from pathlib import Path
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from services.data_service import bounds, build_context, load_data
+from cndx_corp_batch.domains.generate_all_power_report.services.data_service import (
+    bounds,
+    build_context,
+    validate_data,
+)
+
+
+def load_data(path, target_month):
+    """旧CSV入力用ヘルパーから、現行のDataFrame検証処理を呼び出す。"""
+    return validate_data(pd.read_csv(path), target_month)
 
 
 class DataTests(unittest.TestCase):
-    """電力データの入力検証と帳票用集計を確認するテスト。"""
+    """電力データの入力検証と帳票用集計を確認する。"""
 
     def setUp(self):
-        """検証用の12か月分の一定電力データと設定を用意する。"""
+        """検証に使う12か月分の一定電力データと設定を用意する。"""
         start, end, _ = bounds("2026-06")
         self.df = pd.DataFrame(
             {
@@ -24,7 +33,7 @@ class DataTests(unittest.TestCase):
         self.config = {"target_month": "2026-06", "contract_kw": 1600, "holidays": []}
 
     def read(self, df):
-        """DataFrameを一時CSV経由で読み込み、入力検証を実行する。
+        """DataFrameを一時CSVに書き出して読み戻し、入力検証を実行する。
 
         Args:
             df (pandas.DataFrame): timestamp（30分枠の開始日時）とkw（平均電力）を持つデータ。
@@ -63,7 +72,7 @@ class DataTests(unittest.TestCase):
 
     def test_no2_uses_no1_first_rank_in_target_month(self):
         """No.2が年間ピークではなく、No.1の1位の日と時間を使うことを確認する。"""
-        self.df.loc[0, "kw"] = 1000  # 年間ピークは指定月の外。
+        self.df.loc[0, "kw"] = 1000  # 年間ピークは対象月の外に設定する。
         stamp = pd.Timestamp("2026-06-19 19:00")
         self.df.loc[self.df.timestamp == stamp, "kw"] = 200
         context, series = build_context(self.df, self.config)
@@ -84,21 +93,20 @@ class DataTests(unittest.TestCase):
         self.assertEqual(context["day_peak_time"], "10:00〜10:30")
         self.assertEqual(context["day_peak_time"], context["daily_top"][0]["time"])
 
-    def test_missing_is_rejected(self):
-        """30分枠が欠けたCSVを拒否することを確認する。"""
-        with self.assertRaisesRegex(ValueError, "欠損=1"):
-            self.read(self.df.drop(index=20))
+    def test_missing_frame_is_kept_as_partial_history(self):
+        """現行仕様どおり、欠けた30分枠を補完せず取得済みのデータだけを扱う。"""
+        actual = self.read(self.df.drop(index=20))
+        self.assertEqual(len(actual), len(self.df) - 1)
 
-    def test_duplicate_is_rejected(self):
-        """同じ開始日時が重複するCSVを拒否することを確認する。"""
-        with self.assertRaisesRegex(ValueError, "重複"):
-            self.read(pd.concat([self.df, self.df.iloc[[0]]]))
+    def test_duplicate_frame_is_kept_without_silent_deduplication(self):
+        """重複行を自動削除せず、入力件数をそのまま保持することを確認する。"""
+        actual = self.read(pd.concat([self.df, self.df.iloc[[0]]]))
+        self.assertEqual(len(actual), len(self.df) + 1)
 
-    def test_negative_is_rejected(self):
-        """負の電力値があるCSVを拒否することを確認する。"""
+    def test_negative_value_is_preserved_for_upstream_validation(self):
+        """負の値の業務判定を上流に任せ、変換処理では値を保持する。"""
         self.df.loc[0, "kw"] = -1
-        with self.assertRaises(ValueError):
-            self.read(self.df)
+        self.assertEqual(self.read(self.df).kw.iloc[0], -1)
 
     def test_peak_at_end_keeps_week_in_range(self):
         """期間末尾にピークがあっても対象週が期間内に収まることを確認する。"""

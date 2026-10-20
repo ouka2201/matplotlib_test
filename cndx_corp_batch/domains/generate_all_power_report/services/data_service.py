@@ -20,7 +20,8 @@ def bounds(target_month):
             対象期間の開始日時、終了日時、対象月の月初日時。終了日時は
             翌月1日00:00で、集計には含めない。
     """
-    month = pd.Timestamp(target_month + "01")
+    # SQLのYYYYMMと、手動実行時に使われるYYYY-MMの両方を受け付ける。
+    month = pd.Timestamp(str(target_month).replace("-", "") + "01")
     # 指定月の翌月1日を抽出範囲に含めない終了日時とする。そこから暦に従って1年戻り、うるう年にも対応する。
     end = month + pd.DateOffset(months=1)
     return end - pd.DateOffset(years=1), end, month

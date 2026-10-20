@@ -1,4 +1,4 @@
-"""No.0がページへ直接描画され、契約値が領域に収まることを検証する。"""
+"""No.0をページへ直接描画し、契約値が領域に収まることを検証する。"""
 
 from pathlib import Path
 import sys
@@ -11,15 +11,17 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from rendering.canvas import FirstPageCanvas
-from rendering.sections.no0_contract import draw_no0
+from cndx_corp_batch.domains.generate_all_power_report.rendering.canvas import FirstPageCanvas
+from cndx_corp_batch.domains.generate_all_power_report.rendering.sections.no0_contract import (
+    draw_no0,
+)
 
 
 class No0ContractTests(unittest.TestCase):
     """同じFigureへの描画と、長い契約情報の扱いを確認する。"""
 
     def setUp(self):
-        """既存ページと、契約情報4項目を準備する。"""
+        """既存ページと4項目の契約情報を準備する。"""
         self.page = FirstPageCanvas()
         self.config = {
             "customer_name": "テスト会社",
@@ -29,11 +31,11 @@ class No0ContractTests(unittest.TestCase):
         }
 
     def tearDown(self):
-        """検証用のページFigureを閉じる。"""
+        """検証に使ったページFigureを閉じる。"""
         plt.close(self.page.fig)
 
     def test_contract_texts_drawn_on_existing_page(self):
-        """Figure・Axes・部品画像を増やさず、4項目を描画する。"""
+        """Figure・Axes・画像を増やさずに、4項目を描画する。"""
         figures = set(plt.get_fignums())
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore", message="Glyph .* missing from font")
@@ -54,7 +56,7 @@ class No0ContractTests(unittest.TestCase):
         self.assertEqual(tuple(self.page.canvas.get_ylim()), (194, 0))
 
     def test_long_contract_value_does_not_close_shared_figure(self):
-        """収まらない値はエラーにし、ページの終了処理は呼び出し側に任せる。"""
+        """収まらない値をエラーにし、ページの終了処理は呼び出し側に任せる。"""
         self.config["address"] = "W" * 500
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore", message="Glyph .* missing from font")

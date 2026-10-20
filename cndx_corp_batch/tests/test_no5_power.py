@@ -1,4 +1,4 @@
-"""仕様書No.5の月別最大電力、契約電力、数値ラベルとコメントを検証する。"""
+"""仕様書No.5の月別最大電力、契約電力、数値ラベル、コメントを検証する。"""
 
 from pathlib import Path
 import sys
@@ -13,16 +13,21 @@ from matplotlib.colors import to_rgba
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from services.data_service import bounds, build_context
-from rendering.pages.first_page import draw_first_page
-from rendering.styles import format_number
+from cndx_corp_batch.domains.generate_all_power_report.services.data_service import (
+    bounds,
+    build_context,
+)
+from cndx_corp_batch.domains.generate_all_power_report.rendering.pages.first_page import (
+    draw_first_page,
+)
+from cndx_corp_batch.domains.generate_all_power_report.rendering.styles import format_number
 
 
 class No5PowerTests(unittest.TestCase):
     """小数のkWhから換算したkWと、契約値の表示を照合する。"""
 
     def setUp(self):
-        """各月の1枠だけを最大値にする、12か月の30分データを用意する。"""
+        """各月の1枠だけが最大値になる、12か月分の30分データを用意する。"""
         start, end, _ = bounds("2026-06")
         self.frame = pd.DataFrame(
             {
@@ -54,7 +59,7 @@ class No5PowerTests(unittest.TestCase):
         }
 
     def context(self, kwh):
-        """DB取得後と同じ換算値を各月に入れ、月別集計を作る。
+        """DB取得後と同じ換算値を各月に設定し、月別集計を作成する。
 
         Args:
             kwh (list[float]): 12か月の月別最大の30分使用電力量。
@@ -65,12 +70,12 @@ class No5PowerTests(unittest.TestCase):
         frame = self.frame.copy()
         for month, value in zip(self.months, kwh):
             stamp = month.start_time + pd.Timedelta(hours=19)
-            # DBの既存処理と同じ、kWh×2の平均電力を渡す。
+            # DB取得後の処理と同じく、kWh×2の平均電力を設定する。
             frame.loc[frame.timestamp == stamp, "kw"] = value * 2
         return build_context(frame, self.config)
 
     def draw(self, series):
-        """全No.を直接描画して、検証用のページFigureを作成する。
+        """全No.を直接描画し、検証用のページFigureを生成する。
 
         Args:
             series (dict): 共通集計が返すグラフ用データ。
@@ -83,7 +88,7 @@ class No5PowerTests(unittest.TestCase):
             return draw_first_page(series, self.config)
 
     def test_monthly_maximum_preserves_unrounded_kw(self):
-        """未丸めのkWh×2を月別最大値とし、期間とピーク月を確認する。"""
+        """丸める前のkWh×2を月別最大値とし、対象期間とピーク月を確認する。"""
         context, series = self.context(self.kwh)
         self.assertEqual(
             series["monthly"]["max"].tolist(), [value * 2 for value in self.kwh]
@@ -125,7 +130,7 @@ class No5PowerTests(unittest.TestCase):
                 ],
             )
             line = ax.lines[0]
-            self.assertEqual(list(line.get_ydata()), [39, 39])  # 契約値を2倍しない。
+            self.assertEqual(list(line.get_ydata()), [39, 39])  # 契約値は2倍にしない。
             self.assertEqual(line.get_color(), "#e15759")
             self.assertEqual(line.get_linestyle(), "--")
             self.assertEqual(line.get_label(), "契約電力")
