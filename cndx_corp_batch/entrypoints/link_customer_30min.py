@@ -1,7 +1,8 @@
 import argparse
+import sys
+from collections.abc import Sequence
 from dataclasses import replace
 from datetime import date
-import sys
 
 from cndx_corp_batch.common.config import load_config
 from cndx_corp_batch.common.context import BatchContext
@@ -11,10 +12,19 @@ from cndx_corp_batch.domains.link_customer_30min.jobs.link_customer_30min_job im
 )
 
 
-def main(argv=None) -> int:
+def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="顧客情報と30分値データの連携")
-    parser.add_argument("--batch-date", type=date.fromisoformat, help="実行日（YYYY-MM-DD）")
-    parser.add_argument("--batch-size", type=int, default=1000, help="1回の取得件数（既定：1000）")
+    parser.add_argument(
+        "--batch-date",
+        type=date.fromisoformat,
+        help="実行日（YYYY-MM-DD）",
+    )
+    parser.add_argument(
+        "--batch-size",
+        type=int,
+        default=1000,
+        help="1回の取得件数（既定：1000）",
+    )
     args = parser.parse_args(argv)
     if args.batch_size <= 0:
         parser.error("--batch-size は1以上を指定してください。")

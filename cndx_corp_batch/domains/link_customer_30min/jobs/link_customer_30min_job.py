@@ -2,7 +2,9 @@ import getpass
 from datetime import date
 
 from sqlalchemy import bindparam, text
+from sqlalchemy.sql.elements import TextClause
 
+from cndx_corp_batch.common.context import BatchContext
 from cndx_corp_batch.common.db import get_session
 from cndx_corp_batch.common.query import load_sql_file
 from cndx_corp_batch.common.time import calc_offset_month, get_current_time, month_end
@@ -12,7 +14,12 @@ from cndx_corp_batch.jobs.base import BaseJob
 class LinkCustomer30MinJob(BaseJob):
     """BLMMVMVBUILDING：取込済みの30分値をLecMocの顧客情報に紐付ける。"""
 
-    def __init__(self, context, batch_date: date | None = None, batch_size: int = 1000):
+    def __init__(
+        self,
+        context: BatchContext,
+        batch_date: date | None = None,
+        batch_size: int = 1000,
+    ) -> None:
         super().__init__(context)
         if batch_size <= 0:
             raise ValueError("取得件数は1以上を指定してください。")
@@ -33,21 +40,23 @@ class LinkCustomer30MinJob(BaseJob):
         self.update_error = self._point_query("update_customer_30min_error.sql")
 
     @staticmethod
-    def _point_query(filename):
+    def _point_query(filename: str) -> TextClause:
         return text(load_sql_file(filename)).bindparams(
             bindparam("supply_points", expanding=True)
         )
 
-    def execute(self):
+    def execute(self) -> int:
         linked_count = 0
         last_point = ""
         while True:
             points = []
             try:
-                # 処理2～4：取得した管理行をロックし、生データと紐付け日時をまとめて確定する。
+                # 処理2～4：管理行をロックし、生データと紐付け日時を確定する。
                 with get_session() as session:
                     params = {**self.params, "last_point": last_point}
-                    points = session.execute(self.select_targets, params).scalars().all()
+                    points = (
+                        session.execute(self.select_targets, params).scalars().all()
+                    )
                     if not points:
                         break
                     params.update(
@@ -65,18 +74,25 @@ class LinkCustomer30MinJob(BaseJob):
                 last_point = points[-1]
                 if len(linked) != len(points):
                     self.logger.warning(
-                        "結合先データがないため紐付けを保留しました。対象年月=%s 件数=%s",
-                        self.params["target_year_month"], len(points) - len(linked),
+                        "結合先データがないため紐付けを保留しました。"
+                        "対象年月=%s 件数=%s",
+                        self.params["target_year_month"],
+                        len(points) - len(linked),
                     )
             except Exception as exc:
                 if points:
                     self._record_error(points, exc)
+                self.logger.exception(
+                    "30分値データ連携で例外が発生しました。対象年月=%s 供給地点=%s",
+                    self.params["target_year_month"],
+                    ",".join(points),
+                )
                 # 処理内容定義書：例外発生時は後続処理を行わず終了する。
                 raise
         self.logger.info("顧客情報と30分値データの紐付け完了。件数=%s", linked_count)
         return linked_count
 
-    def _record_error(self, points, error):
+    def _record_error(self, points: list[str], error: Exception) -> None:
         # 更新仕様No.6：登録処理をロールバックした後、エラー情報だけを別途確定する。
         try:
             with get_session() as session:
@@ -90,4 +106,9 @@ class LinkCustomer30MinJob(BaseJob):
                     },
                 )
         except Exception:
-            self.logger.exception("30分値取込管理への紐付けエラーの記録に失敗しました。")
+            self.logger.exception(
+                "30分値取込管理への紐付けエラーの記録に失敗しました。"
+                "対象年月=%s 供給地点=%s",
+                self.params["target_year_month"],
+                ",".join(points),
+            )
