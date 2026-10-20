@@ -3,6 +3,9 @@
 顧客情報と30分値データの連携バッチ（BLMMVMVBUILDING）は、
 [実行方法と処理仕様](domains/link_customer_30min/README.md)を参照してください。
 
+担当者引継ぎ実行バッチ（BLMMGMGHANDOVER）は、
+[実行方法と処理仕様](domains/sales_user_handover/README.md)を参照してください。
+
 このフォルダーが既存バッチに組み込まれた実装です。プロジェクト直下の
 `services` と `tests` は別実装なので、本バッチの確認には下記のテストを使います。
 
