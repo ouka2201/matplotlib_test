@@ -1,0 +1,12 @@
+[run]
+branch = True
+source =
+    cndx_corp_batch.domains.generate_all_power_report
+
+[report]
+show_missing = True
+skip_empty = True
+fail_under = 90
+
+[xml]
+output = ../output/coverage.xml

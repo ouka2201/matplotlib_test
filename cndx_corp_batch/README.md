@@ -1,7 +1,7 @@
 # 電力見える化レポート一括作成
 
-このフォルダーが既存バッチに組み込まれた実装です。プロジェクト直下の
-`services` と `tests` は別実装なので、本バッチの確認には下記のテストを使います。
+このフォルダーが既存バッチに組み込まれた実装です。本バッチのテストは
+`tests/generate_all_power_report` に配置しています。
 
 ## 実行
 
@@ -9,7 +9,7 @@ Python 3.12と本フォルダーの依存ライブラリ、PlaywrightのChromium
 `DATABASE_URL` は実行環境に設定してください。認証情報をソースへ記載しません。
 Tableauの認証情報が必要な環境では `TABLEAU_USERNAME`、`TABLEAU_PASSWORD` も環境から渡します。
 
-`step` フォルダーで実行します。
+バッチ本体はプロジェクトルート（`C:\STEP4\electricity_report`）で実行します。
 
 ```powershell
 $env:REPORT_OUTPUT_DIR = 'C:\STEP4\electricity_report\output\reports'
@@ -41,20 +41,24 @@ python -m cndx_corp_batch.entrypoints.generate_all_power_report --batch-date 202
 
 ## pytestによる自動テスト
 
-`step` フォルダーで次を実行します。実DBやTableauには接続せず、SQLiteとPDF生成の代替処理で検証します。
+`cndx_corp_batch` フォルダーで次を実行します。実DBやTableauには接続せず、SQLiteとPDF生成の代替処理で検証します。
 
 ```powershell
-python -m pip install -r cndx_corp_batch/test/requirements.txt
-python -m pytest cndx_corp_batch/tests -q
+Set-Location C:\STEP4\electricity_report\cndx_corp_batch
+python -m pip install -r test/requirements.txt
+python -m pytest .\tests\generate_all_power_report -q
 ```
+
+`test` や `tests` はPythonモジュールとして直接起動せず、必ず `pytest` を介して実行します。
 
 分岐カバレッジを計測する場合は、次を実行します。対象は
 `cndx_corp_batch.domains.generate_all_power_report` で、未カバー行を端末に表示し、
-`output/coverage.xml` にXMLレポートを出力します。設計書のC0/C1目標に合わせて、
+プロジェクト直下の `output/coverage.xml` にXMLレポートを出力します。設計書のC0/C1目標に合わせて、
 合計カバレッジが90%未満の場合は未達として表示します。
 
 ```powershell
-python -m pytest cndx_corp_batch/tests -q --cov --cov-report=term-missing --cov-report=xml --cov-fail-under=90
+Set-Location C:\STEP4\electricity_report\cndx_corp_batch
+python -m pytest .\tests\generate_all_power_report -q --cov --cov-report=term-missing --cov-report=xml --cov-fail-under=90
 ```
 
 数値変換時の状態・ログ、後続対象の継続、ファイル名、期間境界、対象登録、
@@ -62,5 +66,5 @@ python -m pytest cndx_corp_batch/tests -q --cov --cov-report=term-missing --cov-
 追加のpytestでは、48枠の時刻対応・単位換算、エラーの行と列、12か月の境界、
 列名の大小文字、枠列の不足を確認します。既存のunittest形式の16件も一緒に実行します。
 本体の依存ライブラリもテスト用requirementsからインストールされます。テストでChromiumは起動しません。
-`cndx_corp_batch/test/test_generate_all_power_report.py` のDB接続用スクリプトは、
-対象を `cndx_corp_batch/tests` に限定しているため自動収集されません。
+`test/test_generate_all_power_report.py` のDB接続用スクリプトは、
+対象を `tests` に限定しているため自動収集されません。
