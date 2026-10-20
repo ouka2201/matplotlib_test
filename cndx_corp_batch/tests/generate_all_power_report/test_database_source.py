@@ -3,8 +3,10 @@
 import pandas as pd
 import pytest
 
-from cndx_corp_batch.domains.generate_all_power_report.services.data_service import bounds
-from cndx_corp_batch.domains.generate_all_power_report.services.database_source_service import (
+from cndx_corp_batch.domains.generate_all_power_report.services \
+    .data_service import bounds
+from cndx_corp_batch.domains.generate_all_power_report.services \
+    .database_source_service import (
     DATE,
     POINT,
     SLOTS,
@@ -13,7 +15,7 @@ from cndx_corp_batch.domains.generate_all_power_report.services.database_source_
 )
 
 
-def rows(start="2026-06-01", end="2026-07-01", value="1.5"):
+def rows(start = "2026-06-01", end = "2026-07-01", value = "1.5"):
     return [
         {
             POINT: "0000000000000000000001",

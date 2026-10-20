@@ -1,7 +1,5 @@
 """仕様書No.6の順位表、TOP50集計、表示、年間コマ数を検証する。"""
 
-from pathlib import Path
-import sys
 import unittest
 import warnings
 
@@ -9,16 +7,13 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import to_rgba
 import pandas as pd
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from cndx_corp_batch.domains.generate_all_power_report.rendering.sections.no6_duration import (
-    duration_axis,
-)
 from cndx_corp_batch.domains.generate_all_power_report.services.data_service import (
     bounds,
     build_context,
     most_common_labels,
 )
-from cndx_corp_batch.domains.generate_all_power_report.rendering.pages.second_page import (
+from cndx_corp_batch.domains.generate_all_power_report.rendering.pages \
+    .second_page import (
     draw_second_page,
 )
 
@@ -26,7 +21,7 @@ from cndx_corp_batch.domains.generate_all_power_report.rendering.pages.second_pa
 class No6DurationTests(unittest.TestCase):
     """同値・0時台・日付またぎ・うるう年を含む帳票の値を照合する。"""
 
-    def fixture(self, month="2026-06"):
+    def fixture(self, month = "2026-06"):
         """1年分のデータに、同値の50枠と23:30の年間ピークを設定する。
 
         Args:

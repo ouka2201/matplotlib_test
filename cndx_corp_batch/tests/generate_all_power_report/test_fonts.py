@@ -2,7 +2,8 @@
 
 from pathlib import Path
 
-from cndx_corp_batch.domains.generate_all_power_report.services.pdf_service import HtmlRenderer
+from cndx_corp_batch.domains.generate_all_power_report.services \
+    .pdf_service import HtmlRenderer
 
 
 # テストディレクトリからバッチのルートへ移動する。

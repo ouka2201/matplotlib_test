@@ -1,26 +1,22 @@
 """仕様書No.5の月別最大電力、契約電力、数値ラベル、コメントを検証する。"""
 
-from pathlib import Path
-import sys
 import unittest
 import warnings
 
-import matplotlib
-
-matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from matplotlib.colors import to_rgba
 import pandas as pd
+from matplotlib.colors import to_rgba
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from cndx_corp_batch.domains.generate_all_power_report.services.data_service import (
     bounds,
     build_context,
 )
-from cndx_corp_batch.domains.generate_all_power_report.rendering.pages.first_page import (
+from cndx_corp_batch.domains.generate_all_power_report.rendering.pages \
+    .first_page import (
     draw_first_page,
 )
-from cndx_corp_batch.domains.generate_all_power_report.rendering.styles import format_number
+from cndx_corp_batch.domains.generate_all_power_report.rendering \
+    .styles import format_number
 
 
 class No5PowerTests(unittest.TestCase):

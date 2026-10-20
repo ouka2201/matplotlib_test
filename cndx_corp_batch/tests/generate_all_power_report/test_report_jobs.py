@@ -7,13 +7,16 @@ from unittest.mock import Mock, patch
 import pytest
 
 from cndx_corp_batch.common.logger import BatchLogger
-from cndx_corp_batch.domains.generate_all_power_report.jobs.get_power_report_target_job import (
+from cndx_corp_batch.domains.generate_all_power_report.jobs \
+    .get_power_report_target_job import (
     GetPowerReportTargetJob,
 )
-from cndx_corp_batch.domains.generate_all_power_report.jobs.register_unregistered_report_target_job import (
+from cndx_corp_batch.domains.generate_all_power_report.jobs \
+    .register_unregistered_report_target_job import (
     RegisterUnregisteredReportTargetJob,
 )
-from cndx_corp_batch.domains.generate_all_power_report.services.report_job_source import (
+from cndx_corp_batch.domains.generate_all_power_report.services \
+    .report_job_source import (
     customer_column_mapping,
 )
 
@@ -40,10 +43,16 @@ def db_session(session):
 def test_register_job_executes_insert_sql_once():
     session = Mock()
     with patch(
-        "cndx_corp_batch.domains.generate_all_power_report.jobs.register_unregistered_report_target_job.get_session",
+        (
+            "cndx_corp_batch.domains.generate_all_power_report.jobs."
+            "register_unregistered_report_target_job.get_session"
+        ),
         return_value=db_session(session),
     ), patch(
-        "cndx_corp_batch.domains.generate_all_power_report.jobs.register_unregistered_report_target_job.load_sql_file",
+        (
+            "cndx_corp_batch.domains.generate_all_power_report.jobs."
+            "register_unregistered_report_target_job.load_sql_file"
+        ),
         return_value="INSERT_SQL",
     ):
         RegisterUnregisteredReportTargetJob(context(), date(2026, 6, 1)).run()
@@ -57,10 +66,16 @@ def test_get_target_job_returns_only_the_db_result():
     expected = [("0001", "C001", True)]
     session.execute.return_value.all.return_value = expected
     with patch(
-        "cndx_corp_batch.domains.generate_all_power_report.jobs.get_power_report_target.get_session",
+        (
+            "cndx_corp_batch.domains.generate_all_power_report.jobs."
+            "get_power_report_target_job.get_session"
+        ),
         return_value=db_session(session),
     ), patch(
-        "cndx_corp_batch.domains.generate_all_power_report.jobs.get_power_report_target.load_sql_file",
+        (
+            "cndx_corp_batch.domains.generate_all_power_report.jobs."
+            "get_power_report_target_job.load_sql_file"
+        ),
         return_value="SELECT_SQL",
     ):
         result = GetPowerReportTargetJob(context(), date(2026, 6, 1)).run()

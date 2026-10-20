@@ -1,19 +1,16 @@
 """No.3の画像配置、注記、部分太字、文字領域を検証する。"""
 
 from pathlib import Path
-import sys
 import unittest
 from unittest.mock import patch
 import warnings
 
-import matplotlib
-
-matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from cndx_corp_batch.domains.generate_all_power_report.rendering.canvas import FirstPageCanvas
-from cndx_corp_batch.domains.generate_all_power_report.rendering.sections.no3_footer import (
+from cndx_corp_batch.domains.generate_all_power_report.rendering \
+    .canvas import FirstPageCanvas
+from cndx_corp_batch.domains.generate_all_power_report.rendering.sections \
+    .no3_footer import (
     draw_no3,
     load_footer_logo,
 )

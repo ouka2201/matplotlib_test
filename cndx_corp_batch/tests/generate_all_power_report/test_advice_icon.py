@@ -1,19 +1,14 @@
 """ICON.pngのサイズ・透過状態・再利用と、両ページへの配置を検証する。"""
 
 from pathlib import Path
-import sys
 import tempfile
 import unittest
 from unittest.mock import patch
 
-import matplotlib
-
-matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from cndx_corp_batch.domains.generate_all_power_report.rendering import icons
 from cndx_corp_batch.domains.generate_all_power_report.rendering.canvas import (
     FirstPageCanvas,
@@ -78,7 +73,10 @@ class AdviceIconTests(unittest.TestCase):
                 self.assertLess(top, 30)
                 self.assertGreater(bottom, 30)
                 self.assertEqual(image.origin, "upper")
-                self.assertEqual((page.canvas.get_xlim(), page.canvas.get_ylim()), before)
+                self.assertEqual(
+                    (page.canvas.get_xlim(), page.canvas.get_ylim()),
+                    before,
+                )
                 plt.close(page.fig)
 
     def test_yellow_note_does_not_require_icon(self):

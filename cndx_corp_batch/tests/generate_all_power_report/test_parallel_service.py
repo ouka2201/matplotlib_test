@@ -5,7 +5,8 @@ from types import SimpleNamespace
 from unittest.mock import Mock, patch
 
 from cndx_corp_batch.common.logger import BatchLogger
-from cndx_corp_batch.domains.generate_all_power_report.jobs.generate_all_power_report_job import (
+from cndx_corp_batch.domains.generate_all_power_report.jobs \
+    .generate_all_power_report_job import (
     GenerateAllPowerReportJob,
 )
 
@@ -27,7 +28,13 @@ def test_worker_count_is_limited_by_target_count(monkeypatch):
     job = GenerateAllPowerReportJob(context(), date(2026, 5, 15))
     job.register_report_job.execute = Mock()
     job.get_report_target_job.execute = Mock(return_value=["one", "two"])
-    monkeypatch.setattr("cndx_corp_batch.domains.generate_all_power_report.jobs.generate_all_power_report_job.cpu_workers", lambda: 8)
+    monkeypatch.setattr(
+        (
+            "cndx_corp_batch.domains.generate_all_power_report.jobs."
+            "generate_all_power_report_job.cpu_workers"
+        ),
+        lambda: 8,
+    )
 
     class Executor:
         def __init__(self, max_workers, **kwargs):
@@ -54,10 +61,28 @@ def test_worker_count_is_limited_by_target_count(monkeypatch):
         def Queue(self):
             return object()
 
-    with patch("cndx_corp_batch.domains.generate_all_power_report.jobs.generate_all_power_report_job.ProcessPoolExecutor", Executor), patch(
-        "cndx_corp_batch.domains.generate_all_power_report.jobs.generate_all_power_report_job.multiprocessing.Manager",
-        Manager,
-    ), patch("cndx_corp_batch.domains.generate_all_power_report.jobs.generate_all_power_report_job.logging.handlers.QueueListener") as listener:
+    with (
+        patch(
+            (
+                "cndx_corp_batch.domains.generate_all_power_report.jobs."
+                "generate_all_power_report_job.ProcessPoolExecutor"
+            ),
+            Executor,
+        ),
+        patch(
+            (
+                "cndx_corp_batch.domains.generate_all_power_report.jobs."
+                "generate_all_power_report_job.multiprocessing.Manager"
+            ),
+            Manager,
+        ),
+        patch(
+            (
+                "cndx_corp_batch.domains.generate_all_power_report.jobs."
+                "generate_all_power_report_job.logging.handlers.QueueListener"
+            )
+        ) as listener,
+    ):
         job.execute()
     listener.return_value.start.assert_called_once()
     listener.return_value.stop.assert_called_once()

@@ -26,4 +26,6 @@ def test_save_writes_debug_png_only_when_output_dir_is_set(tmp_path):
     service = ChartService(output_dir=tmp_path)
     figure = plt.figure()
     uri = service.save("page", figure)
-    assert (tmp_path / "page.png").read_bytes() == base64.b64decode(uri.split(",", 1)[1])
+    assert (tmp_path / "page.png").read_bytes() == base64.b64decode(
+        uri.split(",", 1)[1]
+    )

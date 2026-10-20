@@ -18,10 +18,12 @@ from cndx_corp_batch.domains.generate_all_power_report.services import (
     create_power_report_service as worker_module,
     report_service as report_service_module,
 )
-from cndx_corp_batch.domains.generate_all_power_report.services.database_source_service import (
+from cndx_corp_batch.domains.generate_all_power_report.services \
+    .database_source_service import (
     NumericConversionError,
 )
-from cndx_corp_batch.domains.generate_all_power_report.services.query_result_service import (
+from cndx_corp_batch.domains.generate_all_power_report.services \
+    .query_result_service import (
     prepare_query_results,
 )
 from cndx_corp_batch.domains.generate_all_power_report.services.report_service import (
@@ -44,7 +46,11 @@ def make_context():
     )
 
 
-def target(point="0000000000000000000001", company="C001", syousapo=False):
+def target(
+    point = "0000000000000000000001",
+    company = "C001",
+    syousapo = False,
+):
     return SimpleNamespace(
         supply_point_number=point,
         company_id=company,
@@ -56,7 +62,9 @@ def target(point="0000000000000000000001", company="C001", syousapo=False):
     ("run_day", "expected"),
     [(date(2026, 5, 14), "202602"), (date(2026, 5, 15), "202603")],
 )
-def test_batch_date_selects_the_designated_report_month(run_day, expected):
+def test_batch_date_selects_the_designated_report_month(
+    run_day, expected
+):
     job = job_module.GenerateAllPowerReportJob(make_context(), run_day)
     assert job.report_ymd.strftime("%Y%m") == expected
 
@@ -76,7 +84,7 @@ def test_empty_target_does_not_start_worker_pool(monkeypatch, caplog):
 
 
 class _FakeFuture:
-    def __init__(self, row, failed=False):
+    def __init__(self, row, failed = False):
         self.row = row
         self.failed = failed
 
@@ -158,7 +166,7 @@ def test_each_target_is_submitted_once_and_error_does_not_stop_later_targets(
 
 
 class _Result:
-    def __init__(self, customer=None, daily=None):
+    def __init__(self, customer = None, daily = None):
         self.customer = customer
         self.daily = daily
         self.updated = []
@@ -190,31 +198,65 @@ def fake_worker_session(customer, daily, updated):
     return session_context
 
 
-def run_worker(monkeypatch, tmp_path, row, prepare_side_effect=None, render_side_effect=None):
+def run_worker(
+    monkeypatch,
+    tmp_path,
+    row,
+    prepare_side_effect = None,
+    render_side_effect = None,
+):
     updated = []
     worker_module._SQL_QUERIES.clear()
     worker_module._SQL_QUERIES.update(
         select_cust="customer", select_30min="daily", update_target="update"
     )
-    customer = {"customer_name": "テスト企業", "address": "東京都", "customer_number": "001", "contract_kw": 100}
-    daily = [{"T01_GET_YMD": "20260301", **{f"T01_30T_SYR{i:02d}": "1" for i in range(1, 49)}}]
+    customer = {
+        "customer_name": "テスト企業",
+        "address": "東京都",
+        "customer_number": "001",
+        "contract_kw": 100,
+    }
+    daily = [
+        {
+            "T01_GET_YMD": "20260301",
+            **{f"T01_30T_SYR{i:02d}": "1" for i in range(1, 49)},
+        }
+    ]
     service = Mock()
     if render_side_effect:
         service.generate_frame.side_effect = render_side_effect
-    monkeypatch.setattr(worker_module, "get_session", fake_worker_session(customer, daily, updated))
-    monkeypatch.setattr(worker_module, "get_current_time", lambda: datetime(2026, 5, 15, 1, 2, 3))
+    monkeypatch.setattr(
+        worker_module,
+        "get_session",
+        fake_worker_session(customer, daily, updated),
+    )
+    monkeypatch.setattr(
+        worker_module,
+        "get_current_time",
+        lambda: datetime(2026, 5, 15, 1, 2, 3),
+    )
     monkeypatch.setattr(worker_module, "get_sysuser", lambda: "test-user")
     monkeypatch.setattr(worker_module, "_report_service", service)
     if prepare_side_effect is not None:
-        monkeypatch.setattr(worker_module, "prepare_query_results", Mock(side_effect=prepare_side_effect))
+        monkeypatch.setattr(
+            worker_module,
+            "prepare_query_results",
+            Mock(side_effect=prepare_side_effect),
+        )
     else:
-        monkeypatch.setattr(worker_module, "prepare_query_results", Mock(return_value=("frame", {"target_month": "202603"})))
+        monkeypatch.setattr(
+            worker_module,
+            "prepare_query_results",
+            Mock(return_value=("frame", {"target_month": "202603"})),
+        )
     monkeypatch.setenv("REPORT_OUTPUT_DIR", str(tmp_path))
     worker_module.execute(row, date(2026, 3, 1))
     return updated, service
 
 
-def test_worker_success_uses_joined_filename_and_status_three(monkeypatch, tmp_path):
+def test_worker_success_uses_joined_filename_and_status_three(
+    monkeypatch, tmp_path
+):
     updated, service = run_worker(
         monkeypatch, tmp_path, target("0001", "C001", True)
     )
@@ -229,7 +271,9 @@ def test_worker_success_uses_joined_filename_and_status_three(monkeypatch, tmp_p
     )
 
 
-def test_worker_numeric_error_sets_warning_status_and_skips_pdf(monkeypatch, tmp_path, caplog):
+def test_worker_numeric_error_sets_warning_status_and_skips_pdf(
+    monkeypatch, tmp_path, caplog
+):
     updated, service = run_worker(
         monkeypatch,
         tmp_path,
@@ -259,11 +303,18 @@ def test_worker_unexpected_error_sets_error_status_with_100_character_message(
     assert "レポート作成エラー" in caplog.text
 
 
-def test_query_result_conversion_expands_48_half_hour_slots_and_reports_bad_column():
+def test_query_result_conversion_expands_48_half_hour_slots_and_reports_bad_column(
+):
     customer = {
-        "customer_name": "企業", "address": "住所", "customer_number": "001", "contract_kw": "100"
+        "customer_name": "企業",
+        "address": "住所",
+        "customer_number": "001",
+        "contract_kw": "100",
     }
-    row = {"T01_GET_YMD": "20260301", **{f"T01_30T_SYR{i:02d}": str(i) for i in range(1, 49)}}
+    row = {
+        "T01_GET_YMD": "20260301",
+        **{f"T01_30T_SYR{i:02d}": str(i) for i in range(1, 49)},
+    }
     frame, config = prepare_query_results(customer, [row], "0001", "202603")
     assert len(frame) == 48
     assert frame.iloc[0].kw == 2
@@ -277,7 +328,9 @@ def test_query_result_conversion_expands_48_half_hour_slots_and_reports_bad_colu
     assert error.value.column == "T01_30T_SYR17"
 
 
-def test_report_service_writes_only_the_requested_pdf(tmp_path, monkeypatch):
+def test_report_service_writes_only_the_requested_pdf(
+    tmp_path, monkeypatch
+):
     service = ReportService.__new__(ReportService)
     service.charts = Mock()
     service.charts.create_all.return_value = {"first_page": "data:image/png;base64,one"}
@@ -285,8 +338,14 @@ def test_report_service_writes_only_the_requested_pdf(tmp_path, monkeypatch):
     service.html.render.return_value = "<html>report</html>"
     service.printer = Mock()
     service.printer.print_html.return_value = b"%PDF-test"
-    monkeypatch.setattr(report_service_module, "validate_data", lambda frame, month: frame)
-    monkeypatch.setattr(report_service_module, "build_context", lambda frame, config: (config, {"df": frame}))
+    monkeypatch.setattr(
+        report_service_module, "validate_data", lambda frame, month: frame
+    )
+    monkeypatch.setattr(
+        report_service_module,
+        "build_context",
+        lambda frame, config: (config, {"df": frame}),
+    )
     output = tmp_path / "report.pdf"
 
     result = ReportService.generate_frame(

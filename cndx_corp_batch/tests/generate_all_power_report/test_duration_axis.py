@@ -1,12 +1,10 @@
-import sys
 import unittest
-from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from cndx_corp_batch.domains.generate_all_power_report.rendering.sections.no6_duration import (
+from cndx_corp_batch.domains.generate_all_power_report.rendering.sections \
+    .no6_duration import (
     duration_axis,
 )
 

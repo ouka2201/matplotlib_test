@@ -1,18 +1,14 @@
 """No.0をページへ直接描画し、契約値が領域に収まることを検証する。"""
 
-from pathlib import Path
-import sys
 import unittest
 import warnings
 
-import matplotlib
-
-matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from cndx_corp_batch.domains.generate_all_power_report.rendering.canvas import FirstPageCanvas
-from cndx_corp_batch.domains.generate_all_power_report.rendering.sections.no0_contract import (
+from cndx_corp_batch.domains.generate_all_power_report.rendering \
+    .canvas import FirstPageCanvas
+from cndx_corp_batch.domains.generate_all_power_report.rendering.sections \
+    .no0_contract import (
     draw_no0,
 )
 

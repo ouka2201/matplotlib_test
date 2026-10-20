@@ -1,11 +1,9 @@
-import sys
 import tempfile
 import unittest
 from pathlib import Path
 
 import pandas as pd
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from cndx_corp_batch.domains.generate_all_power_report.services.data_service import (
     bounds,
     build_context,

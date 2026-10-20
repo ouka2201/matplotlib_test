@@ -1,7 +1,5 @@
 """仕様書No.7の週の選定、時間帯の色、日別kWh、最大kWを検証する。"""
 
-from pathlib import Path
-import sys
 import unittest
 import warnings
 
@@ -9,17 +7,15 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import to_rgba
 import pandas as pd
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from cndx_corp_batch.domains.generate_all_power_report.rendering.sections.no6_duration import (
-    duration_axis,
-)
 from cndx_corp_batch.domains.generate_all_power_report.services.data_service import (
     bounds,
     build_context,
     peak_week_bounds,
 )
-from cndx_corp_batch.domains.generate_all_power_report.rendering.styles import DEFAULT_NOTES
-from cndx_corp_batch.domains.generate_all_power_report.rendering.pages.second_page import (
+from cndx_corp_batch.domains.generate_all_power_report.rendering \
+    .styles import DEFAULT_NOTES
+from cndx_corp_batch.domains.generate_all_power_report.rendering.pages \
+    .second_page import (
     draw_second_page,
 )
 

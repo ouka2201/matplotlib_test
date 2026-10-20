@@ -1,26 +1,22 @@
 """No.1の四捨五入・順位・カレンダーの仕様を検証する。"""
 
 import calendar
-from pathlib import Path
-import sys
 import unittest
 import warnings
 
-import matplotlib
-
-matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from matplotlib.colors import to_rgba
 import pandas as pd
+from matplotlib.colors import to_rgba
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from cndx_corp_batch.domains.generate_all_power_report.services.data_service import (
     bounds,
     build_context,
     calendar_power,
 )
-from cndx_corp_batch.domains.generate_all_power_report.rendering.canvas import FirstPageCanvas
-from cndx_corp_batch.domains.generate_all_power_report.rendering.sections.no1_daily_maximum import (
+from cndx_corp_batch.domains.generate_all_power_report.rendering \
+    .canvas import FirstPageCanvas
+from cndx_corp_batch.domains.generate_all_power_report.rendering.sections \
+    .no1_daily_maximum import (
     draw_no1,
 )
 

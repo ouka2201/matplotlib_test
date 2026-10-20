@@ -1,23 +1,19 @@
 """仕様書No.4の月間電力量、最小値の点線、順位、コメントを検証する。"""
 
-from pathlib import Path
-import sys
 import unittest
 import warnings
 
-import matplotlib
 
-matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.colors import to_rgba
 import pandas as pd
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from cndx_corp_batch.domains.generate_all_power_report.services.data_service import (
     bounds,
     build_context,
 )
-from cndx_corp_batch.domains.generate_all_power_report.rendering.pages.first_page import (
+from cndx_corp_batch.domains.generate_all_power_report.rendering.pages \
+    .first_page import (
     draw_first_page,
 )
 
@@ -103,7 +99,12 @@ class No4EnergyTests(unittest.TestCase):
             texts = [t.get_text() for t in fig.axes[0].texts]
             self.assertIn("使用電力量が最も\n多かったのは08月でした", texts)
             self.assertIn(
-                "03月（青点線）を上回る使用電力量は\n空調による影響が大きいと思われます\n空調洗浄や高効率空調への更新が\n使用電力量削減につながります",
+                (
+                    "03月（青点線）を上回る使用電力量は\n"
+                    "空調による影響が大きいと思われます\n"
+                    "空調洗浄や高効率空調への更新が\n"
+                    "使用電力量削減につながります"
+                ),
                 texts,
             )
         finally:

@@ -1,36 +1,34 @@
 """1年未満の実績について、CSV・DB・集計・ページ描画まで検証する。"""
 
-import sys
 import tempfile
 import unittest
 import warnings
 from pathlib import Path
 
-import matplotlib
-
-matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from cndx_corp_batch.domains.generate_all_power_report.services.data_service import (
     validate_data,
     build_context,
 )
-from cndx_corp_batch.domains.generate_all_power_report.services.database_source_service import (
+from cndx_corp_batch.domains.generate_all_power_report.services \
+    .database_source_service import (
     expand_daily_rows,
     POINT,
     DATE,
     SLOTS,
 )
-from cndx_corp_batch.domains.generate_all_power_report.rendering.pages.first_page import (
+from cndx_corp_batch.domains.generate_all_power_report.rendering.pages \
+    .first_page import (
     draw_first_page,
 )
-from cndx_corp_batch.domains.generate_all_power_report.rendering.pages.second_page import (
+from cndx_corp_batch.domains.generate_all_power_report.rendering.pages \
+    .second_page import (
     draw_second_page,
 )
-from cndx_corp_batch.domains.generate_all_power_report.rendering.sections.no6_duration import (
+from cndx_corp_batch.domains.generate_all_power_report.rendering.sections \
+    .no6_duration import (
     duration_axis,
 )
 

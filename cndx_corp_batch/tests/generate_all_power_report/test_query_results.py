@@ -2,12 +2,14 @@
 
 import pytest
 
-from cndx_corp_batch.domains.generate_all_power_report.services.database_source_service import (
+from cndx_corp_batch.domains.generate_all_power_report.services \
+    .database_source_service import (
     DATE,
     SLOTS,
     NumericConversionError,
 )
-from cndx_corp_batch.domains.generate_all_power_report.services.query_result_service import (
+from cndx_corp_batch.domains.generate_all_power_report.services \
+    .query_result_service import (
     prepare_query_results,
     row_to_dict,
 )
@@ -25,7 +27,7 @@ def customer():
     }
 
 
-def daily(day="20260601", value="1.5"):
+def daily(day = "20260601", value = "1.5"):
     return {DATE.lower(): day, **{slot.lower(): value for slot in SLOTS}}
 
 
