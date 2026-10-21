@@ -5,12 +5,27 @@ import pytest
 
 from cndx_corp_batch.test.insert_link_customer_30min_data import (
     SeedOptions,
+    _table_name,
     seed_database,
 )
 
 
 def settings_for(tmp_path):
-    return {"url": f"sqlite:///{tmp_path / 'seed.db'}", "schema": None}
+    return {
+        "url": f"sqlite:///{tmp_path / 'seed.db'}",
+        "schema": None,
+        "import_management_table": "t_30min_import_mng",
+        "management_table": "t_power_report_mng_info",
+    }
+
+
+def test_import_management_table_is_used_when_report_config_is_shared():
+    settings = {
+        "import_management_table": "t_30min_import_mng",
+        "management_table": "t_power_report_mng_info",
+    }
+
+    assert _table_name(settings, "management") == "t_30min_import_mng"
 
 
 def rows(engine, query):

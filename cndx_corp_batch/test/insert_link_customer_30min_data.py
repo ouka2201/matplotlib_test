@@ -79,6 +79,16 @@ class SeedOptions:
 
 
 def _table_name(settings: dict[str, Any], key: str) -> str:
+    if key == "management":
+        # レポート作成用設定には、別用途のmanagement_tableも含まれる。
+        # 30分値取込管理はimport_management_tableを優先して使用する。
+        return settings.get(
+            "link_management_table",
+            settings.get(
+                "import_management_table",
+                settings.get("management_table", TABLE_NAMES[key]),
+            ),
+        )
     return settings.get(f"{key}_table", TABLE_NAMES[key])
 
 
