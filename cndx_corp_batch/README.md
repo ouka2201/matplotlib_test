@@ -68,3 +68,24 @@ python -m pytest .\tests\generate_all_power_report -q --cov --cov-report=term-mi
 本体の依存ライブラリもテスト用requirementsからインストールされます。テストでChromiumは起動しません。
 `test/test_generate_all_power_report.py` のDB接続用スクリプトは、
 対象を `tests` に限定しているため自動収集されません。
+
+## 顧客情報と30分値データ連携用のテストデータ
+
+連携バッチの確認に必要な、取込管理・企業・建物・ARVE顧客情報・EP30分値を
+まとめて登録するPGを `test/insert_link_customer_30min_data.py` に用意しています。
+接続先は `--db-config` の `url` または `url_env` から取得します。
+
+```powershell
+Set-Location C:\STEP4\electricity_report
+$env:REPORT_DATABASE_URL = 'postgresql+psycopg2://ユーザー:パスワード@ホスト/DB名'
+python -m cndx_corp_batch.test.insert_link_customer_30min_data `
+    --db-config cndx_corp_batch/test/database.json `
+    --target-month 2026-03 `
+    --count 3
+```
+
+既定では対象月の全日について48枠の30分値を作成し、取込管理を状態3（完了）で
+登録します。`--days` で生成日数、`--missing-count` と `--invalid-count` で
+欠測・不正件数を指定できます。再実行時に既存行を残す場合は
+`--on-existing skip`、登録せず内容だけ確認する場合は `--dry-run` を指定します。
+このPGは連携先の `t_electricity_data_30min` には登録しません。
