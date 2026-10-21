@@ -46,6 +46,8 @@ def test_seed_creates_all_source_rows(tmp_path):
         assert len(daily) == 4
         assert daily[0]["T01_30T_SYR01"] == "1.2511"
         assert daily[0]["T01_KSKJ_KSU"] == "0"
+        assert daily[0]["CREATED_BY"] == "customer_30min_test_seed"
+        assert daily[0]["CREATED_AT"] is not None
     finally:
         engine.dispose()
 

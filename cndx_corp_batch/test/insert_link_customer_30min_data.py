@@ -141,7 +141,12 @@ def _points(options: SeedOptions) -> Iterator[tuple[int, str]]:
 
 
 def _daily_rows(
-    point: str, serial: int, start: date, end: date, options: SeedOptions
+    point: str,
+    serial: int,
+    start: date,
+    end: date,
+    options: SeedOptions,
+    now: datetime,
 ) -> Iterator[dict[str, Any]]:
     current = start
     while current < end:
@@ -150,6 +155,7 @@ def _daily_rows(
             "T01_GET_YMD": current.strftime("%Y%m%d"),
             "T01_KSKJ_KSU": str(options.missing_count),
             "T01_FSIJ_KSU": str(options.invalid_count),
+            **_audit(now),
         }
         for index, column in enumerate(SLOT_COLUMNS, start=1):
             value = options.value + Decimal(serial) / 1000 + Decimal(index) / 10000
@@ -293,6 +299,10 @@ def _table_definitions(metadata: MetaData, settings: dict[str, Any]) -> None:
         Column("T01_KSKJ_KSU", String(2), nullable=False),
         Column("T01_FSIJ_KSU", String(2), nullable=False),
         *[Column(name, String(9), nullable=False) for name in SLOT_COLUMNS],
+        Column("CREATED_BY", String(50), nullable=False),
+        Column("CREATED_AT", DateTime, nullable=False),
+        Column("UPDATED_BY", String(50)),
+        Column("UPDATED_AT", DateTime),
     )
     Table(
         _table_name(settings, "linked"),
@@ -378,7 +388,13 @@ def seed_database(settings: dict[str, Any], options: SeedOptions) -> dict[str, A
             _require_columns(tables["customer"], ("CMN_SupplyPointSpecificNum__c",))
             _require_columns(
                 tables["daily"],
-                ("T01_KYO_CTN_TOK_NO", "T01_GET_YMD", *SLOT_COLUMNS),
+                (
+                    "T01_KYO_CTN_TOK_NO",
+                    "T01_GET_YMD",
+                    *SLOT_COLUMNS,
+                    "CREATED_BY",
+                    "CREATED_AT",
+                ),
             )
             now = datetime.now()
             for serial, point in _points(options):
@@ -416,7 +432,7 @@ def seed_database(settings: dict[str, Any], options: SeedOptions) -> dict[str, A
                     result["tables"]["customer"],
                     options,
                 )
-                for row in _daily_rows(point, serial, start, end, options):
+                for row in _daily_rows(point, serial, start, end, options, now):
                     _insert_or_skip(
                         connection,
                         tables["daily"],
