@@ -1,0 +1,8 @@
+# Requirements
+# - VSCodeプラグイン REST Client
+
+### シナリオ1 条件：銀行名 （曖昧検索）
+GET http://127.0.0.1:5000/api/report/cn-karte-download
+Content-Type: application/json
+
+GET http://192.168.1.18:5000/api/report/cn-karte/visual/download?file_name=cn_karte_202104.pdf

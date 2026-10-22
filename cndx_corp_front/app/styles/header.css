@@ -1,0 +1,38 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .header-frame {
+    @apply flex flex-row items-center justify-between flex-nowrap;
+    @apply h-[71px] px-4 py-2 bg-white border-b border-[#d0d5dd];
+    @apply fixed top-0 right-0 left-0 z-200;
+  }
+
+  .logo-wrapper,
+  .logo-link,
+  .user-nav-wrapper {
+    @apply flex items-center;
+  }
+
+  .logo {
+    /* @apply relative w-[88px] h-[32px]; */
+    @apply relative w-[150px] h-[40px] flex items-center justify-center;
+  }
+
+  .header-tepco-logo {
+    /* @apply absolute top-0 left-0 w-full h-full bg-no-repeat bg-center bg-[length:100%_100%]; */
+    @apply w-full h-full bg-no-repeat bg-center bg-contain;
+    background-image: url('/assets/icons/icon-logo-tepsys.png');
+  }
+  .header-lecmoc-logo {
+    /* @apply relative h-[32px] w-[150px] bg-no-repeat bg-center bg-[length:100%_100%]; */
+    @apply w-full h-full bg-no-repeat bg-center bg-contain;
+    background-image: url('/assets/icons/icon-lec-moc.png');
+    transform: scale(1.45) translateY(1px);
+  }
+
+  .site-title {
+    @apply h-[24px] text-[#1d2939] font-bold text-[16px] leading-[24px] whitespace-nowrap font-["Noto_Sans_JP"];
+  }
+}

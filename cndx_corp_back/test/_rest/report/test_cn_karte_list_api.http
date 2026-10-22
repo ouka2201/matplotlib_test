@@ -1,0 +1,68 @@
+### シナリオ1：法人番号あり（データあり）
+GET http://127.0.0.1:5000/api/report/cn-karte/list?corporate_number=1234567890123&org_id=ORG001
+Content-Type: application/json
+
+###
+
+### シナリオ1-2：法人番号あり（データあり／org_idなし）
+# → 期待結果: 200 OK, データあり（org_idなしでも許容する仕様の場合）
+GET http://127.0.0.1:5000/api/report/cn-karte/list?corporate_number=1234567890123
+Content-Type: application/json
+
+###
+
+### シナリオ1-3：法人番号あり（データあり／別法人番号）
+# → 期待結果: 200 OK, データあり
+GET http://127.0.0.1:5000/api/report/cn-karte/list?corporate_number=1234567890124&org_id=10001
+Content-Type: application/json
+
+###
+
+### シナリオ2：法人番号あり（データなし）
+# → 期待結果: 200 OK, 空配列 []
+GET http://127.0.0.1:5000/api/report/cn-karte/list?corporate_number=9999999999999&org_id=10001
+Content-Type: application/json
+
+###
+
+### シナリオ3：法人番号パラメータなし（全くの空）
+# → 期待結果: 400 Bad Request
+GET http://127.0.0.1:5000/api/report/cn-karte/list
+Content-Type: application/json
+
+###
+
+### シナリオ4：法人番号は空文字（""）
+# → 期待結果: 400 Bad Request
+GET http://127.0.0.1:5000/api/report/cn-karte/list?corporate_number=
+Content-Type: application/json
+
+###
+
+### シナリオ5：不正な余分パラメータ付き（無視される想定）
+# → 期待結果: 200 OK, dummyパラメータは無視される
+GET http://127.0.0.1:5000/api/report/cn-karte/list?corporate_number=1234567890123&dummy=abc123
+Content-Type: application/json
+
+###
+
+### シナリオ6：org_idは空文字（""）
+# → 期待結果: 200 OK もしくは 400（仕様により）
+GET http://127.0.0.1:5000/api/report/cn-karte/list?corporate_number=1234567890123&org_id=
+Content-Type: application/json
+
+###
+
+### シナリオ7：両方のパラメータが空文字
+# → 期待結果: 400 Bad Request
+GET http://127.0.0.1:5000/api/report/cn-karte/list?corporate_number=&org_id=
+Content-Type: application/json
+
+###
+
+### シナリオ8：不正なHTTPメソッド（POST）
+# → 期待結果: 405 Method Not Allowed
+POST http://127.0.0.1:5000/api/report/cn-karte/list
+Content-Type: application/json
+
+{}

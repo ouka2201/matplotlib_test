@@ -1,0 +1,4 @@
+FROM fluent/fluent-bit:latest
+
+# カスタムプラグインや設定を追加
+COPY fluent-bit.conf /fluent-bit/etc/fluent-bit.conf

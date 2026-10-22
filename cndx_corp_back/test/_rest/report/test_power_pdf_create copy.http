@@ -1,0 +1,80 @@
+### 正常系：単一拠点（スクショの値）
+POST http://127.0.0.1:5000/api/report/power-report/create
+Content-Type: application/json
+
+{
+  "corporate_number": "2025071400001",
+  "org_id": "TEP",
+  "building_id": "2025071400001001001",
+  "agreement_category": "11",
+  "target_month": "202504"
+}
+
+### 正常系：agreement_category 省略（デフォルト '01' を使用）
+POST http://127.0.0.1:5000/api/report/power-report/create
+Content-Type: application/json
+
+{
+  "corporate_number": "2025071400001",
+  "org_id": "TEP",
+  "building_id": "2025071400001001001",
+  "target_month": "202504"
+}
+
+### エラー系：存在しない building_id
+POST http://127.0.0.1:5000/api/report/power-report/create
+Content-Type: application/json
+
+{
+  "corporate_number": "2025071400001",
+  "org_id": "TEP",
+  "building_id": "ZZZZ",
+  "agreement_category": "11",
+  "target_month": "202504"
+}
+
+### エラー系：building_id 不足
+POST http://127.0.0.1:5000/api/report/power-report/create
+Content-Type: application/json
+
+{
+  "corporate_number": "2025071400001",
+  "org_id": "TEP",
+  "agreement_category": "11",
+  "target_month": "202504"
+}
+
+### エラー系：building_id = null
+POST http://127.0.0.1:5000/api/report/power-report/create
+Content-Type: application/json
+
+{
+  "corporate_number": "2025071400001",
+  "org_id": "TEP",
+  "building_id": null,
+  "agreement_category": "11",
+  "target_month": "202504"
+}
+
+### エラー系：target_month 不足
+POST http://127.0.0.1:5000/api/report/power-report/create
+Content-Type: application/json
+
+{
+  "corporate_number": "2025071400001",
+  "org_id": "TEP",
+  "building_id": "2025071400001001001",
+  "agreement_category": "11"
+}
+
+### 正常系：別建物（ID を差し替えて使用）
+POST http://127.0.0.1:5000/api/report/power-report/create
+Content-Type: application/json
+
+{
+  "corporate_number": "2025071400001",
+  "org_id": "TEP",
+  "building_id": "B002",          // ← 実データの拠点IDに置換
+  "agreement_category": "11",
+  "target_month": "202504"
+}

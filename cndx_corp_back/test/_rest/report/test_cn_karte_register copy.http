@@ -1,0 +1,91 @@
+### 正常系：① 複数拠点カルテ作成 → 企業全体
+POST http://127.0.0.1:5000/api/report/cn-karte/register
+Content-Type: application/json
+
+{
+  "corporate_number": "1234567890123",
+  "org_id": "ORG001",
+  "agreement_category": "01",
+  "org_name": "東京営業部",
+  "start_year": 2021,
+  "start_month": 4,
+  "end_year": 2022,
+  "end_month": 3,
+  "consent_route": "可視化アライアンス（EP・REP）",
+  "report_type": "CNカルテ(簡易版)",
+  "downloads": {
+    "missing_data_pdf": true,
+    "report_back_csv": true,
+    "kpi_csv": true
+  },
+  "multi_condition": {
+    "entire_company": true,
+    "group_option": false,
+    "group_items": []
+  },
+  "target_type": "複数",
+  "building_id": null,
+  "fiscal_year": "2021",
+  "user": "system"
+}
+
+### 正常系：② 複数拠点カルテ作成 → グループ（東京、大阪）
+POST http://127.0.0.1:5000/api/report/cn-karte/register
+Content-Type: application/json
+
+{
+  "corporate_number": "1234567890123",
+  "org_id": "ORG001",
+  "agreement_category": "01",
+  "org_name": "東京営業部",
+  "start_year": 2021,
+  "start_month": 4,
+  "end_year": 2022,
+  "end_month": 3,
+  "consent_route": "可視化アライアンス（EP・REP）",
+  "report_type": "CNカルテ(簡易版)",
+  "downloads": {
+    "missing_data_pdf": true,
+    "report_back_csv": true,
+    "kpi_csv": true
+  },
+  "multi_condition": {
+    "entire_company": false,
+    "group_option": true,
+    "group_items": [
+      {"name": "東京"},
+      {"name": "大阪"}
+    ]
+  },
+  "target_type": "複数",
+  "building_id": null,
+  "fiscal_year": "2021",
+  "user": "system"
+}
+
+### 正常系：③ 個別拠点カルテ作成 → BUILDING001
+POST http://127.0.0.1:5000/api/report/cn-karte/register
+Content-Type: application/json
+
+{
+  "corporate_number": "1234567890123",
+  "org_id": "ORG001",
+  "agreement_category": "01",
+  "org_name": "東京営業部",
+  "start_year": 2021,
+  "start_month": 4,
+  "end_year": 2022,
+  "end_month": 3,
+  "consent_route": "可視化アライアンス（EP・REP）",
+  "report_type": "CNカルテ(簡易版)",
+  "downloads": {
+    "missing_data_pdf": true,
+    "report_back_csv": true,
+    "kpi_csv": true
+  },
+  "multi_condition": {},
+  "target_type": "個別",
+  "building_id": "BUILDING001",
+  "fiscal_year": "2021",
+  "user": "system"
+}

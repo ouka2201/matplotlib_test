@@ -1,0 +1,53 @@
+### 1 正常系
+POST http://127.0.0.1:5000/api/corp/basic-info
+Authorization: TEST_TOKEN
+Content-Type: application/json
+
+{
+    "corporate_number": "2025060601001",
+    "agreement_category": "01",
+    "org_id": "testorgid",
+    "company_name": "⓪①株式会社",
+    "company_address_city": "テスト町1-1",
+    "business_office_count": "1",
+    "industry_class_major_code": "A",
+    "industry_class_middle_code": "01",
+    "industry_class_minor_code": "010",
+    "industry_class_detail_code": "0100"
+}
+
+### 2 異常系 レコード存在しない
+POST http://127.0.0.1:5000/api/corp/basic-info
+Authorization: TEST_TOKEN
+Content-Type: application/json
+
+{
+    "corporate_number": "2025060601002",
+    "agreement_category": "01",
+    "org_id": "testorgid",
+    "company_name": "⓪①株式会社",
+    "company_address_city": "テスト町1-1",
+    "business_office_count": "1",
+    "industry_class_major_code": "A",
+    "industry_class_middle_code": "01",
+    "industry_class_minor_code": "010",
+    "industry_class_detail_code": "0100"
+}
+
+### 3 異常系 産業分類存在しない
+POST http://127.0.0.1:5000/api/corp/basic-info
+Authorization: TEST_TOKEN
+Content-Type: application/json
+
+{
+    "corporate_number": "2025060601003",
+    "agreement_category": "01",
+    "org_id": "testorgid",
+    "company_name": "⓪①株式会社",
+    "company_address_city": "テスト町1-1",
+    "business_office_count": "1",
+    "industry_class_major_code": "A",
+    "industry_class_middle_code": "01",
+    "industry_class_minor_code": "010",
+    "industry_class_detail_code": "0100"
+}

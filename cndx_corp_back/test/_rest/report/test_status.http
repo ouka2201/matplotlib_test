@@ -1,0 +1,51 @@
+# Requirements
+# - VSCodeプラグイン REST Client
+
+### シナリオ1 条件：銀行名 （曖昧検索）
+GET http://127.0.0.1:5000/api/report/status/inquiry?bank_name=%EF%BC%97%EF%BC%97
+Content-Type: application/json
+
+### シナリオ2 条件：法人名 （曖昧検索）
+GET http://127.0.0.1:5000/api/report/status/inquiry?corporation_name=%E3%81%97%E3%81%B6%E3%81%97%E3%81%B6
+Content-Type: application/json
+
+### シナリオ3 条件：対象年度 （完全一致検索）
+GET http://127.0.0.1:5000/api/report/status/inquiry?fiscal_year=2020
+Content-Type: application/json
+
+### シナリオ4 条件：作成日開始
+GET http://127.0.0.1:5000/api/report/status/inquiry?creation_date_from=2025-03-23
+Content-Type: application/json
+
+### シナリオ5 条件：作成日終了
+GET http://127.0.0.1:5000/api/report/status/inquiry?creation_date_to=2025-03-23
+Content-Type: application/json
+
+### シナリオ6 条件：ステータス （完全一致検索）
+GET http://127.0.0.1:5000/api/report/status/inquiry?report_status=9
+Content-Type: application/json
+
+### シナリオ7 全条件
+GET http://127.0.0.1:5000/api/report/status/inquiry?bank_name=77&corporation_name=%E3%81%8D%E3%81%9F&fiscal_year=2021&creation_date_from=2025-03-23&creation_date_to=2025-03-23&report_status=2
+Content-Type: application/json
+
+### シナリオ8 全条件 + 余計なパラメータあり
+GET http://127.0.0.1:5000/api/report/status/inquiry?bank_name=77&corporation_name=%E3%81%8D%E3%81%9F&fiscal_year=2021&creation_date_from=2025-03-23&creation_date_to=2025-03-23&report_status=2&unknown=test11111&bank_code=0115
+Content-Type: application/json
+
+### シナリオ9 条件なし
+GET http://127.0.0.1:5000/api/report/status/inquiry
+Content-Type: application/json
+
+### シナリオ10 条件が空文字
+GET http://127.0.0.1:5000/api/report/status/inquiry?bank_name=&corporation_name=&fiscal_year=&creation_date_from=&creation_date_to=&report_status=
+Content-Type: application/json
+
+### シナリオ11 年度 202 （完全一致検索動作確認）
+GET http://127.0.0.1:5000/api/report/status/inquiry?fiscal_year=202
+Content-Type: application/json
+
+
+### シナリオ12 条件：作成日 日付形式エラー
+GET http://127.0.0.1:5000/api/report/status/inquiry?creation_date_from=2025-01-
+Content-Type: application/json

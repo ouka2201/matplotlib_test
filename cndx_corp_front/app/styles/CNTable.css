@@ -1,0 +1,66 @@
+.CNtableContainer {
+  width: 100%;
+  overflow-x: auto;
+	background-color: gray;
+}
+
+.CNtable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.CNtable th {
+  border: none;
+  padding: 8px;
+  text-align: left;
+  vertical-align: middle;
+	background-color: gray;
+}
+
+.CNtable td {
+  border: none;
+  padding: 8px;
+  text-align: left;
+  vertical-align: middle;
+	background-color: white;
+}
+
+.checkboxColumn {
+  width: 3%;
+  text-align: center;
+}
+
+.branchName {
+  width: 10%;
+}
+
+.bankName {
+  width: 10%;
+}
+
+.customerName {
+  min-width: 15%;
+  flex: 1;
+}
+
+.representative {
+  width: 10%;
+}
+
+.fiscalYear {
+  width: 8%;
+}
+
+.registrationDate {
+  width: 10%;
+}
+
+.registrationCount {
+  width: 8%;
+}
+
+.record {
+  flex: 1;
+}
+
+

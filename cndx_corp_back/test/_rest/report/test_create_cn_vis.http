@@ -1,0 +1,61 @@
+# Requirements
+# - VSCodeプラグイン REST Client
+
+### シナリオ1 複数拠点 企業全体
+POST http://127.0.0.1:5000/api/report/cn-karte/create/vis
+Authorization: Bearer TEST_TOKEN
+Content-Type: application/json
+
+{
+    "corporate_number":"2025071400001",
+    "start_year":"2025",
+    "start_month":"04",
+    "creation_format":"1",
+    "org_id":"TEP",
+    "agreement_category":"01",
+    "need_data_insufficiency_list":"True",
+    "need_report_backdata":"False",
+    "need_kpi_list":"True",
+    "is_for_multibuilding":"True"
+}
+
+### シナリオ2 複数拠点 group
+POST http://127.0.0.1:5000/api/report/cn-karte/create/vis
+Authorization: Bearer TEST_TOKEN
+Content-Type: application/json
+
+{
+    "corporate_number":"2025071400001",
+    "start_year":"2025",
+    "start_month":"04",
+    "creation_format":"1",
+    "org_id":"TEP",
+    "agreement_category":"01",
+    "need_data_insufficiency_list": "True",
+    "need_report_backdata": "False",
+    "need_kpi_list": "True",
+    "is_for_multibuilding": "True",
+    "group_for_multibuilding": [
+        {"group_no":"1", "option_no":"2"},
+        {"group_no":"2", "option_no":"1"}
+    ]
+}
+
+### シナリオ3 単拠点
+POST http://127.0.0.1:5000/api/report/cn-karte/create/vis
+Authorization: Bearer TEST_TOKEN
+Content-Type: application/json
+
+{
+    "corporate_number":"2025071400001",
+    "start_year":"2025",
+    "start_month":"04",
+    "creation_format":"1",
+    "org_id":"TEP",
+    "agreement_category":"01",
+    "need_data_insufficiency_list": "True",
+    "need_report_backdata": "False",
+    "need_kpi_list": "True",
+    "is_for_multibuilding": "False",
+    "building_ids_for_single": ["2025071401001001001", "2025071401001001002"]
+}

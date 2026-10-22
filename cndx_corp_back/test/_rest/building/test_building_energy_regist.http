@@ -1,0 +1,2646 @@
+# 拠点エネルギー登録 API テスト
+# Requirements
+# - VSCodeプラグイン REST Client
+
+
+### シナリオ1 正常系 登録
+# 新規本登録（registration_seq不要、entry_draft_flagが1以外）
+# 結果：✅
+POST http://127.0.0.1:5000/api/building/energy-register
+Authorization: Bearer TEST_TOKEN
+Content-Type: application/json
+
+{
+    "corporate_number": "2025071400001",
+    "agreement_category": "01",
+    "org_id": "TEP",
+    "start_year_month": "202404",
+    "end_year_month": "202503",
+    "fiscal_year": "2024",
+    "updated_building_info": [
+        {
+            "industry_class_major_code": "A",
+            "industry_class_middle_code": "01",
+            "industry_class_minor_code": "011",
+            "industry_class_detail_code": "0111",
+            "gross_floor_area": "222",
+            "electric_company_reg_no": "A0001",
+            "menu_no": "11",
+            "ep_office_code": "ep1",
+            "ep_customer_number": "1111122222001",
+            "supply_point_number": "1111100000111112220101",
+            "city_gas_reg_no": "G0001",
+            "heat_supply_reg_no": "H0001",
+            "energy_info": [
+                {
+                    "energy_unit_original": "千kWh",
+                    "energy_code": "0200010011",
+                    "energy_name_jp": "電気",
+                    "energy_usage": [
+                        10,
+                        20,
+                        30,
+                        40,
+                        50,
+                        60,
+                        70,
+                        80,
+                        90,
+                        100,
+                        110,
+                        120
+                    ],
+                    "energy_usage_sum": 780
+                },
+                {
+                    "energy_code": "0100230000",
+                    "energy_unit_original": "m3",
+                    "energy_name_jp": "都市ガス",
+                    "energy_usage": [
+                        11,
+                        22,
+                        33,
+                        44,
+                        55,
+                        66,
+                        77,
+                        88,
+                        99,
+                        100,
+                        110,
+                        120
+                    ]
+                }
+            ],
+            "building_id": "2025071400001001001",
+            "building_name": "事務所2"
+        }
+    ]
+}
+
+### シナリオ1-1 正常系 登録 2023
+# 新規本登録（registration_seq不要、entry_draft_flagが1以外）
+# 結果：✅
+POST http://127.0.0.1:5000/api/building/energy-register
+Authorization: Bearer TEST_TOKEN
+Content-Type: application/json
+
+{
+    "corporate_number": "2025062401001",
+    "agreement_category": "01",
+    "org_id": "REP",
+    "start_year_month": "202304",
+    "end_year_month": "202403",
+    "fiscal_year": "2023",
+    "updated_building_info": [
+        {
+            "industry_class_major_code": "A",
+            "industry_class_middle_code": "01",
+            "industry_class_minor_code": "011",
+            "industry_class_detail_code": "0111",
+            "gross_floor_area": "222",
+            "electric_company_reg_no": "A0001",
+            "menu_no": "1",
+            "ep_office_code": "ep1",
+            "ep_customer_number": "1111122222001",
+            "supply_point_number": "1111100000111112220101",
+            "city_gas_reg_no": "G0001",
+            "heat_supply_reg_no": "H0001",
+            "energy_info": [
+                {
+                    "energy_unit_original": "千kWh",
+                    "energy_code": "0200010011",
+                    "energy_name_jp": "電気",
+                    "energy_usage": [
+                        10,
+                        20,
+                        30,
+                        40,
+                        50,
+                        60,
+                        70,
+                        80,
+                        90,
+                        100,
+                        11,
+                        12
+                    ],
+                    "energy_usage_sum": 780
+                },
+                {
+                    "energy_code": "0100230000",
+                    "energy_unit_original": "m3",
+                    "energy_name_jp": "都市ガス",
+                    "energy_usage": [
+                        11,
+                        22,
+                        33,
+                        44,
+                        55,
+                        66,
+                        77,
+                        88,
+                        99,
+                        100,
+                        11,
+                        12
+                    ]
+                }
+            ],
+            "building_id": "2025062301001001001",
+            "building_name": "事務所１"
+        }
+    ]
+}
+
+### シナリオ2 正常系 更新
+# 登録済みのデータを更新（registration_seqあり、entry_draft_flagが1以外）
+# 登録回数が15回目のデータを更新
+# 結果：✅
+POST http://127.0.0.1:5000/api/building/energy-register
+Authorization: Bearer TEST_TOKEN
+Content-Type: application/json
+
+{
+    "corporate_number": "2025062401001",
+    "agreement_category": "01",
+    "org_id": "testorgid",
+    "start_year_month": "202404",
+    "end_year_month": "202503",
+    "fiscal_year": "2024",
+    "registration_seq": 16,
+    "entry_draft_flag": "0",
+    "updated_building_info": [
+        {
+            "industry_class_major_code": "A",
+            "industry_class_middle_code": "01",
+            "industry_class_minor_code": "011",
+            "industry_class_detail_code": "0112",
+            "gross_floor_area": "1001",
+            "electric_company_reg_no": "A0002",
+            "menu_no": "1",
+            "ep_office_code": "ep1",
+            "ep_customer_number": "1111122222001",
+            "supply_point_number": "1111100000111112220101",
+            "city_gas_reg_no": "G0002",
+            "heat_supply_reg_no": "H0002",
+            "energy_info": [
+                {
+                    "energy_unit_original": "千kWh",
+                    "energy_code": "0200010011",
+                    "energy_name_jp": "電気",
+                    "energy_usage": [
+                        10,
+                        20,
+                        30,
+                        40,
+                        50,
+                        60,
+                        70,
+                        80,
+                        90,
+                        100,
+                        110,
+                        1201
+                    ],
+                    "energy_usage_sum": 780
+                },
+                {
+                    "energy_code": "0100230000",
+                    "energy_unit_original": "m3",
+                    "energy_name_jp": "都市ガス",
+                    "energy_usage": [
+                        11,
+                        22,
+                        33,
+                        44,
+                        55,
+                        66,
+                        77,
+                        88,
+                        99,
+                        100,
+                        110,
+                        1202
+                    ]
+                }
+            ],
+            "building_id": "2025062301001001001",
+            "building_name": "事務所１"
+        },
+        {
+            "industry_class_major_code": "B",
+            "industry_class_middle_code": "03",
+            "industry_class_minor_code": "031",
+            "industry_class_detail_code": "0312",
+            "gross_floor_area": "1502",
+            "electric_company_reg_no": "A0012",
+            "menu_no": "1",
+            "ep_office_code": "EP2",
+            "ep_customer_number": "1111122222002",
+            "supply_point_number": "1111100000111112220101",
+            "city_gas_reg_no": "G0012",
+            "heat_supply_reg_no": "H0012",
+            "energy_info": [
+                {
+                    "energy_unit_original": "kWh",
+                    "energy_code": "0200010011",
+                    "energy_name_jp": "電気",
+                    "energy_usage": [
+                        1,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        200
+                    ]
+                }
+            ],
+            "building_id": "2025062301001001002",
+            "building_name": "事務所２"
+        }
+    ]
+}
+
+### シナリオ3 下書き新規登録（registration_seqなし、entry_draft_flag=1）
+# 新規下書き保存（registration_seq不要、entry_draft_flagが1）
+# 結果：✅
+POST http://127.0.0.1:5000/api/building/energy-register
+Authorization: Bearer TEST_TOKEN
+Content-Type: application/json
+
+{
+  "corporate_number": "2025071400001",
+  "agreement_category": "01",
+  "org_id": "TEP",
+  "start_year_month": "202504",
+  "end_year_month": "202603",
+  "fiscal_year": "2025",
+  "entry_draft_flag": "0",
+  "insert_flag": false,
+  "registration_seq": 2,
+  "updated_building_info": [
+    {
+      "building_id": "2025071401001001001",
+      "building_name": "AutoEntryテスト1ビル",
+      "industry_class_major_code": "A",
+      "industry_class_middle_code": "01",
+      "industry_class_minor_code": "011",
+      "industry_class_detail_code": "0111",
+      "gross_floor_area": "222",
+      "electric_company_reg_no": "A0001",
+      "menu_no": "1",
+      "ep_office_code": "123",
+      "ep_customer_number": "1234567890123",
+      "supply_point_number": "1234567890123456789011",
+      "city_gas_reg_no": "G0001",
+      "heat_supply_reg_no": "H0001",
+      "energy_info": [
+        {
+          "energy_unit_original": "千kWh",
+          "energy_code": "0200010011",
+          "energy_name_jp": "電気",
+          "energy_quantity": [10,20,30,40,50,60,70,80,90,100,110,120]
+        }
+      ]
+    }
+  ]
+}
+
+### シナリオx 一時
+# 新規下書き保存（registration_seq不要、entry_draft_flagが1）
+# 結果：✅
+POST http://127.0.0.1:5000/api/building/energy-register
+Authorization: Bearer TEST_TOKEN
+Content-Type: application/json
+
+{"corporate_number":"2025060601115","agreement_category":"01","registration_seq":null,"org_id":"TEP","start_year_month":"202404","end_year_month":"202503","fiscal_year":"2024","entry_draft_flag":"0","insert_flag":true,"updated_building_info":[{"building_id":"2025060601115001001","building_name":"testビル","industry_class_major_code":"K","industry_class_middle_code":"68","industry_class_minor_code":"682","industry_class_detail_code":"6821","gross_floor_area":"123","menu_no":"1","ep_office_code":"404","ep_customer_number":"7777700000123","supply_point_number":"2222200000222220000012","energy_info":[{"energy_code":"0200010011","energy_unit_original":"千kWh","energy_name_jp":"電気","energy_quantity":["124","514","0","0","0","0","215","0","0","0","0","0"],"energy_usage_sum":0}],"entry_draft_flag":"0","electric_company_reg_no":"A0002","city_gas_reg_no":"0828","heat_supply_reg_no":"00001"}]}
+
+### シナリオx 一時
+# 新規下書き保存（registration_seq不要、entry_draft_flagが1）
+# 結果：✅
+POST http://127.0.0.1:5000/api/building/energy-register
+Authorization: Bearer TEST_TOKEN
+Content-Type: application/json
+
+{
+  "corporate_number": "0000000000333",
+  "agreement_category": "02",
+  "registration_seq": 4,
+  "org_id": "TEP",
+  "start_year_month": "202404",
+  "end_year_month": "202503",
+  "fiscal_year": "2024",
+  "entry_draft_flag": "1",
+  "insert_flag": false,
+  "updated_building_info": [
+    {
+      "building_id": "0000000000333001001",
+      "building_name": "test拠点1",
+      "industry_class_major_code": "A",
+      "industry_class_middle_code": "01",
+      "gross_floor_area": "222",
+      "menu_no": "1",
+      "ep_office_code": "123",
+      "ep_customer_number": "1234567890123",
+      "supply_point_number": "1234567890123456789011",
+      "energy_info": [
+        {
+          "energy_code": "0200010011",
+          "energy_quantity": [
+            "10",
+            "20",
+            "30",
+            "40",
+            "50",
+            "60",
+            "70",
+            "80",
+            "90",
+            "100",
+            "110",
+            "120"
+          ],
+          "energy_quantity_sum": 780,
+          "energy_unit_original": "千kWh",
+          "energy_name_jp": "電気"
+        }
+      ],
+      "entry_draft_flag": "1",
+      "electric_company_reg_no": "A0002",
+      "city_gas_reg_no": "0828",
+      "heat_supply_reg_no": "H0002"
+    }
+  ]
+}
+
+### シナリオ4 下書き編集→本登録（registration_seqあり、entry_draft_flag=0）
+# 下書きを編集して本登録（registration_seqが照会でもらったもの、entry_draft_flagが1以外）
+POST http://127.0.0.1:5000/api/building/energy-register
+Authorization: Bearer TEST_TOKEN
+Content-Type: application/json
+
+{
+    "corporate_number": "2025062401001",
+    "agreement_category": "01",
+    "org_id": "testorgid",
+    "start_year_month": "202404",
+    "end_year_month": "202503",
+    "fiscal_year": "2024",
+    "entry_draft_flag": "0",
+    "updated_building_info": [
+        {
+            "industry_class_major_code": "A",
+            "industry_class_middle_code": "01",
+            "industry_class_minor_code": "011",
+            "industry_class_detail_code": "0110",
+            "gross_floor_area": "222",
+            "electric_company_reg_no": "A0001",
+            "menu_no": "1",
+            "ep_office_code": "ep1",
+            "ep_customer_number": "1111122222001",
+            "supply_point_number": "1111100000111112220101",
+            "city_gas_reg_no": "G0001",
+            "heat_supply_reg_no": "H0001",
+            "energy_info": [
+                {
+                    "energy_unit_original": "千kWh",
+                    "energy_code": "0200010011",
+                    "energy_name_jp": "電気",
+                    "energy_usage": [10,20,30,40,50,60,70,80,90,100,110,120]
+                }
+            ],
+            "building_id": "2025062301001001001",
+            "building_name": "事務所１",
+            "registration_seq": 1
+        }
+    ]
+}
+
+
+### シナリオ5 正常系 登録
+# 新規本登録（registration_seq不要、entry_draft_flagが1以外）
+# 建物5個、エネルギー10種類利用
+# 結果：
+POST http://127.0.0.1:5000/api/building/energy-register
+Authorization: Bearer TEST_TOKEN
+Content-Type: application/json
+
+{
+  "corporate_number": "2025042100104",
+  "agreement_category": "01",
+  "org_id": "REP",
+  "start_year_month": "202301",
+  "end_year_month": "202312",
+  "fiscal_year": "2023",
+  "entry_draft_flag": "0",
+  "updated_building_info": [
+    {
+      "building_id": "2025042100104001001",
+      "building_name": "六月十八日1ビル",
+      "registration_seq": "",
+      "industry_class_major_code": "A",
+      "industry_class_middle_code": "01",
+      "industry_class_minor_code": "011",
+      "industry_class_detail_code": "0116",
+      "gross_floor_area": "1234",
+      "electric_company_reg_no": "B0001",
+      "menu_no": "1",
+      "ep_office_code": "001",
+      "ep_customer_number": "0000000000001",
+      "supply_point_number": "2025061901234567891011",
+      "city_gas_reg_no": "001",
+      "heat_supply_reg_no": "003",
+      "energy_info": [
+        {
+          "energy_code": "0200010011",
+          "energy_unit_original": "千kWh",
+          "energy_name_jp": "電気",
+          "energy_usage": [
+            "24215",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "9"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100020000",
+          "energy_unit_original": "t",
+          "energy_name_jp": "輸入原料炭",
+          "energy_usage": [
+            "878",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "89"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100310000",
+          "energy_unit_original": "t",
+          "energy_name_jp": "コークス用原料炭",
+          "energy_usage": [
+            "787",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "97"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100320000",
+          "energy_unit_original": "t",
+          "energy_name_jp": "吹込用原料炭",
+          "energy_usage": [
+            "789",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "789"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100010000",
+          "energy_unit_original": "t",
+          "energy_name_jp": "輸入一般炭",
+          "energy_usage": [
+            "779",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "7979"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100330000",
+          "energy_unit_original": "t",
+          "energy_name_jp": "国産一般炭",
+          "energy_usage": [
+            "79",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "6"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100150000",
+          "energy_unit_original": "L",
+          "energy_name_jp": "原油（コンデンセート（NGL）を除く）",
+          "energy_usage": [
+            "78969",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            0,
+            "87987"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100120000",
+          "energy_unit_original": "kl",
+          "energy_name_jp": "Ａ重油",
+          "energy_usage": [
+            "6796",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "690"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100230000",
+          "energy_unit_original": "千m3",
+          "energy_name_jp": "都市ガス",
+          "energy_usage": [
+            "89",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "890"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0300010000",
+          "energy_unit_original": "GJ",
+          "energy_name_jp": "産業用蒸気",
+          "energy_usage": [
+            "9809",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "7987"
+          ],
+          "energy_usage_sum": 0
+        }
+      ]
+    },
+    {
+      "building_id": "2025042100104001002",
+      "building_name": "六月十八日2ビル",
+      "registration_seq": "",
+      "industry_class_major_code": "A",
+      "industry_class_middle_code": "01",
+      "industry_class_minor_code": "011",
+      "industry_class_detail_code": "0116",
+      "gross_floor_area": "1234",
+      "electric_company_reg_no": "B0001",
+      "menu_no": "1",
+      "ep_office_code": "001",
+      "ep_customer_number": "0000000000001",
+      "supply_point_number": "2025061901234567891011",
+      "city_gas_reg_no": "001",
+      "heat_supply_reg_no": "003",
+      "energy_info": [
+        {
+          "energy_code": "0200010011",
+          "energy_unit_original": "千kWh",
+          "energy_name_jp": "電気",
+          "energy_usage": [
+            "24215",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "9"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100020000",
+          "energy_unit_original": "t",
+          "energy_name_jp": "輸入原料炭",
+          "energy_usage": [
+            "878",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "89"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100310000",
+          "energy_unit_original": "t",
+          "energy_name_jp": "コークス用原料炭",
+          "energy_usage": [
+            "787",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "97"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100320000",
+          "energy_unit_original": "t",
+          "energy_name_jp": "吹込用原料炭",
+          "energy_usage": [
+            "789",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "789"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100010000",
+          "energy_unit_original": "t",
+          "energy_name_jp": "輸入一般炭",
+          "energy_usage": [
+            "779",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "7979"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100330000",
+          "energy_unit_original": "t",
+          "energy_name_jp": "国産一般炭",
+          "energy_usage": [
+            "79",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "6"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100150000",
+          "energy_unit_original": "L",
+          "energy_name_jp": "原油（コンデンセート（NGL）を除く）",
+          "energy_usage": [
+            "78969",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            0,
+            "87987"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100120000",
+          "energy_unit_original": "kl",
+          "energy_name_jp": "Ａ重油",
+          "energy_usage": [
+            "6796",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "690"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100230000",
+          "energy_unit_original": "千m3",
+          "energy_name_jp": "都市ガス",
+          "energy_usage": [
+            "89",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "890"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0300010000",
+          "energy_unit_original": "GJ",
+          "energy_name_jp": "産業用蒸気",
+          "energy_usage": [
+            "9809",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "7987"
+          ],
+          "energy_usage_sum": 0
+        }
+      ]
+    },
+    {
+      "building_id": "2025042100104001003",
+      "building_name": "六月十八日3ビル",
+      "registration_seq": "",
+      "industry_class_major_code": "A",
+      "industry_class_middle_code": "01",
+      "industry_class_minor_code": "011",
+      "industry_class_detail_code": "0116",
+      "gross_floor_area": "1234",
+      "electric_company_reg_no": "B0001",
+      "menu_no": "1",
+      "ep_office_code": "001",
+      "ep_customer_number": "0000000000001",
+      "supply_point_number": "2025061901234567891011",
+      "city_gas_reg_no": "001",
+      "heat_supply_reg_no": "003",
+      "energy_info": [
+        {
+          "energy_code": "0200010011",
+          "energy_unit_original": "千kWh",
+          "energy_name_jp": "電気",
+          "energy_usage": [
+            "24215",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "9"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100020000",
+          "energy_unit_original": "t",
+          "energy_name_jp": "輸入原料炭",
+          "energy_usage": [
+            "878",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "89"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100310000",
+          "energy_unit_original": "t",
+          "energy_name_jp": "コークス用原料炭",
+          "energy_usage": [
+            "787",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "97"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100320000",
+          "energy_unit_original": "t",
+          "energy_name_jp": "吹込用原料炭",
+          "energy_usage": [
+            "789",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "789"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100010000",
+          "energy_unit_original": "t",
+          "energy_name_jp": "輸入一般炭",
+          "energy_usage": [
+            "779",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "7979"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100330000",
+          "energy_unit_original": "t",
+          "energy_name_jp": "国産一般炭",
+          "energy_usage": [
+            "79",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "6"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100150000",
+          "energy_unit_original": "L",
+          "energy_name_jp": "原油（コンデンセート（NGL）を除く）",
+          "energy_usage": [
+            "78969",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            0,
+            "87987"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100120000",
+          "energy_unit_original": "kl",
+          "energy_name_jp": "Ａ重油",
+          "energy_usage": [
+            "6796",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "690"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100230000",
+          "energy_unit_original": "千m3",
+          "energy_name_jp": "都市ガス",
+          "energy_usage": [
+            "89",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "890"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0300010000",
+          "energy_unit_original": "GJ",
+          "energy_name_jp": "産業用蒸気",
+          "energy_usage": [
+            "9809",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "7987"
+          ],
+          "energy_usage_sum": 0
+        }
+      ]
+    },
+    {
+      "building_id": "2025042100104001004",
+      "building_name": "六月十八日4ビル",
+      "registration_seq": "",
+      "industry_class_major_code": "A",
+      "industry_class_middle_code": "01",
+      "industry_class_minor_code": "011",
+      "industry_class_detail_code": "0116",
+      "gross_floor_area": "1234",
+      "electric_company_reg_no": "B0001",
+      "menu_no": "1",
+      "ep_office_code": "001",
+      "ep_customer_number": "0000000000001",
+      "supply_point_number": "2025061901234567891011",
+      "city_gas_reg_no": "001",
+      "heat_supply_reg_no": "003",
+      "energy_info": [
+        {
+          "energy_code": "0200010011",
+          "energy_unit_original": "千kWh",
+          "energy_name_jp": "電気",
+          "energy_usage": [
+            "24215",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "9"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100020000",
+          "energy_unit_original": "t",
+          "energy_name_jp": "輸入原料炭",
+          "energy_usage": [
+            "878",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "89"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100310000",
+          "energy_unit_original": "t",
+          "energy_name_jp": "コークス用原料炭",
+          "energy_usage": [
+            "787",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "97"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100320000",
+          "energy_unit_original": "t",
+          "energy_name_jp": "吹込用原料炭",
+          "energy_usage": [
+            "789",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "789"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100010000",
+          "energy_unit_original": "t",
+          "energy_name_jp": "輸入一般炭",
+          "energy_usage": [
+            "779",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "7979"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100330000",
+          "energy_unit_original": "t",
+          "energy_name_jp": "国産一般炭",
+          "energy_usage": [
+            "79",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "6"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100150000",
+          "energy_unit_original": "L",
+          "energy_name_jp": "原油（コンデンセート（NGL）を除く）",
+          "energy_usage": [
+            "78969",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            0,
+            "87987"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100120000",
+          "energy_unit_original": "kl",
+          "energy_name_jp": "Ａ重油",
+          "energy_usage": [
+            "6796",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "690"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100230000",
+          "energy_unit_original": "千m3",
+          "energy_name_jp": "都市ガス",
+          "energy_usage": [
+            "89",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "890"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0300010000",
+          "energy_unit_original": "GJ",
+          "energy_name_jp": "産業用蒸気",
+          "energy_usage": [
+            "9809",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "7987"
+          ],
+          "energy_usage_sum": 0
+        }
+      ]
+    },
+    {
+      "building_id": "2025042100104001005",
+      "building_name": "六月十八日5ビル",
+      "registration_seq": "",
+      "industry_class_major_code": "A",
+      "industry_class_middle_code": "01",
+      "industry_class_minor_code": "011",
+      "industry_class_detail_code": "0116",
+      "gross_floor_area": "1234",
+      "electric_company_reg_no": "B0001",
+      "menu_no": "1",
+      "ep_office_code": "001",
+      "ep_customer_number": "0000000000001",
+      "supply_point_number": "2025061901234567891011",
+      "city_gas_reg_no": "001",
+      "heat_supply_reg_no": "003",
+      "energy_info": [
+        {
+          "energy_code": "0200010011",
+          "energy_unit_original": "千kWh",
+          "energy_name_jp": "電気",
+          "energy_usage": [
+            "24215",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "9"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100020000",
+          "energy_unit_original": "t",
+          "energy_name_jp": "輸入原料炭",
+          "energy_usage": [
+            "878",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "89"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100310000",
+          "energy_unit_original": "t",
+          "energy_name_jp": "コークス用原料炭",
+          "energy_usage": [
+            "787",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "97"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100320000",
+          "energy_unit_original": "t",
+          "energy_name_jp": "吹込用原料炭",
+          "energy_usage": [
+            "789",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "789"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100010000",
+          "energy_unit_original": "t",
+          "energy_name_jp": "輸入一般炭",
+          "energy_usage": [
+            "779",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "7979"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100330000",
+          "energy_unit_original": "t",
+          "energy_name_jp": "国産一般炭",
+          "energy_usage": [
+            "79",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "6"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100150000",
+          "energy_unit_original": "L",
+          "energy_name_jp": "原油（コンデンセート（NGL）を除く）",
+          "energy_usage": [
+            "78969",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            0,
+            "87987"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100120000",
+          "energy_unit_original": "kl",
+          "energy_name_jp": "Ａ重油",
+          "energy_usage": [
+            "6796",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "690"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100230000",
+          "energy_unit_original": "千m3",
+          "energy_name_jp": "都市ガス",
+          "energy_usage": [
+            "89",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "890"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0300010000",
+          "energy_unit_original": "GJ",
+          "energy_name_jp": "産業用蒸気",
+          "energy_usage": [
+            "9809",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "7987"
+          ],
+          "energy_usage_sum": 0
+        }
+      ]
+    }
+  ]
+}
+
+### シナリオ6 正常系 全種類利用
+# 結果：✅
+POST http://127.0.0.1:5000/api/building/energy-register
+Authorization: Bearer TEST_TOKEN
+Content-Type: application/json
+
+
+{
+  "corporate_number": "2025062401001",
+  "agreement_category": "01",
+  "org_id": "REP",
+  "start_year_month": "202401",
+  "end_year_month": "202412",
+  "fiscal_year": "2024",
+  "entry_draft_flag": "0",
+  "updated_building_info": [
+    {
+      "building_id": "2025042100101001001",
+      "building_name": "事務所１",
+      "registration_seq": "",
+      "industry_class_major_code": "A",
+      "industry_class_middle_code": "01",
+      "industry_class_minor_code": "011",
+      "industry_class_detail_code": "0111",
+      "gross_floor_area": "1234",
+      "electric_company_reg_no": "B0001",
+      "menu_no": "1",
+      "ep_office_code": "001",
+      "ep_customer_number": "0000000000001",
+      "supply_point_number": "2025061901234567891011",
+      "city_gas_reg_no": "002",
+      "heat_supply_reg_no": "002",
+      "energy_info": [
+        {
+          "energy_code": "0200010011",
+          "energy_unit_original": "千kWh",
+          "energy_name_jp": "電気",
+          "energy_usage": [
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100020000",
+          "energy_unit_original": "t",
+          "energy_name_jp": "輸入原料炭",
+          "energy_usage": [
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100310000",
+          "energy_unit_original": "t",
+          "energy_name_jp": "コークス用原料炭",
+          "energy_usage": [
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100320000",
+          "energy_unit_original": "t",
+          "energy_name_jp": "吹込用原料炭",
+          "energy_usage": [
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100010000",
+          "energy_unit_original": "t",
+          "energy_name_jp": "輸入一般炭",
+          "energy_usage": [
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100330000",
+          "energy_unit_original": "t",
+          "energy_name_jp": "国産一般炭",
+          "energy_usage": [
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100030000",
+          "energy_unit_original": "kg",
+          "energy_name_jp": "輸入無煙炭",
+          "energy_usage": [
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100070000",
+          "energy_unit_original": "kg",
+          "energy_name_jp": "石炭コークス",
+          "energy_usage": [
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100080000",
+          "energy_unit_original": "t",
+          "energy_name_jp": "石油コ ークス",
+          "energy_usage": [
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100350000",
+          "energy_unit_original": "t",
+          "energy_name_jp": "FCCコーク",
+          "energy_usage": [
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100170000",
+          "energy_unit_original": "t",
+          "energy_name_jp": "コールタール",
+          "energy_usage": [
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100160000",
+          "energy_unit_original": "kg",
+          "energy_name_jp": "石油アスファルト",
+          "energy_usage": [
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100140000",
+          "energy_unit_original": "L",
+          "energy_name_jp": "コンデンセート（NGL）",
+          "energy_usage": [
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100150000",
+          "energy_unit_original": "L",
+          "energy_name_jp": "原油（コンデンセート（NGL ）を除く）",
+          "energy_usage": [
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100090000",
+          "energy_unit_original": "L",
+          "energy_name_jp": "揮発油",
+          "energy_usage": [
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100180000",
+          "energy_unit_original": "kl",
+          "energy_name_jp": "ナフサ",
+          "energy_usage": [
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100300000",
+          "energy_unit_original": "kl",
+          "energy_name_jp": "ジ ェット燃料油",
+          "energy_usage": [
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100100000",
+          "energy_unit_original": "L",
+          "energy_name_jp": "灯油",
+          "energy_usage": [
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100110000",
+          "energy_unit_original": "L",
+          "energy_name_jp": "軽油",
+          "energy_usage": [
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100120000",
+          "energy_unit_original": "kl",
+          "energy_name_jp": "Ａ重油",
+          "energy_usage": [
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100130000",
+          "energy_unit_original": "kl",
+          "energy_name_jp": "Ｂ・Ｃ重油",
+          "energy_usage": [
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100360000",
+          "energy_unit_original": "kl",
+          "energy_name_jp": "潤滑油",
+          "energy_usage": [
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100190000",
+          "energy_unit_original": "kg",
+          "energy_name_jp": "液化石油ガス（LPG）",
+          "energy_usage": [
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100200000",
+          "energy_unit_original": "千m3",
+          "energy_name_jp": "石油系炭化水素ガス",
+          "energy_usage": [
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100210000",
+          "energy_unit_original": "kg",
+          "energy_name_jp": "液化天然ガス（LNG）",
+          "energy_usage": [
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100220000",
+          "energy_unit_original": "千m3",
+          "energy_name_jp": "その他可燃性天然ガス",
+          "energy_usage": [
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100240000",
+          "energy_unit_original": "m3",
+          "energy_name_jp": "コークス炉ガス",
+          "energy_usage": [
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100250000",
+          "energy_unit_original": "千m3",
+          "energy_name_jp": "高炉ガス",
+          "energy_usage": [
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100340000",
+          "energy_unit_original": "千m3",
+          "energy_name_jp": "発電用高炉ガス",
+          "energy_usage": [
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100260000",
+          "energy_unit_original": "千m3",
+          "energy_name_jp": "転炉ガス",
+          "energy_usage": [
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0100230000",
+          "energy_unit_original": "千m3",
+          "energy_name_jp": "都市ガス",
+          "energy_usage": [
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0300010000",
+          "energy_unit_original": "MJ",
+          "energy_name_jp": "産業用蒸気",
+          "energy_usage": [
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0300020000",
+          "energy_unit_original": "MJ",
+          "energy_name_jp": "産業用以外の蒸気",
+          "energy_usage": [
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0300030000",
+          "energy_unit_original": "GJ",
+          "energy_name_jp": "温水",
+          "energy_usage": [
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "0300040000",
+          "energy_unit_original": "GJ",
+          "energy_name_jp": "冷水",
+          "energy_usage": [
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "9900010001",
+          "energy_unit_original": "kWh",
+          "energy_name_jp": "再エネ発電（自家消費）",
+          "energy_usage": [
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "9900010002",
+          "energy_unit_original": "t-CO2",
+          "energy_name_jp": "電力証書・クレジット",
+          "energy_usage": [
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "9900010003",
+          "energy_unit_original": "t-CO2",
+          "energy_name_jp": "熱証書・クレジット",
+          "energy_usage": [
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999"
+          ],
+          "energy_usage_sum": 0
+        },
+        {
+          "energy_code": "9900010004",
+          "energy_unit_original": "t-CO2",
+          "energy_name_jp": "その他の証書・クレジット",
+          "energy_usage": [
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999",
+            "999"
+          ],
+          "energy_usage_sum": 0
+        }
+      ]
+    }
+  ]
+}
+
+
+### シナリオ11 正常系（energy_usageに空文字列）
+# energy_usageに空文字列が含まれる場合、0として扱われることを確認
+POST http://127.0.0.1:5000/api/building/energy-register
+Authorization: Bearer TEST_TOKEN
+Content-Type: application/json
+
+{
+    "corporate_number": "2025062401011",
+    "agreement_category": "01",
+    "org_id": "testorgid",
+    "fiscal_year": "2024",
+    "start_year_month": "202401",
+    "end_year_month": "202412",
+    "updated_building_info": [
+        {
+            "building_id": "2025062401011001001",
+            "building_name": "事務所１",
+            "industry_class_major_code": "A",
+            "industry_class_middle_code": "01",
+            "industry_class_minor_code": "011",
+            "industry_class_detail_code": "0110",
+            "gross_floor_area": 222,
+            "electric_company_reg_no": "A0001",
+            "menu_no": "1",
+            "ep_office_code": "ep1",
+            "ep_customer_number": "1111122222001",
+            "supply_point_number": "1111100000111112220101",
+            "city_gas_reg_no": "G0001",
+            "heat_supply_reg_no": "H0001",
+            "energy_info": [
+                {
+                    "energy_unit_original": "千kWh",
+                    "energy_code": "0200010011",
+                    "energy_name_jp": "電気",
+                    "energy_usage": [10, "", 30, "", 50, 60, 70, 80, 90, 100, 110, 120]
+                }
+            ]
+        }
+    ]
+}
+
+### シナリオ12 異常系（energy_usageが12未満）
+# energy_usageの要素数が12未満の場合、バリデーションエラーとなることを確認
+POST http://127.0.0.1:5000/api/building/energy-register
+Authorization: Bearer TEST_TOKEN
+Content-Type: application/json
+
+{
+    "corporate_number": "2025062401012",
+    "agreement_category": "01",
+    "org_id": "testorgid",
+    "fiscal_year": "2024",
+    "start_year_month": "202404",
+    "end_year_month": "202503",
+    "updated_building_info": [
+        {
+            "building_id": "2025062401012001001",
+            "building_name": "事務所１",
+            "industry_class_major_code": "A",
+            "industry_class_middle_code": "01",
+            "industry_class_minor_code": "011",
+            "industry_class_detail_code": "0110",
+            "gross_floor_area": 222,
+            "electric_company_reg_no": "A0001",
+            "menu_no": "1",
+            "ep_office_code": "ep1",
+            "ep_customer_number": "1111122222001",
+            "supply_point_number": "1111100000111112220101",
+            "city_gas_reg_no": "G0001",
+            "heat_supply_reg_no": "H0001",
+            "energy_info": [
+                {
+                    "energy_unit_original": "千kWh",
+                    "energy_code": "0200010011",
+                    "energy_name_jp": "電気",
+                    "energy_usage": [10, 20, 30]
+                }
+            ]
+        }
+    ]
+}
+
+### シナリオ13 異常系（start_year_monthが不正）
+# start_year_monthの月が13など不正な場合、バリデーションエラーとなることを確認
+POST http://127.0.0.1:5000/api/building/energy-register
+Authorization: Bearer TEST_TOKEN
+Content-Type: application/json
+
+{
+    "corporate_number": "2025062401013",
+    "agreement_category": "01",
+    "org_id": "testorgid",
+    "fiscal_year": "2024",
+    "start_year_month": "202413",
+    "end_year_month": "202503",
+    "updated_building_info": []
+}
+
+### シナリオ14 異常系（building_idの長さ不正）
+# building_idの長さが19桁でない場合、バリデーションエラーとなることを確認
+POST http://127.0.0.1:5000/api/building/energy-register
+Authorization: Bearer TEST_TOKEN
+Content-Type: application/json
+
+{
+    "corporate_number": "2025062401013",
+    "agreement_category": "01",
+    "org_id": "testorgid",
+    "fiscal_year": "2024",
+    "start_year_month": "202404",
+    "end_year_month": "202503",
+    "updated_building_info": [
+        {
+            "building_id": "20250623",
+            "building_name": "事務所１",
+            "industry_class_major_code": "A",
+            "industry_class_middle_code": "01",
+            "industry_class_minor_code": "011",
+            "industry_class_detail_code": "0110",
+            "gross_floor_area": 222,
+            "electric_company_reg_no": "A0001",
+            "menu_no": "1",
+            "ep_office_code": "ep1",
+            "ep_customer_number": "1111122222001",
+            "supply_point_number": "1111100000111112220101",
+            "city_gas_reg_no": "G0001",
+            "heat_supply_reg_no": "H0001",
+            "energy_info": []
+        }
+    ]
+}
+
+### シナリオ15 異常系 境界値（updated_building_infoが空）
+# updated_building_infoが空配列の場合、エラーになること
+POST http://127.0.0.1:5000/api/building/energy-register
+Authorization: Bearer TEST_TOKEN
+Content-Type: application/json
+
+{
+    "corporate_number": "2025062401001",
+    "agreement_category": "01",
+    "org_id": "testorgid",
+    "fiscal_year": "2024",
+    "start_year_month": "202404",
+    "end_year_month": "202503",
+    "updated_building_info": []
+}
+
+### シナリオ16 異常系（複数エラー: list内・list外・多重list）
+# 複数のバリデーションエラーが同時に発生する場合のテスト
+# - corporate_numberの長さ不正（list外）
+# - updated_building_info[0].building_idの長さ不正（list1）
+# - updated_building_info[0].energy_info[1].energy_usageが12未満（list2, 多重list）
+POST http://127.0.0.1:5000/api/building/energy-register
+Authorization: Bearer TEST_TOKEN
+Content-Type: application/json
+
+{
+    "corporate_number": "20250624",
+    "agreement_category": "01",
+    "org_id": "testorgid",
+    "fiscal_year": "2024",
+    "start_year_month": "202404",
+    "end_year_month": "202503",
+    "updated_building_info": [
+        {
+            "building_id": "2025",
+            "building_name": "事務所１",
+            "industry_class_major_code": "A",
+            "industry_class_middle_code": "01",
+            "industry_class_minor_code": "011",
+            "industry_class_detail_code": "0110",
+            "gross_floor_area": 222,
+            "electric_company_reg_no": "A0001",
+            "menu_no": "1",
+            "ep_office_code": "ep1",
+            "ep_customer_number": "1111122222001",
+            "supply_point_number": "1111100000111112220101",
+            "city_gas_reg_no": "G0001",
+            "heat_supply_reg_no": "H0001",
+            "energy_info": [
+                {
+                    "energy_unit_original": "千kWh",
+                    "energy_code": "0200010011",
+                    "energy_name_jp": "電気",
+                    "energy_usage": [10,20,30,40,50,60,70,80,90,100,"110","１２０"]
+                },
+                {
+                    "energy_unit_original": "m3",
+                    "energy_code": "0100230000",
+                    "energy_name_jp": "都市ガス",
+                    "energy_usage": [1,2,3]
+                }
+            ]
+        }
+    ]
+}
+
+
+### シナリオ10 下書き編集→本登録（registration_seqあり、entry_draft_flag=0）
+# 下書きを編集して本登録（registration_seqが照会でもらったもの、entry_draft_flagが1以外）
+POST http://127.0.0.1:5000/api/building/energy-register
+Authorization: Bearer TEST_TOKEN
+Content-Type: application/json
+
+{
+    "corporate_number": "2025062401001",
+    "agreement_category": "01",
+    "org_id": "testorgid",
+    "start_year_month": "202404",
+    "end_year_month": "202503",
+    "fiscal_year": "2024",
+    "entry_draft_flag": "0",
+    "updated_building_info": [
+        {
+            "industry_class_major_code": "A",
+            "industry_class_middle_code": "01",
+            "industry_class_minor_code": "011",
+            "industry_class_detail_code": "0110",
+            "gross_floor_area": "222",
+            "electric_company_reg_no": "A0001",
+            "menu_no": "1",
+            "ep_office_code": "ep1",
+            "ep_customer_number": "1111122222001",
+            "supply_point_number": "1111100000111112220101",
+            "city_gas_reg_no": "G0001",
+            "heat_supply_reg_no": "H0001",
+            "energy_info": [
+                {
+                    "energy_unit_original": "千kWh",
+                    "energy_code": "0200010011",
+                    "energy_name_jp": "電気",
+                    "energy_usage": [10,20,30,40,50,60,70,80,90,100,110,120]
+                }
+            ],
+            "building_id": "2025062301001001001",
+            "building_name": "事務所１",
+            "registration_seq": 1
+        }
+    ]
+}
+
+### シナリオ11 下書き編集→下書き保存（registration_seqあり、entry_draft_flag=1）
+# 下書きを編集して下書き保存（registration_seqが照会でもらったもの、entry_draft_flagが1）
+POST http://127.0.0.1:5000/api/building/energy-register
+Authorization: Bearer TEST_TOKEN
+Content-Type: application/json
+
+{
+    "corporate_number": "2025062401001",
+    "agreement_category": "01",
+    "org_id": "testorgid",
+    "start_year_month": "202404",
+    "end_year_month": "202503",
+    "fiscal_year": "2024",
+    "entry_draft_flag": "1",
+    "updated_building_info": [
+        {
+            "industry_class_major_code": "A",
+            "industry_class_middle_code": "01",
+            "industry_class_minor_code": "011",
+            "industry_class_detail_code": "0110",
+            "gross_floor_area": "222",
+            "electric_company_reg_no": "A0001",
+            "menu_no": "1",
+            "ep_office_code": "ep1",
+            "ep_customer_number": "1111122222001",
+            "supply_point_number": "1111100000111112220101",
+            "city_gas_reg_no": "G0001",
+            "heat_supply_reg_no": "H0001",
+            "energy_info": [
+                {
+                    "energy_unit_original": "千kWh",
+                    "energy_code": "0200010011",
+                    "energy_name_jp": "電気",
+                    "energy_usage": [10,20,30,40,50,60,70,80,90,100,110,120]
+                }
+            ],
+            "building_id": "2025062301001001001",
+            "building_name": "事務所１",
+            "registration_seq": 1
+        }
+    ]
+}
+
+### シナリオxx 下書き保存 エネルギー全くないパターン TODO

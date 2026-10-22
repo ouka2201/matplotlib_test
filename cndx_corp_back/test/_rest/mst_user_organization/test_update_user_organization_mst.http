@@ -1,0 +1,62 @@
+# Requirements
+# - VSCodeプラグイン REST Client
+
+### シナリオ1 既存情報あり全項目更新
+POST http://127.0.0.1:5000/api/user/mst_organization/corpration/auth_update
+Content-Type: application/json
+
+{
+    "org_id": "BNK0009",
+    "user_id": "user_id_case01",
+    "org_name": "地銀カタカナ_ケース①",
+    "org_type": "地銀・支店_ケース①",
+    "user_company_name": "山梨中央銀行_ケース①",
+    "user_company_code": "876_ケース①",
+    "user_org_dept_name": "河口湖支店_ケース①",
+    "user_org_dept_code": "005_ケース①"
+}
+
+### シナリオ2 既存情報なし全項目更新
+POST http://127.0.0.1:5000/api/user/mst_organization/corpration/auth_update
+Content-Type: application/json
+
+{
+    "org_id": "org_id_case02",
+    "user_id": "user_id_case02",
+    "org_name": "地銀カタカナ_ケース②",
+    "org_type": "地銀・支店_ケース②",
+    "user_company_name": "山梨中央銀行_ケース②",
+    "user_company_code": "876_ケース②",
+    "user_org_dept_name": "河口湖支店_ケース②",
+    "user_org_dept_code": "005_ケース②"
+}
+
+### シナリオ3 DB障害(想定外エラー)
+POST http://127.0.0.1:5000/api/user/mst_organization/corpration/auth_update
+Content-Type: application/json
+
+{
+    "org_id": "org_id_case02",
+    "user_id": "user_id_case02",
+    "org_name": "地銀カタカナ_ケース②",
+    "org_type": "地銀・支店_ケース②",
+    "user_company_name": "山梨中央銀行_ケース②",
+    "user_company_code": "876_ケース②",
+    "user_org_dept_name": "河口湖支店_ケース②",
+    "user_org_dept_code": "005_ケース②"
+}
+
+### シナリオ4 サーバー内部エラー
+POST http://127.0.0.1:5000/api/user/mst_organization/corpration/auth_update
+Content-Type: application/json
+
+{
+    "org_id": "BNK9999",
+    "user_id": "user_id_case01",
+    "org_name": "地銀カタカナ",
+    "org_type": "地銀・支店",
+    "user_company_name": "山梨中央銀行",
+    "user_company_code": "876",
+    "user_org_dept_name": "河口湖支店",
+    "user_org_dept_code": "005"
+}

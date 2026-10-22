@@ -1,0 +1,22 @@
+# Requirements
+# - VSCodeプラグイン REST Client
+
+### シナリオ1、2 初期表示時APIが呼び出されること
+GET http://127.0.0.1:5000/api/user/mst_organization/corprations/auth
+Content-Type: application/json
+
+### シナリオ3 特殊文字(投入データ特殊文字あり)
+GET http://127.0.0.1:5000/api/user/mst_organization/corprations/auth
+Content-Type: application/json
+
+### シナリオ4 特殊文字(投入データなし)
+GET http://127.0.0.1:5000/api/user/mst_organization/corprations/auth
+Content-Type: application/json
+
+### シナリオ6 APIエラー発生時
+GET http://127.0.0.1:5000/api/user/mst_organization/corprations/auth
+Content-Type: application/json
+
+### シナリオ7 利用者組織情報0件の場合
+GET http://127.0.0.1:5000/api/user/mst_organization/corprations/auth
+Content-Type: application/json

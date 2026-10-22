@@ -1,0 +1,39 @@
+### シナリオ1：法人番号と組織IDあり（データあり）
+GET http://127.0.0.1:5000/api/report/cn-karte/visual/list?corporate_number=0000000000345&org_id=TEP
+Content-Type: application/json
+
+###
+
+### シナリオ2：法人番号と組織IDあり（データなし）
+GET http://127.0.0.1:5000/api/report/cn-karte/visual/list?corporate_number=9999999999999&org_id=ORG999
+Content-Type: application/json
+
+###
+
+### シナリオ3：法人番号だけあり、組織IDなし（500エラー想定）
+GET http://127.0.0.1:5000/api/report/cn-karte/visual/list?corporate_number=1234567890123
+Content-Type: application/json
+
+###
+
+### シナリオ4：組織IDだけあり、法人番号なし（500エラー想定）
+GET http://127.0.0.1:5000/api/report/cn-karte/visual/list?org_id=ORG001
+Content-Type: application/json
+
+###
+
+### シナリオ5：法人番号と組織IDが空文字（500エラー想定）
+GET http://127.0.0.1:5000/api/report/cn-karte/visual/list?corporate_number=&org_id=
+Content-Type: application/json
+
+###
+
+### シナリオ6：法人番号はあり、組織IDパラメータなし（500エラー想定）
+GET http://127.0.0.1:5000/api/report/cn-karte/visual/list?corporate_number=1234567890123
+Content-Type: application/json
+
+###
+
+### シナリオ7：余分なダミーパラメータ付き（無視される想定）
+GET http://127.0.0.1:5000/api/report/cn-karte/visual/list?corporate_number=1234567890123&org_id=ORG001&dummy=abc123
+Content-Type: application/json

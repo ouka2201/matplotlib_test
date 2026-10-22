@@ -1,0 +1,28 @@
+# Requirements
+# - VSCodeプラグイン REST Client
+
+### シナリオ1 複数拠点 正常系
+POST http://127.0.0.1:5000/api/report/cn-karte/create
+Authorization: Bearer TEST_TOKEN
+Content-Type: application/json
+
+{
+    "org_id": "TEP",
+    "agreement_category": "01",
+    "corporate_number": "2025071400001",
+    "fiscal_year": "2025",
+    "registration_seq": 1
+}
+
+### シナリオ1 複数拠点 正常系
+POST http://127.0.0.1:5000/api/report/cn-karte/create
+Authorization: Bearer TEST_TOKEN
+Content-Type: application/json
+
+{
+    "org_id": "TEP",
+    "agreement_category": "01",
+    "corporate_number": "2025071400001",
+    "fiscal_year": "2025",
+    "registration_seq": 1
+}

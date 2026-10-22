@@ -1,0 +1,39 @@
+# 建物・エネルギー情報照会 API テスト
+# Requirements
+# - VSCodeプラグイン REST Client
+
+### シナリオ1 10種類利用
+GET http://127.0.0.1:5000/api/building/energy-info/inquiry?bank_code=3200&branch_code=320&corporate_number=2025032103200&fiscal_year=2021&registration_seq=2
+Content-Type: application/json
+
+### シナリオ2 全種類利用
+GET http://127.0.0.1:5000/api/building-energy/info/inquiry?bank_code=0110&branch_code=010&corporate_number=2023022600100&fiscal_year=2023&registration_seq=2
+Content-Type: application/json
+
+### シナリオ 異常系：パラメータ足りない
+GET http://127.0.0.1:5000/api/building-energy/info/inquiry?bank_code=0110&branch_code=010&corporate_number=2023022600100&fiscal_year=2023
+Content-Type: application/json
+
+### extra シナリオ1
+GET http://127.0.0.1:5000/api/building-energy/info/inquiry?bank_code=0200&branch_code=020&corporate_number=2025021300100&fiscal_year=2024&registration_seq=3
+Content-Type: application/json
+###
+GET http://127.0.0.1:5000/api/building-energy/info/inquiry?bank_code=0200&branch_code=020&corporate_number=2025021300100&fiscal_year=2024&registration_seq=3
+Content-Type: application/json
+
+### download
+
+POST http://127.0.0.1:5000/api/report/pdf/output
+Content-Type: application/json
+
+{
+  "bank_code": "3200",
+  "branch_code": "320",
+  "corporate_number": "2025032103200",
+  "building_id": "2025032103200001001",
+  "fiscal_year": "2021",
+  "registration_seq": "6",
+  "file_id": null,
+  "report_location": "dtap://TenantStorage/corp/report_pdf_files/入力シート３２銀行/入力シートアップロード画面３２株式会社/2021/企業カルテ_入力シート３２銀行_入力シートアップロード画面３２株式会社_2021_6.pdf",
+  "current_status": "2"
+}

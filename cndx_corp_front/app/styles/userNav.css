@@ -1,0 +1,63 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  /* ログインユーザー全体 */
+  .user-nav {
+    @apply relative z-[5] flex items-center gap-2 h-[71px] px-3 pl-[12px] shrink-0 cursor-pointer;
+  }
+
+  .user-nav::before {
+    content: "";
+    @apply absolute left-0 top-2 bottom-2 w-px bg-[#d0d5dd];
+  }
+
+  .user-nav__icon {
+    @apply w-8 h-8 bg-center bg-no-repeat bg-cover relative shrink-0 overflow-hidden z-[6];
+    background-image: url(/assets/icons/user.png);
+  }
+
+  .user-nav__text {
+    @apply flex flex-col items-start shrink-0 relative z-[7];
+  }
+
+  .user-nav__branch {
+    @apply h-[18px] text-[12px] leading-[18px] font-normal text-[#98a1b2] whitespace-nowrap z-[8];
+    font-family: var(--default-font-family);
+  }
+
+  .user-nav__username {
+    @apply h-[21px] text-[14px] leading-[21px] font-bold text-[#1d2939] whitespace-nowrap z-[9];
+    font-family: var(--default-font-family);
+  }
+
+  .user-nav__arrow {
+    @apply w-6 h-6 bg-center bg-no-repeat bg-cover overflow-hidden;
+    background-image: url(/assets/icons/icon-arrow-down.png);
+  }
+
+  .user-nav__menu {
+    @apply w-[224px];
+  }
+
+  .user-nav__label {
+    @apply font-normal;
+  }
+
+  .user-nav__label-content {
+    @apply flex flex-col gap-1;
+  }
+
+  .user-nav__menu-username {
+    @apply text-[14px] font-medium leading-none;
+  }
+
+  .user-nav__email {
+    @apply text-[12px] leading-none text-gray-500;
+  }
+
+  .user-nav__logout {
+    @apply flex items-center w-full gap-2 px-3 py-[7px];
+  }
+}

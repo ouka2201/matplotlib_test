@@ -1,0 +1,160 @@
+/* app/styles/main.css */
+
+body {
+    font-family: var(--default-font-family);
+  }
+  
+  form {
+    margin-top: 0;
+  }
+  
+ 
+/***********************************/
+/*inquiry
+/***********************************/
+  .div_class{
+    align-content: center;
+  }
+  .form_group {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      margin: 3px;
+      align-items: center;
+  }
+
+  .label_container {
+      width: 9%;
+      text-align: left;
+  }
+
+  .label_container_1{
+    width: 1%;
+  }
+
+  .label_container1 {
+    /* width: 10%; */
+    /* min-width: 200px; */
+    text-align: right;
+    padding-left: 20px;
+  }
+
+  .input_container input {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid #0aa162;
+      border-radius: 4px;
+  }
+
+  .lease_loan_floor_div {
+    display: flex;
+    align-items: center;
+
+  }
+
+  .lease_loan_floor_div1 {
+    display: flex;
+    align-items: center;
+    margin-left: 20px;
+
+  }
+
+  .lease_loan_floor_label {
+    flex: 0 0 20%;
+
+  }
+
+  .lease_loan_floor_input input {
+    flex: 0 0 80%;
+    padding: 0.5rem;
+    border: 1px solid #0aa162;
+    border-radius: 4px;
+  }
+
+  input:focus {
+    border-color: #009688;      /* フォーカス時のボーダーの色 */
+    outline: none;                /* デフォルトのフォーカスプロファイルを削除 */
+    box-shadow: 0 0 5px #009688;/* フォーカス時のシャドー効果 */
+  }
+
+/***********************************/
+/*フォント設定
+/***********************************/
+  .font_setting{
+    font-size: 12px;
+  }
+
+/***********************************/
+/*ボタン設定
+/***********************************/
+  .button {
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+    margin-left: 20px;
+  }
+  
+  .button:hover {
+    background-color: #45a049;
+  }
+/***********************************/
+/*ログ設定
+/***********************************/
+  .logo {
+    width: 150px;
+    height: auto;
+    margin: 20px;
+  }
+
+  
+/***********************************/
+/*header
+/***********************************/
+
+.header {
+  background-color: #f8f9fa;
+  padding: 0px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.report_section {
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.report_label {
+  margin-right: 10px;
+  white-space: nowrap;
+}
+
+.dropdown_container {
+  /* flex: 1; */
+  padding: 0 5px;
+}
+
+.dropdown {
+  height: 100%;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+.content_container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.h1{
+  margin-left: 10px;;
+
+}
+
+

@@ -1,0 +1,319 @@
+/*テーブルCSS */
+.CNtableContainer {
+  width: 100%;
+  overflow-x: auto;
+  background-color: var(--color-white-pale);
+  border: 1px solid var(--color-gray-light);
+  border-radius: 8px;
+}
+
+.CNtable {
+  table-layout: fixed;
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  min-width: 1200px; /* 必要に応じて最小幅を設定 */
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.CNtableError {
+  width: 100%;
+  background-color: var(--color-pink);
+  padding: 16px;
+}
+
+.CNtable th {
+  border: none;
+  padding: 8px;
+  text-align: left;
+  vertical-align: middle;
+  box-sizing: border-box;
+  position: relative;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  background-color: var(--color-white-pale) !important;
+}
+
+.tableContainer {
+  border: none !important;
+}
+
+.CNtable td {
+  border: none;
+  padding: 8px;
+  text-align: left;
+  vertical-align: middle;
+  background-color: var(--color-white);
+  white-space: nowrap;
+  overflow: hidden;
+  /* overflow: scroll; */
+  text-overflow: ellipsis;
+}
+
+thead {
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 10;
+}
+
+.tableScrollY {
+  max-height: 400px; /* 任意の高さ */
+  overflow-y: auto; /* 縦スクロールを許可 */
+}
+
+.tableScrollX {
+  /* max-height: 400px; 任意の高さ */
+  overflow-x: auto; /* 縦スクロールを許可 */
+}
+
+.linkButton {
+  color: #0e9384;
+  font-family: var(--default-font-family);
+  font-size: 14px;
+  line-height: 21px;
+  text-align: left;
+  text-decoration: underline;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  z-index: 157;
+  overflow: hidden;
+}
+
+/* チェックボックス列 */
+.checkboxColumn {
+  width: 3%;
+  text-align: center;
+  accent-color: var(--color-green-primary);
+}
+
+/* リサイズハンドル */
+.resizeHandle {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  width: 5px;
+  cursor: col-resize;
+  background-color: transparent;
+  transition: background-color 0.2s;
+}
+
+.resizeHandle:hover {
+  background-color: var(--color-gray-light);
+}
+
+/* 各列の幅 */
+/* .branchName { width: 10%; }
+  .bankName { width: 10%; }
+  .customerName { min-width: 15%; flex: 1; }
+  .representative { width: 10%; }
+  .fiscalYear { width: 5%; }
+  .registrationDate { width: 20%; }
+  .registrationCount { width: 8%; }
+  .record { flex: 1; } */
+
+.contentErrorDetail {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  background-color: #fee4e2; /* 背景色を赤に設定 */
+  border: 1px solid #d92d20; /* 赤い枠線 */
+  padding: 24px 16px;
+  border-radius: 0 0 4px 4px;
+  color: #d92d20;
+  cursor: pointer;
+  gap: 25px; /* メッセージ間のスペース */
+}
+
+.contentErrorDetailText {
+  color: #d92d20; /* メッセージの色を赤に設定 */
+  font-family: var(--default-font-family);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 21px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.filterDetailsContentObject {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+  gap: 4px;
+  position: relative;
+  min-width: 100px;
+  z-index: 87;
+}
+
+.filterDetailsContentObjectLabel {
+  flex-shrink: 0;
+  flex-basis: auto;
+  position: relative;
+  height: 18px;
+  color: #667085;
+  font-family: var(--default-font-family);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 18px;
+  text-align: left;
+  white-space: nowrap;
+  z-index: 88;
+}
+
+.selectbox {
+  flex: 1;
+  padding: 8px 12px;
+  font-size: 16px;
+  border: 1px solid var(--color-gray);
+  border-radius: 4px;
+  outline: none;
+  transition: border-color 0.2s ease;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  padding-right: 30px;
+
+}
+
+.filterDetailsContentObjectDate {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+  gap: 4px;
+  position: relative;
+  min-width: 100px;
+  z-index: 76;
+}
+
+.filterDetailsContentObjectDateLabel {
+  flex-shrink: 0;
+  flex-basis: auto;
+  position: relative;
+  height: 18px;
+  color: #667085;
+  font-family: var(--default-font-family);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 18px;
+  text-align: left;
+  white-space: nowrap;
+  z-index: 77;
+  min-width: 100px;
+}
+
+.filterDetailsContentObjectDateInput {
+  display: flex;
+  align-items: center;
+  align-self: stretch;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+  gap: 8px;
+  position: relative;
+  min-width: 100px;
+  z-index: 78;
+}
+
+.datebox {
+  flex: 1;
+  height: 42px;
+  padding: 8px 12px;
+  font-size: 16px;
+  border: 1px solid var(--color-gray);
+  border-radius: 4px;
+  outline: none;
+  transition: border-color 0.2s ease;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  padding-right: 30px;
+}
+
+.reportClearButton,
+.reportSearchButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+  gap: 30px;
+  position: relative;
+  width: 300px;
+  min-width: 80px;
+  height: 36px;
+  padding: 0 12px 0 12px;
+  cursor: pointer;
+  z-index: 92;
+  border-radius: 4px;
+  box-shadow: 0 1px 2px 0 rgba(16, 24, 40, 0.05);
+}
+.reportClearButton {
+  background: #ffffff;
+  border: 1px solid #0e9384;
+}
+.reportSearchButton {
+  background: #009688;
+  border: 1px solid #ffffff;
+}
+.reportClearButtonText,
+.reportSearchButtonText {
+  flex-shrink: 0;
+  flex-basis: auto;
+  position: relative;
+  height: 21px;
+  font-family: var(--default-font-family);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 21px;
+  text-align: left;
+  white-space: nowrap;
+  z-index: 93;
+}
+.reportClearButtonText {
+  color: #0e9384;
+}
+.reportSearchButtonText {
+  color: #ffffff;
+}
+
+.pagenation {
+    display: flex;
+    justify-content: center;  /* ボタンを中央に配置 */
+    gap: 8px;  /* ボタン間の隙間 */
+    flex-wrap: nowrap;  /* ボタンが折り返さないように */
+    align-items: center;  /* ボタンを垂直方向に中央揃え */
+  }
+  
+  .pagenation button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 12px;  /* ボタン内の横の余白 */
+    min-width: 40px;  /* ボタンの最小幅 */
+    height: 36px;  /* ボタンの高さ */
+    background: #ffffff;
+    border: 1px solid #0e9384;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    color: #0e9384;
+    box-shadow: 0 1px 2px 0 rgba(16, 24, 40, 0.05);
+  }
+  
+  .pagenation button:disabled {
+    background-color: #f0f0f0;  /* 非活性のときの背景色 */
+    border-color: #dcdcdc;  /* 非活性のときの枠線色 */
+    cursor: not-allowed;  /* 非活性のときにカーソルを変える */
+  }
+
+  .pagenation .active {
+    background-color: #0e9384;  /* 現在ページのボタンに色をつける */
+    color: white;
+  }

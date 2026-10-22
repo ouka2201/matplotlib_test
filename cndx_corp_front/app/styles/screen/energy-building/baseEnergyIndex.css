@@ -1,0 +1,24 @@
+.index-comp {
+  padding: 20px 0px 20px 70px;
+}
+
+.index-title {
+  margin-bottom: 50px;
+}
+
+.index-status {
+  border: gray 1px solid;
+  border-radius: 20px;
+  text-align: center;
+  align-items: center;
+  width: 80px;
+}
+
+.register-index-status {
+  border: 1px solid #5fe9d0;
+  border-radius: 20px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  width: 80px;
+}

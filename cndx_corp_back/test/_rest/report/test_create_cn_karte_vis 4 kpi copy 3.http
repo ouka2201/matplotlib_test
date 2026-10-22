@@ -1,0 +1,135 @@
+### ケース1: 単拠点1件
+POST http://127.0.0.1:5000/api/report/cn-karte/create/vis
+Content-Type: application/json
+
+{
+  "corporate_number": "1234567890123",
+  "agreement_category": "12",
+  "org_id": "TEP",
+  "start_year": "2024",
+  "start_month": "04",
+  "end_year": "2025",
+  "end_month": "03",
+  "creation_format": "01",
+  "consent_route": "可視化アライアンス（EP・REP）",
+  "is_for_multibuilding": false,
+  "building_ids_for_single": ["1234567890123001001"],
+  "need_data_insufficiency_list": false,
+  "need_report_backdata": false,
+  "need_kpi_list": true
+}
+
+
+
+
+### ケース2: 単拠点複数件(3件)
+POST http://127.0.0.1:5000/api/report/cn-karte/create/vis
+Content-Type: application/json
+
+{
+  "corporate_number": "1234567890123",
+  "agreement_category": "12",
+  "org_id": "TEP",
+  "start_year": "2024",
+  "start_month": "04",
+  "end_year": "2025",
+  "end_month": "03",
+  "creation_format": "CNカルテ(簡易版)",
+  "consent_route": "可視化アライアンス（EP・REP）",
+  "is_for_multibuilding": false,
+  "building_ids_for_single": [
+    "0000000000222tokyoA",
+    "0000000000222tokyoB"
+  ],
+  "need_data_insufficiency_list": false,
+  "need_report_backdata": false,
+  "need_kpi_list": true
+}
+
+
+
+### ケース3: 企業全体
+POST http://127.0.0.1:5000/api/report/cn-karte/create/vis
+Content-Type: application/json
+
+{
+  "corporate_number": "1234567890123",
+  "agreement_category": "12",
+  "org_id": "TEP",
+  "start_year": "2024",
+  "start_month": "04",
+  "end_year": "2025",
+  "end_month": "03",
+  "creation_format": "CNカルテ(簡易版)",
+  "consent_route": "可視化アライアンス（EP・REP）",
+  "is_for_multibuilding": true,
+  "need_data_insufficiency_list": true,
+  "need_report_backdata": true,
+  "need_kpi_list": true
+}
+
+
+
+### ケース4: グループ選択
+POST http://127.0.0.1:5000/api/report/cn-karte/create/vis
+Content-Type: application/json
+
+{
+  "corporate_number": "1234567890123",
+  "agreement_category": "12",
+  "org_id": "TEP",
+  "start_year": "2024",
+  "start_month": "04",
+  "end_year": "2025",
+  "end_month": "03",
+  "creation_format": "01",
+  "consent_route": "可視化アライアンス（EP・REP）",
+  "is_for_multibuilding": true,
+  "group_for_multibuilding": [
+    { "group_no": "3", "option_no": "2" },
+    { "group_no": "4", "option_no": "5" } 
+  ],
+  "need_data_insufficiency_list": true,
+  "need_report_backdata": true,
+  "need_kpi_list": true
+}
+
+### ケース5: 欠損対象確認
+POST http://127.0.0.1:5000/api/report/cn-karte/create/vis
+Content-Type: application/json
+
+{
+  "corporate_number": "2025060602222",
+  "agreement_category": "11",
+  "org_id": "TEP",
+  "start_year": "2024",
+  "start_month": "04",
+  "end_year": "2025",
+  "end_month": "03",
+  "creation_format": "CNカルテ(簡易版)",
+  "consent_route": "可視化アライアンス（EP・REP）",
+  "is_for_multibuilding": true,
+  "need_data_insufficiency_list": true,
+  "need_report_backdata": true,
+  "need_kpi_list": true
+}
+
+### ケース6: 欠損対象確認
+POST http://127.0.0.1:5000/api/report/cn-karte/create/vis
+Content-Type: application/json
+
+{
+  "corporate_number": "0000000000222",
+  "agreement_category": "11",
+  "org_id": "TEP",
+  "start_year": "2023",
+  "start_month": "04",
+  "end_year": "2024",
+  "end_month": "03",
+  "creation_format": "CNカルテ(簡易版)",
+  "consent_route": "可視化アライアンス（EP・REP）",
+  "is_for_multibuilding": true,
+  "need_data_insufficiency_list": true,
+  "need_report_backdata": true,
+  "need_kpi_list": true
+}

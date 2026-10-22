@@ -1,0 +1,278 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --default-font-family:
+      "Noto Sans JP",
+      "Hiragino Sans",
+      "Yu Gothic",
+      "Meiryo",
+      -apple-system,
+      BlinkMacSystemFont,
+      "Segoe UI",
+      sans-serif;
+
+    /* フォントサイズ */
+    --font-size-base: 14px;
+    --font-size-sm: 12px;
+    --font-size-md: 16px;
+    --font-size-lg: 18px;
+    --font-size-xl: 24px;
+
+    /* フォント太さ */
+    --font-weight-normal: 400;
+    --font-weight-bold: 700;
+
+    /* 色：キーカラー */
+    --color-black: #1d2939;
+    --color-gray-dark: #667085;
+    --color-gray: #98a2b3;
+    --color-gray-light: #d0d5dd;
+    --color-green: #0e9384;
+
+    --color-green-primary: #15b79e;
+    --color-green-primary-hover: #107569;
+    --color-green-primary-clicked: #134e48;
+
+    --color-secondary-hover: #f6fefc;
+    --color-secondary-clicked: #ccfbef;
+    /* --color-red: #d92d20;
+    --color-pink: #fef3f2;
+    --color-white: #ffffff; */
+    --color-red: #d92d20;
+    --color-pink: #fef3f2;
+    --color-white: #ffffff;
+
+    /* 色：オプションカラー */
+    --color-background: #f9fafb;
+    --color-white-pale: #f2f4f7;
+    --color-disable: #eaecf0;
+    --color-default-hover: #f9fafb;
+    --color-default-clicked: #eaecf0;
+    --color-secondary-hover: #f6fefc;
+    --color-secondary-clicked: #ccfbef;
+
+    /* ボタン */
+    --button-height: 36px;
+    --button-padding-x: 12px;
+    --button-border-radius: 4px;
+    --button-gap: 8px;
+  }
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* ベーススタイルの標準化 */
+*,
+*::before,
+*::after {
+  @apply m-0 p-0 box-border;
+}
+
+html,
+body {
+  @apply font-sans font-normal text-base w-full h-full;
+}
+
+@layer components {
+  .page-title-box {
+    @apply flex py-8 items-center gap-4 self-stretch;
+  }
+  .page-title-text {
+    @apply text-[#1D2939] font-bold text-2xl leading-9 font-sans;
+  }
+
+  .input-base {
+    @apply bg-white px-3 py-[7px] text-sm rounded-md;
+  }
+  .input-text-default-style {
+    @apply bg-white px-3 py-[7px] text-sm rounded-md w-full h-9;
+    @apply border border-[#98A2B3] shadow-[0px_0px_1px_rgba(97,203,244,0.8),_0px_0px_16px_#61CBF4];
+    @apply hover:border-[#667085] focus:border-[#15B79E];
+    /* @apply focus:outline-none focus:ring-2 focus:ring-transparent focus:border-transparent;
+      @apply focus-visible:ring focus-visible:ring-teal-400 focus-visible:border-teal-400; */
+    @apply disabled:bg-[#F2F4F7] disabled:border-[#D0D5DD] disabled:cursor-not-allowed;
+    @apply outline-none transition-none;
+    box-shadow: 0 1px 2px 0 rgba(16, 24, 40, 0.05);
+  }
+  /* error状態 */
+  .input-text-error {
+    @apply bg-[#FEE4E2] border border-[#F97066];
+    @apply hover:border-[#F04438] focus:border-[#F97066];
+  }
+
+  .button-base {
+    @apply min-w-[80px] px-3 py-2 gap-2 h-9;
+    @apply font-sans font-bold text-base;
+    @apply inline-flex items-center justify-center rounded-md;
+    @apply shadow-[0_1px_2px_0_rgba(16,24,40,0.05)];
+    @apply transition-colors duration-300 ease-in;
+    @apply disabled:bg-[#EAECF0] disabled:border-[#EAECF0] disabled:text-gray-400;
+  }
+
+  .button-primary {
+    @apply button-base;
+    @apply bg-[#15B79E] text-white;
+    @apply hover:bg-[#107569] active:bg-[#134e48];
+  }
+
+  .button-secondary {
+    @apply button-base border text-[#0E9384] bg-white border-[#0E9384];
+    @apply hover:border-[#107569] hover:bg-[#F6FEFC];
+    @apply active:bg-[#CCFBEF];
+  }
+
+  .button-third {
+    @apply button-base border bg-white border-[#98A2B3] text-[#344054];
+    @apply hover:bg-[#F9FAFB] hover:border-[#98A2B3];
+    @apply active:bg-[#EAECF0] active:border-[#98A2B3];
+  }
+
+  .button-error {
+    @apply button-base bg-[#D92D20] text-white;
+    @apply hover:bg-[#B42318] active:bg-[#912018];
+  }
+
+  .button-line-error {
+    @apply button-base border border-[#D92D20] bg-[#FEF3F2] text-[#7A271A];
+    @apply hover:border-[#B42318] hover:bg-[#FEE4E2];
+    @apply active:border-[#7A271A] active:bg-[#FECDCA];
+  }
+
+  .input-item-title {
+    @apply text-base font-sans font-normal text-gray-dark;
+  }
+
+  .card-style {
+    @apply rounded-lg border border-[#E6E7E8] bg-white;
+    @apply shadow-[0px_2px_4px_-2px_rgba(16,24,40,0.06),0px_4px_8px_-2px_rgba(16,24,40,0.10)];
+  }
+
+  .required-mark {
+    @apply px-1 py-[2px] rounded-[4px] bg-[#D92D20] font-sans text-sm text-white font-normal leading-[150%];
+  }
+}
+
+.input-item-title {
+  @apply text-base font-sans font-normal text-gray-dark;
+}
+
+.card-style {
+  @apply rounded-lg border border-[#E6E7E8] bg-white;
+  @apply shadow-[0px_2px_4px_-2px_rgba(16,24,40,0.06),0px_4px_8px_-2px_rgba(16,24,40,0.10)];
+}
+
+.required-mark {
+  @apply px-1 py-[2px] rounded-[4px] bg-[#D92D20] font-sans text-sm text-white font-normal leading-[150%];
+}
+
+@layer components {
+  /* パンくずリスト */
+  .breadcrumb__list {
+    @apply flex w-full px-3 py-4 gap-[4px] items-center flex-nowrap bg-[#f9fafb] relative mx-auto;
+  }
+  .breadcrumbWithB__list {
+    @apply fixed top-[71px] right-0 left-0 bottom-0 z-10;
+    @apply h-[51px];
+  }
+
+  .breadcrumb__chevron {
+    @apply w-[24px] h-[24px] shrink-0 relative overflow-hidden z-10;
+  }
+
+  .breadcrumb__link {
+    @apply h-[21px] shrink-0 font-sans text-[14px] font-normal leading-[21px] relative text-left overflow-hidden whitespace-nowrap;
+  }
+
+  .breadcrumb__link--not-last {
+    @apply flex items-center gap-[8px] text-[#0E9384] underline z-[1];
+  }
+
+  .breadcrumb__link--last {
+    @apply flex items-center gap-[8px] text-[#1D2939] z-[2];
+  }
+
+  .textlink {
+    @apply text-[#007EA8] font-bold text-[14px] leading-[150%];
+    @apply hover:text-[#005E88] hover:underline;
+    @apply active:text-[#004A6B] active:underline active:decoration-solid;
+    @apply disabled:text-[rgba(8,11,25,0.30)] disabled:no-underline disabled:cursor-not-allowed;
+  }
+
+  .textlink_button {
+    @apply text-[#007EA8] font-bold text-[16px] leading-[150%];
+    @apply hover:text-[#005E88] hover:underline;
+    @apply active:text-[#004A6B] active:underline active:decoration-solid;
+    @apply disabled:text-[rgba(8,11,25,0.30)] disabled:no-underline disabled:cursor-not-allowed;
+  }
+}
+
+@layer components {
+  .layout-wrapper {
+    @apply flex h-screen overflow-hidden;
+  }
+
+  .button-text-wrapper {
+    @apply w-[286px] p-3 border-2 border-dashed border-[#B88EFF] rounded-md mx-auto;
+  }
+
+  .button-grid {
+    @apply grid grid-cols-3 gap-3 p-3 border border-[#D0A6F8] rounded-md;
+  }
+
+  .button-grid label {
+    @apply flex items-center justify-center gap-2 text-sm text-[#1d2939] cursor-pointer;
+  }
+
+  .radio-box {
+    @apply w-4 h-4 rounded-full border border-[#98A2B3] relative;
+  }
+
+  .peer:checked ~ .radio-box {
+    @apply border-[#0E9384];
+  }
+
+  .peer:checked ~ .radio-box::after {
+    content: "";
+    @apply w-2 h-2 bg-[#0E9384] rounded-full absolute top-1/2 left-1/2;
+    transform: translate(-50%, -50%);
+  }
+
+  .peer:checked ~ span {
+    @apply text-[#0E9384] font-bold;
+  }
+}
+
+@layer components {
+  .tablist {
+    @apply flex gap-8 border-b-2 border-gray-200 px-16 w-full max-w-[1480px] pt-8 overflow-x-auto whitespace-nowrap overflow-hidden;
+  }
+  .tab-button {
+    @apply relative h-[48px] max-w-[160px] w-full flex items-center justify-center text-[16px] font-semibold whitespace-nowrap;
+  }
+  .tab-button::after {
+    content: "";
+    @apply absolute left-0 bottom-0 w-full transition-all;
+  }
+  .tab-button-active {
+    @apply text-black;
+  }
+  .tab-button-active::after {
+    @apply h-[3px] bg-teal-500;
+  }
+  .tab-button-inactive {
+    @apply text-gray-400;
+  }
+  .tab-button-inactive::after {
+    @apply h-[1px] bg-transparent;
+  }
+  .table-link {
+    @apply cursor-pointer text-[#0E9384] hover:underline;
+  }
+}

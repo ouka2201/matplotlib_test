@@ -1,0 +1,51 @@
+export type EnergyOption = {
+  energy_code: string;
+  energy_name_jp: string;
+  energy_unit_original: string[];
+};
+
+export const energyOptions = [
+  { energy_code: "0100020000", energy_name_jp: "輸入原料炭", energy_unit_original: ["t", "kg"] },
+  { energy_code: "0100310000", energy_name_jp: "コークス用原料炭", energy_unit_original: ["t", "kg"] },
+  { energy_code: "0100320000", energy_name_jp: "吹込用原料炭", energy_unit_original: ["t", "kg"] },
+  { energy_code: "0100010000", energy_name_jp: "輸入一般炭", energy_unit_original: ["t", "kg"] },
+  { energy_code: "0100330000", energy_name_jp: "国産一般炭", energy_unit_original: ["t", "kg"] },
+  { energy_code: "0100030000", energy_name_jp: "輸入無煙炭", energy_unit_original: ["t", "kg"] },
+  { energy_code: "0100070000", energy_name_jp: "石炭コークス", energy_unit_original: ["t", "kg"] },
+  { energy_code: "0100080000", energy_name_jp: "石油コークス", energy_unit_original: ["t", "kg"] },
+  { energy_code: "0100350000", energy_name_jp: "FCCコーク", energy_unit_original: ["t", "kg"] },
+  { energy_code: "0100170000", energy_name_jp: "コールタール", energy_unit_original: ["t", "kg"] },
+  { energy_code: "0100160000", energy_name_jp: "石油アスファルト", energy_unit_original: ["t", "kg"] },
+  { energy_code: "6800030000", energy_name_jp: "コンデンセート（NGL）", energy_unit_original: ["kl", "l"] },
+  {
+    energy_code: "0100150000",
+    energy_name_jp: "原油（コンデンセート除く）",
+    energy_unit_original: ["kl", "l"],
+  },
+  { energy_code: "0100090000", energy_name_jp: "揮発油", energy_unit_original: ["kl", "l"] },
+  { energy_code: "0100180000", energy_name_jp: "ナフサ", energy_unit_original: ["kl", "l"] },
+  { energy_code: "0100300000", energy_name_jp: "ジェット燃料油", energy_unit_original: ["kl", "l"] },
+  { energy_code: "0100100000", energy_name_jp: "灯油", energy_unit_original: ["kl", "l"] },
+  { energy_code: "0100110000", energy_name_jp: "軽油", energy_unit_original: ["kl", "l"] },
+  { energy_code: "0100120000", energy_name_jp: "Ａ重油", energy_unit_original: ["kl", "l"] },
+  { energy_code: "0100130000", energy_name_jp: "Ｂ・Ｃ重油", energy_unit_original: ["kl", "l"] },
+  { energy_code: "0100360000", energy_name_jp: "潤滑油", energy_unit_original: ["kl", "l"] },
+  { energy_code: "0100190000", energy_name_jp: "液化石油ガス（LPG）", energy_unit_original: ["t", "kg", "m3"] },
+  { energy_code: "0100200000", energy_name_jp: "石油系炭化水素ガス", energy_unit_original: ["千m3", "m3"] },
+  { energy_code: "0100210000", energy_name_jp: "液化天然ガス（LNG）", energy_unit_original: ["t", "kg"] },
+  { energy_code: "0100220000", energy_name_jp: "その他可燃性天然ガス", energy_unit_original: ["千m3", "m3"] },
+  { energy_code: "0100240000", energy_name_jp: "コークス炉ガス", energy_unit_original: ["千m3", "m3"] },
+  { energy_code: "0100250000", energy_name_jp: "高炉ガス", energy_unit_original: ["千m3", "m3"] },
+  { energy_code: "0100340000", energy_name_jp: "発電用高炉ガス", energy_unit_original: ["千m3", "m3"] },
+  { energy_code: "0100260000", energy_name_jp: "転炉ガス", energy_unit_original: ["千m3", "m3"] },
+  { energy_code: "0100230000", energy_name_jp: "都市ガス", energy_unit_original: ["千m3", "m3"] },
+  { energy_code: "0300010000", energy_name_jp: "産業用蒸気", energy_unit_original: ["GJ", "MJ", "Mcal"] },
+  { energy_code: "0300020000", energy_name_jp: "産業用以外の蒸気", energy_unit_original: ["GJ", "MJ", "Mcal"] },
+  { energy_code: "0300030000", energy_name_jp: "温水", energy_unit_original: ["GJ", "MJ", "Mcal"] },
+  { energy_code: "0300040000", energy_name_jp: "冷水", energy_unit_original: ["GJ", "MJ", "Mcal"] },
+  { energy_code: "0200010011", energy_name_jp: "電気", energy_unit_original: ["千kWh", "kWh"] },
+  { energy_code: "9900010001", energy_name_jp: "再エネ発電（自家消費）", energy_unit_original: ["kWh"] },
+  { energy_code: "9900011002", energy_name_jp: "電力証書・クレジット", energy_unit_original: ["t-CO2"] },
+  { energy_code: "9900011006", energy_name_jp: "熱証書・クレジット", energy_unit_original: ["t-CO2"] },
+  { energy_code: "9900011009", energy_name_jp: "その他の証書・クレジット", energy_unit_original: ["t-CO2"] },
+];

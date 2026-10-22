@@ -1,0 +1,80 @@
+
+.page-container {
+  margin: 0 5%;
+  padding: 0;
+  width: auto;
+  box-sizing: border-box;
+  border-radius: 8px;
+}
+
+
+.page-title {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+
+.register-button {
+  /* float: right; */
+  background: linear-gradient(to bottom, #c0e9f9, #81d4fa);
+  position: absolute;
+  left: 800px;
+  color: black;
+  font-size: 14px;
+  padding: 8px 20px;
+  border: 1px solid #5bc0de;
+  border-radius: 4px;
+  cursor: pointer;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+
+.table-wrapper {
+  width: 900px;
+  border: 1px solid #ccc;
+}
+.scroll-table thead {
+  background-color: #f5f5f5;
+}
+
+.scroll-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.scroll-table th,
+.scroll-table td {
+  border: 1px solid #ddd;
+  padding: 12px 8px;            /* 控制行高 */
+  line-height: 1.4;
+  vertical-align: middle;
+
+  box-sizing: border-box;
+  overflow-wrap: break-word; 
+}
+
+
+.scroll-body {
+  max-height: 250px;
+  overflow-y: auto;
+}
+.data-table a {
+  color: #0068b7;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+
+.annotation-box {
+  display: inline-block;
+  margin-top: 20px;
+  padding: 8px 12px;
+  background-color: #f5b169;
+  font-size: 14px;
+  font-weight: bold;
+  border: 1px solid #aa6a29;
+  color: black;
+}

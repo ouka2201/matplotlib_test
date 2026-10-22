@@ -1,0 +1,298 @@
+/* メニューの初期化 */
+.sidebar {
+  width: 200px;
+  transition: width 0.3s ease;
+  background: #ffffff;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.sidebar2 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  align-self: stretch;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+  position: relative;
+  width: 220px;
+  padding: 0;
+  background: #ffffff;
+  border-right: 1px solid #d0d5dd;
+  z-index: 17;
+  gap: 2px;
+}
+
+.sidebar3 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  align-self: stretch;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+  position: relative;
+  width: 220px;
+  padding: 16px 0 0 0;
+  background: #ffffff;
+  border-right: 1px solid #d0d5dd;
+  z-index: 17;
+}
+
+/* 折りたたみ状態のスタイル */
+.sidebar.collapsed {
+  width: 30px;
+  align-items: center;
+}
+
+/* メニュー ボタン スタイル */
+.toggle_btn {
+  background-color: #c9c7c7;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  padding: 10px;
+  width: 100%;
+  font-size: 20px;
+  text-align: center;
+}
+
+/* メニュー項目名 */
+.menu {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  visibility: visible;
+  transition: visibility 0.3s ease, opacity 0.3s ease;
+}
+
+.menu2 {
+  list-style: none;
+  align-items: center;
+  align-self: stretch;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+  gap: 8px;
+  position: relative;
+  min-width: 0;
+  height: 40px;
+  padding: 0;
+  z-index: 18;
+}
+
+.menu3 {
+  padding: 16px;
+  margin: 0;
+  list-style: none;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  visibility: visible;
+  transition: visibility 0.3s ease, opacity 0.3s ease;
+}
+
+/* メニュー項目の表示と非表示の制御 */
+.sidebar.collapsed .menu {
+  visibility: hidden;
+  opacity: 0;
+}
+
+/* 各メニュー項目のスタイル */
+.menu li {
+  width: 100%;
+  cursor: pointer;
+  text-align: center;
+  transition: background-color 0.2s;
+  min-width: 0;
+  height: 30px;
+  background: #ffffff;
+  z-index: 24;
+}
+
+.menu li button {
+  height: 100%;
+  width: 100%;
+  background: #ffffff;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+}
+
+.menu li button span {
+  flex-grow: 1;
+  text-align: left;
+  color: #98A2B3;
+  font-family: var(--default-font-family);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 21px;
+  margin-left: 10px;
+}
+
+.menu2 li button span {
+  color: var(--menu-text-off, #98A2B3);
+  font-family: var(--default-font-family);
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 150%;
+}
+
+.menu li button i {
+  flex-shrink: 0;
+}
+
+/* メニュー項目のホバー状態 */
+.menu li button:hover {
+  background-color: #F9FAFB;
+}
+
+/* リンクのデフォルトスタイルを削除する */
+.menu a {
+  text-decoration: none;
+  color: inherit;
+}
+
+
+
+/***********************************/
+/*サブメニュー欄を設定
+/***********************************/
+
+.sidebar {
+  width: 250px;
+  padding: 10px;
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+}
+
+/* padding 0 16px 0 16px; */
+.sidebar .menu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar .menu li {
+  padding: 10px;
+}
+
+.sidebar .menu a {
+  text-decoration: none;
+  color: black;
+  display: block;
+}
+
+.sidebar .submenu {
+  list-style: none;
+  padding-left: 20px;
+  margin-top: 5px;
+}
+
+.sidebar .submenu li {
+  padding: 5px;
+  border-radius: 3px;
+  margin-bottom: 3px;
+}
+
+.sidebar .submenu li a {
+  color: black;
+}
+
+.sidebar .submenu li:hover {
+  background-color: #c0c0c0;
+}
+
+
+/***********************************/
+/*メニュー欄を設定
+/***********************************/
+.layout_container {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* メニューが左側に固定幅で占める */
+.layout_container .sidebar_menu {
+  width: 250px;
+  height: 100%;
+  background-color: #333;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+}
+
+.submenu {
+  display: none;
+  padding-left: 20px;
+}
+
+.submenu.open {
+  display: block;
+}
+
+
+.parent_menu {
+  cursor: pointer;
+}
+
+.parent_menu>a {
+  text-decoration: none;
+  color: white;
+  font-size: 16px;
+  display: block;
+  padding: 10px;
+  border-radius: 5px;
+  background-color: #34495e;
+  transition: background-color 0.3s ease;
+}
+
+.parent_menu>a:hover {
+  background: var(--background-Bk-gray, #F9FAFB);
+}
+
+.sub_title {
+  display: flex;
+  padding: var(--16, 16px) var(--16, 16px) 2px var(--16, 16px);
+  align-items: center;
+  gap: 8px;
+  align-self: stretch;
+}
+
+.border_box {
+  display: flex;
+  padding: 0px 0px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  align-self: stretch;
+}
+
+.border {
+  height: 1px;
+  align-self: stretch;
+  background: var(--line-line-gray, #D0D5DD);
+}
+
+.sub_title_text {
+  color: var(--menu-menu-title-gray, #98A2B3);
+  font-family: var(--default-font-family);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 150%;
+}
+.active_button{
+  background-color: #f9fafb !important;
+  
+}
+.active_button span {
+ color:black !important;
+}

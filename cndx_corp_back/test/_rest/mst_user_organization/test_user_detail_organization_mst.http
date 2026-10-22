@@ -1,0 +1,18 @@
+# Requirements
+# - VSCodeプラグイン REST Client
+
+### シナリオ1 組織ID指定で照会
+curl -X GET "http://127.0.0.1:5000/api/user/mst_organization/corpration/detail/auth?&org_id=TEP0001" -H "Content-Type: application/json"
+Content-Type: application/json
+
+### シナリオ2 組織ID存在しない
+curl -X GET "http://127.0.0.1:5000/api/user/mst_organization/corpration/detail/auth?&org_id=" -H "Content-Type: application/json"
+Content-Type: application/json
+
+### シナリオ3 組織権限情報マスタに1件もない
+curl -X GET "http://127.0.0.1:5000/api/user/mst_organization/corpration/detail/auth?&org_id=" -H "Content-Type: application/json"
+Content-Type: application/json
+
+### シナリオ4 DBアクセス不可
+curl -X GET "http://127.0.0.1:5000/api/user/mst_organization/corpration/detail/auth?&org_id=" -H "Content-Type: application/json"
+Content-Type: application/json

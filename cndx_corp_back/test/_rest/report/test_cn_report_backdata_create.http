@@ -1,0 +1,49 @@
+### 正常系：CNレポートバックデータ作成
+POST http://127.0.0.1:5000/api/report/cn-report-backdata/create
+Content-Type: application/json
+
+{
+  "corporate_number": "1234567890123",
+  "agreement_category": "01",
+  "org_id": "ORG001",
+  "consent_route": "○○可視化事業者",
+  "start_year": 2023,
+  "start_month": 4,
+  "end_year": 2025,
+  "end_month": 3
+}
+
+### エラー系：corporate_number 不足
+POST http://127.0.0.1:5000/api/report/cn-report-backdata/create
+Content-Type: application/json
+
+{
+  "agreement_category": "01",
+  "org_id": "ORG001",
+  "consent_route": "○○可視化事業者",
+  "start_year": 2023,
+  "start_month": 4,
+  "end_year": 2025,
+  "end_month": 3
+}
+
+### エラー系：consent_route 不足
+POST http://127.0.0.1:5000/api/report/cn-report-backdata/create
+Content-Type: application/json
+
+{
+  "corporate_number": "1234567890123",
+  "agreement_category": "01",
+  "org_id": "ORG001",
+  "start_year": 2023,
+  "start_month": 4,
+  "end_year": 2025,
+  "end_month": 3
+}
+
+### エラー系：全パラメータnull
+POST http://127.0.0.1:5000/api/report/cn-report-backdata/create
+Content-Type: application/json
+
+{
+}

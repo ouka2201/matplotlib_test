@@ -1,0 +1,41 @@
+
+
+
+### test
+POST http://127.0.0.1:5000/api/building/group/master/detail
+Authorization: Bearer TEST_TOKEN
+Content-Type: application/json
+
+{
+    "corporate_number":"2025062401001",
+    "agreement_category":"01",
+    "org_id":"testorgid",
+    "building_ids":["2025062301001001001"],
+    "selected_options": {"1": "2"}
+}
+
+### test
+POST http://127.0.0.1:5000/api/building/group/master/detail
+Authorization: Bearer TEST_TOKEN
+Content-Type: application/json
+
+{
+    "corporate_number":"2025042200202",
+    "agreement_category":"01",
+    "org_id":"TEP",
+    "building_ids": ["2025042200202001001", "2025042200202001002"],
+    "selected_options": {"2": "4"}
+}
+
+### test
+POST http://127.0.0.1:5000/api/building/group/master/detail
+Authorization: Bearer TEST_TOKEN
+Content-Type: application/json
+
+{
+    "corporate_number":"202504220020",
+    "agreement_category":"01",
+    "org_id":"TEP",
+    "building_ids": ["2025062301001001001xxx", "2025062301001001002xxx"],
+    "selected_options": {"1": "2"}
+}

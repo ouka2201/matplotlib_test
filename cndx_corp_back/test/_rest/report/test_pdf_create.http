@@ -1,0 +1,160 @@
+# Requirements
+# - VSCodeプラグイン REST Client
+
+### シナリオ1 複数拠点 正常系
+POST http://127.0.0.1:5000/api/report/cn-karte/create
+Authorization: Bearer TEST_TOKEN
+Content-Type: application/json
+
+{
+    "org_id": "TEP",
+    "agreement_category": "01",
+    "corporate_number": "2025071400001",
+    "fiscal_year": "2025",
+    "registration_seq": 1
+}
+
+### シナリオ2 単一拠点 正常系
+POST http://127.0.0.1:5000/api/report/cn-karte/create
+Authorization: Bearer TEST_TOKEN
+Content-Type: application/json
+
+{
+    "corporate_number": "2025062401003",
+    "fiscal_year": "2024",
+    "registration_seq": 6
+}
+
+### シナリオ2 複数拠点 正常系
+POST http://127.0.0.1:5000/api/report/pdf/create
+Content-Type: application/json
+
+{
+    "creation_info": {
+        "bank_code": "0115",
+        "branch_code": "789",
+        "corporate_number": "1234567890123",
+        "fiscal_year": "2024",
+        "registration_seq": "3",
+        "current_status": "0"
+    }
+}
+
+
+### シナリオ3 エラー系
+POST http://127.0.0.1:5000/api/report/pdf/create
+Content-Type: application/json
+
+{
+    "creation_info": {
+        "bank_code": "6677",
+        "branch_code": "988",
+        "corporate_number": "8889990001234",
+        "fiscal_year": "2024",
+        "registration_seq": "6",
+        "current_status": "0"
+    }
+}
+
+
+### シナリオ4 エラー系
+POST http://127.0.0.1:5000/api/report/pdf/create
+Content-Type: application/json
+
+{
+    "bank_code": "6677",
+    "branch_code": "988",
+    "corporate_number": "8889990001234",
+    "fiscal_year": "2024",
+    "registration_seq": "1",
+    "current_status": "0"
+}
+
+### シナリオ5 エラー系
+POST http://127.0.0.1:5000/api/report/pdf/create
+Content-Type: application/json
+
+{
+    "creation_info": {
+        "branch_code": "988",
+        "corporate_number": "8889990001234",
+        "fiscal_year": "2024",
+        "registration_seq": "1",
+        "current_status": "0"
+    }
+}
+
+### シナリオ6 エラー系
+POST http://127.0.0.1:5000/api/report/pdf/create
+Content-Type: application/json
+
+{
+    "creation_info": {
+        "bank_code": null,
+        "branch_code": "988",
+        "corporate_number": "8889990001234",
+        "fiscal_year": "2024",
+        "registration_seq": "1",
+        "current_status": "0"
+    }
+}
+
+### シナリオ7 エラー系
+POST http://127.0.0.1:5000/api/report/pdf/create
+Content-Type: application/json
+
+{
+    "creation_info": {
+        "bank_code": "667",
+        "branch_code": "988",
+        "corporate_number": "8889990001234",
+        "fiscal_year": "2024",
+        "registration_seq": "1",
+        "current_status": "0"
+    }
+}
+
+### シナリオ8 エラー系
+POST http://127.0.0.1:5000/api/report/pdf/create
+Content-Type: application/json
+
+{
+    "creation_info": {
+        "bank_code": "6677",
+        "branch_code": "988",
+        "corporate_number": "8889990001234",
+        "fiscal_year": "2024",
+        "registration_seq": "1",
+        "current_status": "9"
+    }
+}
+
+
+
+### シナリオ 1-1 正常系
+POST http://127.0.0.1:5000/api/report/cn-karte/create
+Content-Type: application/json
+
+{
+    "corporate_number": "2025052601001",
+    "fiscal_year": "2025"
+}
+
+
+### シナリオ 1-2 存在しない場合
+POST http://127.0.0.1:5000/api/report/cn-karte/create
+Content-Type: application/json
+
+{
+    "corporate_number": "2025052601001",
+    "fiscal_year": "2024"
+}
+
+### シナリオ 1-3
+POST http://127.0.0.1:5000/api/report/cn-karte/create
+Content-Type: application/json
+
+{
+    "corporate_number": "2025052601003",
+    "fiscal_year": "2024"
+}

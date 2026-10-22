@@ -1,0 +1,580 @@
+/* フォントの種類 */
+:root {
+  --default-font-family:
+      "Noto Sans JP",
+      "Hiragino Sans",
+      "Yu Gothic",
+      "Meiryo",
+      -apple-system,
+      BlinkMacSystemFont,
+      "Segoe UI",
+      sans-serif;
+}
+
+/* 標準化 */
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+html, body {
+	width: 100%;
+	height: 100%;
+}
+
+/* テキストサイズ */
+:root {
+	/* 大きさ */
+	--font-size-base: 14px;
+	--font-size-sm: 12px;
+	--font-size-md: 16px;
+	--font-size-lg: 18px;
+	--font-size-xl: 24px;
+
+	/* 太さ */
+	--font-weight-normal: 400;
+	--font-weight-bold: 700;
+}
+
+/* テキストの基礎 */
+
+.font-normal { font-weight: 400; }
+.font-bold { font-weight: 700; }
+
+
+/* 色 キーカラー*/
+:root {
+	--color-black: #1d2939;
+	--color-gray-dark: #667085; 
+	--color-gray: #98a2b3;
+	--color-gray-light: #d0d5dd;
+	--color-green: #0e9384;
+	--color-green-primary: #15e79b;
+	--color-red: #d92d20;
+	--color-pink: #fef3f2;
+	--color-white: #ffffff;
+}
+/* 色 オプションカラー */
+:root {
+	--color-background: #f9fafb;
+	--color-white-pale: #f2f4f7;
+	--color-disable: #eaecf0;
+	--color-default-hover: #f9fafb;
+	--color-default-clicked: #eaecf0;
+	--color-primary-hover: #107569;
+	--color-primary-clicked: #134e48;
+	--color-secondary-hover: #f6fefc;
+	--color-secondary-clicked: #ccfbef;
+}
+
+/* ボタンの共通設定 */
+:root {
+	--button-height: 36px;
+	--button-padding-x: 12px;
+	--button-border-radius: 4px;
+	--button-gap: 8px;
+}
+	
+.button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	height: var(--button-height);
+	padding: 0 var(--button-padding-x);
+	border: 1px solid;
+	border-radius: var(--button-border-radius);
+	font-size: var(--font-size-base);
+	cursor: pointer;
+	gap: var(--button-gap);
+	transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+}
+
+/* ボタンのアイコン設定 */
+/* アイコンが非表示の場合 */
+.button-icon {
+	width: 20px;
+	height: 20px;
+	flex-shrink: 0;
+}
+.button-icon.hidden {
+	display: none;
+}
+
+.button--icon-left {
+	display: flex;
+	align-items: center;
+	justify-content: flex-start;
+}
+.button--icon-right {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+}
+
+/* ボタンのテキスト設定 */
+.button-text {
+	line-height: 1;
+	white-space: nowrap;
+	text-align: left;
+	font-weight: 700;
+}
+
+.button--default {
+	background-color: var(--color-white);
+	color: var(--color-black);
+	border-color: var(--color-gray);
+}
+.button--default:hover { background-color: var(--color-default-hover); }
+.button--default:active { background-color: var(--color-default-clicked); }
+
+.button--primary {
+	background-color: var(--color-green-primary);
+	color: var(--color-white);
+	border-color: var(--color-green-primary);
+}
+.button--primary:hover { background-color: var(--color-primary-hover); }
+.button--primary:active { background-color: var(--color-primary-clicked); }
+
+.button--secondary {
+	background-color: var(--color-white);
+	color: var(--color-green);
+	border-color: var(--color-green);
+}
+.button--secondary:hover { 
+	background-color: var(--color-secondary-hover);
+	box-shadow : 0 0 5px var(--color-green);  
+	border-color: var(--color-green-primary);  }
+.button--secondary:active { background-color: var(--color-secondary-clicked); }
+
+.button--building1 {
+	background-color: var(--color-white);
+	color: var(--color-green);
+	border-color: var(--color-green);
+	width: 200px;
+}
+.button--building1:hover { 
+	background-color: var(--color-secondary-hover);
+	box-shadow : 0 0 5px var(--color-green);  
+	border-color: var(--color-green-primary); 
+ }
+.button--building1:active { background-color: var(--color-secondary-clicked); }
+
+.button--building2 {
+	background-color: var(--color-green);
+	color: var(--color-white);
+	border-color: var(--color-green);
+}
+.button--building2:hover { 
+	background-color: var(--color-primary-hover);
+	box-shadow : 0 0 5px var(--color-green);  
+	border-color: var(--color-green-primary); 
+}
+.button--building2:active { background-color: var(--color-green-primary); }
+
+.button--building2:disabled {
+	background-color: #d0d5dd; /* グレー背景 */
+	color: #999;               /* グレー文字 */
+	border-color: #d0d5dd;
+	cursor: not-allowed;
+	box-shadow: none;
+  }
+
+.button--default:disabled
+.button--default:disabled:hover
+.button--primary:disabled
+.button--primary:disabled:hover
+.button--secondary:disabled
+.button--secondary:disabled:hover
+.button--building1:disabled
+.button--building1:disabled:hover {
+	background-color: var(--color-disable);
+	color: var(--color-gray);
+	border-color: var(--color-disable);
+	cursor: not-allowed;
+}
+
+.cursorPointer { cursor: pointer; }
+.cursorDefault { cursor: default; }
+
+/* レイアウト */
+.loginBackground {
+	width: 100vw;
+	height: 100vh;
+	background-color: var(--color-white-pale);
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+}
+
+/* root.tsxで呼び出す背景 */
+.background {
+  width: 100vw;
+	height: 100vh;
+	background-color: var(--color-background);
+}
+
+/* メインコンテナ 各ページで呼び出す*/
+.mainContainer {
+	display: flex;
+  	flex-direction: column;
+  	align-items: flex-start;
+  	padding: 0 16px 40px 16px;
+  	gap: 12px;
+}
+
+.layoutTitle {
+  display: flex;
+  padding: 32px 0px;
+  align-items: center;
+  gap: 16px;
+  align-self: stretch;
+}
+
+/* 背景白の角丸コンテナ */
+.whiteBox {
+	display: flex;
+  background-color: var(--color-white);
+  padding: 24px;
+	flex-direction: column;
+  align-items: flex-start;
+  gap: 24px;
+  border-radius: 8px;
+  border: 1px solid var(--color-gray-light);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* エラーボックス */
+.errorBox {
+	display: flex;
+	flex-direction: column;
+	border: 1px solid var(--color-red);
+	border-radius: 4px;
+	width: 80%;
+	overflow: hidden;
+}
+
+.errorBoxLabel {
+	display: flex;
+	background-color: var(--color-red);
+  flex-direction: row;
+  align-items: center;
+	padding: 8px 16px;
+	gap: 4px
+}
+
+.errorBoxDetails {
+	display: flex;
+	background-color: var(--color-pink);
+  flex-direction: column;
+  align-items: flex-start;
+	padding: 16px 24px;
+	gap: 4px
+}
+
+.errorTable {
+	display: flex;
+	flex-direction: column;
+	border: 1px solid var(--color-red);
+	border-radius: 4px;
+	width: 80%;
+	overflow: hidden;
+}
+
+.errorTable label {
+	display: flex;
+	background-color: var(--color-red);
+  flex-direction: row;
+  align-items: center;
+	padding: 8px 16px;
+	gap: 4px
+}
+
+.errorTable details {
+	display: flex;
+	background-color: var(--color-pink);
+  flex-direction: column;
+  align-items: flex-start;
+	padding: 16px 24px;
+	gap: 4px
+}
+
+.errorText {
+	margin-bottom: 4px; /* 各エラーメッセージの間に余白をつける */
+	white-space: pre-line; /* テキストの改行を適用 */
+  }
+
+/* ファイル名とディテ-ルの箱 */
+/* 親クラス100%の幅（縦並び） */
+.pairVertical {
+  display: flex;
+  width: 100%;
+  flex-direction: column; /* 縦並び */
+  gap: 0;
+}
+
+/* 親クラス100%の幅（横並び) */
+.pairHorizontal {
+  display: flex;
+  width: 100%;
+	flex-direction: row;
+  gap: 0; /* 密接させるために隙間をなくす */
+}
+
+/* 親クラス80%の幅 */
+.pair80 {
+  display: flex;
+  width: 80%;
+  gap: 0; /* 密接させるために隙間をなくす */
+}
+
+
+/* ラベル箱 */
+.labelBox {
+  min-width: 25%;
+  background-color: #f0f0f0; /* 薄いグレー */
+  border: 1px solid #ccc;
+  padding: 8px;
+	align-items: center;
+  width: 25%;
+}
+
+/* 内容箱 */
+.contentBox {
+  background-color: #fff;
+  border: 1px solid #ccc;
+  padding: 8px;
+	align-items: center;
+  flex-grow: 1;
+}
+
+/* 内容箱（パディングなし、中の要素が縦に密着） */
+.contentBoxNoPadding {
+  border: none;
+  padding: 0; /* パディングなし */
+  display: flex;
+  flex-direction: column; /* 中の要素を縦に並べる */
+  gap: 0; /* 隙間なし */
+  flex-grow: 1;
+}
+
+/* リスト用コンテナ */
+.listContainer {
+	display: grid;
+	gap: 0;
+}
+
+.labelBoxList {
+  background-color: #f0f0f0; /* 薄いグレー */
+  border: 1px solid #ccc;
+	align-items: center;
+}
+
+.contentBoxList {
+  background-color: #fff;
+  border: 1px solid #ccc;
+  padding: 8px;
+	align-items: center;
+	justify-self: end;
+  flex-grow: 1;
+}
+
+.listItem {
+	display: flex;
+	flex-direction: column;
+}
+
+.itemPairWithList {
+	display: flex;
+	width: 100%;
+}
+
+
+/* インプットフィールド */
+.inputField {
+	width: 100%;
+	padding: 7px 12px;
+	border: 1px solid var(--color-gray);
+	border-radius: 4px;
+	background-color: var(--color-white);
+	/* text-align: left; */
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.inputField input {
+	flex: 1;
+	border: none;
+	text-align: center;
+}
+
+.inputField .icon {
+	margin-left: auto;
+	display: flex;
+	align-items: center;
+}
+
+/* input.module.css */
+
+/* コンポーネント全体のコンテナ */
+.inputContainer {
+  display: flex;
+  flex-direction: column;
+	gap: 4px;
+}
+
+/* ラベルのスタイル */
+.inputLabel {
+	flex-direction: row;
+  gap: 4px;
+}
+
+/* 入力欄やセレクトボックスを囲むラッパー */
+.inputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+	gap: 4px;
+}
+
+.error {
+  border-color: var(--color-red) !important;
+	background-color: var(--color-pink);
+}
+
+/* 入力フィールドの基本スタイル */
+.inputField {
+  flex: 1;
+  padding: 8px 12px;
+  font-size: 16px;
+  border: 1px solid var(--color-gray);
+  border-radius: 4px;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+/* フォーカス時の入力フィールド */
+.inputField:focus {
+  border-color: var(--color-green-primary);
+}
+
+/* 必須マーク */
+.requiredMark {
+	display: inline-block;
+	padding: 2px 4px;
+	background-color: var(--color-red);
+	color: var(--color-white);
+	border: 1px solid var(--color-red);
+	border-radius: 4px;
+}
+
+
+/*CNレポートのテーブル */
+.CNtableContainer {
+  width: 100%;
+  overflow-x: auto;
+  background-color: var(--color-white-pale);
+  border: 1px solid var(--color-gray-light);
+  border-radius: 8px;
+}
+
+.CNtable {
+  width: 100%;
+  border-collapse: collapse;
+	table-layout: fixed;
+}
+
+.CNtableError {
+	width: 100%;
+	background-color: var(--color-pink);
+	padding: 16px;
+}
+
+.CNtable th {
+  border: none;
+  padding: 8px;
+  text-align: left;
+  vertical-align: middle;
+  box-sizing: border-box;
+  position: relative;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+  background-color: var(--color-white-pale) !important;
+}
+
+.tableContainer {
+	border: none !important;
+  }
+  
+.CNtable td {
+  border: none;
+  padding: 8px ; 
+  text-align: left;
+  vertical-align: middle;
+  background-color: var(--color-white);
+	white-space: nowrap;
+	overflow: hidden;
+	/* overflow: scroll; */
+	text-overflow: ellipsis;
+}
+
+
+thead {
+	position: sticky;
+	top: 0;
+	background: white;
+	z-index: 10;
+  }
+  
+  .tableScroll {
+	max-height: 400px; /* 任意の高さ */
+	overflow-y: auto; /* 縦スクロールを許可 */
+  }
+
+.linkButton{
+	color: #0e9384; 
+	font-family: var(--default-font-family);
+	font-size: 14px;
+	line-height: 21px;
+	text-align: left;
+	text-decoration: underline;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	z-index: 157;
+	overflow: hidden;
+  }
+
+/* チェックボックス列 */
+.checkboxColumn {
+  width: 3%;
+  text-align: center;
+  accent-color: var(--color-green-primary);
+}
+
+/* リサイズハンドル */
+.resizeHandle {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  width: 5px;
+  cursor: col-resize;
+  background-color: transparent;
+  transition: background-color 0.2s;
+}
+
+.resizeHandle:hover {
+  background-color: var(--color-gray-light);
+}
+
+/* 各列の幅 */
+.branchName { width: 10%; }
+.bankName { width: 10%; }
+.customerName { min-width: 15%; flex: 1; }
+.representative { width: 10%; }
+.fiscalYear { width: 5%; }
+.registrationDate { width: 20%; }
+.registrationCount { width: 8%; }
+.record { flex: 1; }

@@ -1,0 +1,13 @@
+# 建物・エネルギー情報照会 API テスト
+# Requirements
+# - VSCodeプラグイン REST Client
+
+### 建物照会 シナリオ1
+POST  http://127.0.0.1:5000/api/building/regist/building_energy/info
+Content-Type: application/json
+
+{
+    "user_id": "test",
+    "org_id": "testorgid"
+
+}

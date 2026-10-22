@@ -1,0 +1,296 @@
+
+/*************************************************************************************************/
+/* 建物情報入力
+/*div第1層設定
+/***********************************/
+.div_group_input {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    align-items: center;
+    margin-bottom: 20px; 
+    width: 100%;
+    top: 0;
+    gap: 25px;
+}
+/***********************************/
+/*div第2層設定
+/***********************************/ 
+.div_group_input_align {
+    width:70%;
+    padding-left:20px;
+}
+
+/***********************************/
+/*div第3層設定
+/***********************************/ 
+.gridContainer {
+    display: grid;
+    grid-template-rows: repeat(2, 1fr);
+}
+/***********************************/
+/*div第4層設定(label)
+/***********************************/ 
+.input_label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+/***********************************/
+/*Input設定
+/***********************************/   
+.input_container_align input {
+    padding: 0.5rem 0;
+    border: 1px solid #0aa162;
+    border-radius: 4px;
+    width: 100%;
+    background-color: #f5f5f5;
+}
+
+.input:focus {
+    border-color: #009688;      /* フォーカス時のボーダーの色 */
+    outline: none;                /* デフォルトのフォーカスプロファイルを削除 */
+    box-shadow: 0 0 5px #009688;/* フォーカス時のシャドー効果 */
+}
+
+.div_background_color{
+    background-color:#f0f0f0;
+}
+
+.div_background_color_head{   
+    background-color:#f0f0f0;
+}
+
+/*************************************************************************************************/
+/* 建物情報一覧・タイトル
+/*div第1層設定
+/***********************************/
+
+.div_group {
+    display: grid;
+    grid-template-columns: 0.5fr 0.5fr repeat(24, 1fr);
+    align-items: center;
+    width: 4200px;
+    top: 0;
+    margin: 0 0 20px 20px;
+
+}
+
+/***********************************/
+/*div第2層設定
+/***********************************/ 
+.form_item {
+    display: flex;
+    flex-direction: column;
+    align-items: start; 
+}
+
+/***********************************/
+/*div第3層設定
+/***********************************/ 
+.label_container {
+    width: 100%;
+    background-color:#002060;
+    height: 90px;
+    color: white;
+    border: 1px solid #0aa162;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    font-size:14px;
+}
+
+/***********************************/
+/*div第4層設定
+/***********************************/ 
+.label_container1 {
+    height:100%;
+    width: 100%;
+    color: white;
+    background-color:#002060;
+    border: 1px solid #0aa162;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.label_container1 span {
+    font-size: 11px;
+    width: 100%;
+    height:100%;
+    border: 1px solid #0aa162;
+}
+
+/***********************************/
+/*ドロップダウン設定
+/***********************************/ 
+.dropdown {
+    height: 100%;
+    padding: 6px;
+    border: 1px solid #0aa162;
+    border-radius: 4px;
+    font-size: 16px;
+    background-color: #f5f5f5;
+  }
+
+/***********************************/
+/*ボタン設定
+/***********************************/
+.button {
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+    margin-left: 20px;
+  }
+  
+  .button:hover {
+    background-color: #45a049;
+  }
+
+
+
+
+ /***********************************/
+/* 項目「選択」「No」のスタイル
+/***********************************/ 
+.div_group_form_item {
+    display: flex;
+    flex-direction: column;
+    align-items: start; 
+    position:sticky;
+    /* left: '100px' */
+} 
+
+/***********************************/
+/*建物情報一覧データ部分・div第2層設定
+/***********************************/ 
+.data_form_item {
+    display: flex;
+    flex-direction: column;
+    align-items: start; 
+}
+
+/***********************************/
+/*建物情報一覧データ部分・div第3層設定
+/***********************************/ 
+.data_form_item_container {
+    width: 100%;
+    background-color:#f5f5f5;
+    height: 31px;
+    border: 1px solid #0aa162;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    border-radius:4px;
+}
+
+ /*******************************************/
+/*建物情報一覧データ部分・初期化データ検索表示
+/*******************************************/ 
+.data_form_item_container_select {
+    width: 100%;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+} 
+
+/***********************************/
+/*建物情報一覧データ部分・Input設定
+/***********************************/   
+.data_form_item_label_container_input input {
+    padding: 0.5rem 0;
+    border: 1px solid #0aa162;
+    border-radius: 4px;
+    background-color: #f5f5f5;
+}
+
+.input:focus {
+    border-color: #009688;      /* フォーカス時のボーダーの色 */
+    outline: none;                /* デフォルトのフォーカスプロファイルを削除 */
+    box-shadow: 0 0 5px #009688;/* フォーカス時のシャドー効果 */
+}
+
+/*************************************************************************************************/
+/* AEI建物情報一覧・タイトル
+/*div第1層設定
+/***********************************/
+
+.div_group_AEI {
+    display: grid;
+    grid-template-columns: 0.4fr 0.4fr repeat(10, 1fr);
+    align-items: center;
+    width: 1800px;
+    top: 0;
+    margin: 0 0 20px 20px;
+
+}
+
+/*************************************************************************************************/
+/* 建物情報一覧・検索
+/*div第1層設定
+/***********************************/
+
+.div_group_search{
+    margin-top:20px;
+    margin-left:20px;
+    display:flex;
+    gap:25px;
+    align-items:center;
+    grid-template-columns:repeat(6, 1fr);
+
+}
+
+.data_form_item_label_container_input_search{
+    display:flex;
+    width: 250px;
+
+}
+
+.data_form_item_label_container_input_search input {
+    padding: 0.5rem 0;
+    border: 1px solid #0aa162;
+    border-radius: 4px;
+    background-color: #f5f5f5;
+}
+
+.inputGroup {
+    font-size: 16px;  
+    font-weight: bold; 
+    color: #333; 
+    margin-bottom: 10px;  
+    display: flex; 
+    justify-content: flex-start;  
+    align-items: center; 
+  }
+
+.checkbox_group{
+display: flex;  
+  justify-content: flex-start; 
+  gap: 15px; 
+  align-items: center;
+  width: 300px;
+
+}
+.checkbox_item {
+    display: inline-block; 
+  }
+/*************************************************************************************************/
+/* 
+/*チェック
+/***********************************/
+.error_field_select {
+    border: 1px solid red;
+}
+
+.error_field input {
+    padding: 0.5rem 0;
+    border: 1px solid red;
+    border-radius: 4px;
+    width: 100%;
+    background-color: #f5f5f5;
+}

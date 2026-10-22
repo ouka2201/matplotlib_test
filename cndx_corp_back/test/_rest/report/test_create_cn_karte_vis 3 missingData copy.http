@@ -1,0 +1,98 @@
+### ケース1: 単拠点1件
+POST http://127.0.0.1:5000/api/report/cn-karte/create/vis
+Content-Type: application/json
+
+{
+  "corporate_number": "1234567890123",
+  "agreement_category": "12",
+  "org_id": "ASE",
+  "start_year": "2024",
+  "start_month": "04",
+  "end_year": "2025",
+  "end_month": "03",
+  "creation_format": "CNカルテ(簡易版)",
+  "consent_route": "可視化アライアンス（EP・REP）",
+  "is_for_multibuilding": false,
+  "building_ids_for_single": ["1234567890123001001"],
+  "need_data_insufficiency_list": true,
+  "need_report_backdata": false,
+  "need_kpi_list": false
+}
+
+
+
+### ケース2: 単拠点複数件(3件)
+POST http://127.0.0.1:5000/api/report/cn-karte/create/vis
+Content-Type: application/json
+
+{
+  "corporate_number": "1234567890123",
+  "agreement_category": "12",
+  "org_id": "ASE",
+  "start_year": "2024",
+  "start_month": "04",
+  "end_year": "2025",
+  "end_month": "03",
+  "creation_format": "CNカルテ(簡易版)",
+  "consent_route": "可視化アライアンス（EP・REP）",
+  "is_for_multibuilding": false,
+  "building_ids_for_single": [
+    "0000000000222tokyoA",
+    "0000000000222tokyoB",
+    "0000000000222tokyoC"
+  ],
+  "need_data_insufficiency_list": true,
+  "need_report_backdata": false,
+  "need_kpi_list": false
+}
+
+
+
+### ケース3: 企業全体
+POST http://127.0.0.1:5000/api/report/cn-karte/create/vis
+Content-Type: application/json
+
+{
+  "corporate_number": "1234567890123",
+  "agreement_category": "12",
+  "org_id": "ASE",
+  "start_year": "2024",
+  "start_month": "04",
+  "end_year": "2025",
+  "end_month": "03",
+  "creation_format": "CNカルテ(簡易版)",
+  "consent_route": "可視化アライアンス（EP・REP）",
+  "is_for_multibuilding": true,
+  "building_ids_for_single": null,
+  "need_data_insufficiency_list": true,
+  "need_report_backdata": false,
+  "need_kpi_list": false
+}
+
+
+
+### ケース4: グループ選択
+POST http://127.0.0.1:5000/api/report/cn-karte/create/vis
+Content-Type: application/json
+
+{
+  "corporate_number": "1234567890123",
+  "agreement_category": "12",
+  "org_id": "ASE",
+  "start_year": "2024",
+  "start_month": "04",
+  "end_year": "2025",
+  "end_month": "03",
+  "creation_format": "CNカルテ(簡易版)",
+  "consent_route": "可視化アライアンス（EP・REP）",
+  "is_for_multibuilding": true,
+  "building_ids_for_single": null,
+  "group_for_multibuilding": [
+    { "group_no": "1", "option_no": "1" },
+    { "group_no": "2", "option_no": "2" }
+  ],
+  "need_data_insufficiency_list": true,
+  "need_report_backdata": false,
+  "need_kpi_list": false
+}
+

@@ -1,0 +1,111 @@
+### ケース1: 単拠点1件
+POST http://127.0.0.1:5000/api/report/cn-karte/create/vis
+Content-Type: application/json
+
+{
+  "corporateNumber": "1234567890123",
+  "agreementCategory": "12",
+  "orgId": "ASE",
+  "startYear": "2024",
+  "startMonth": "04",
+  "endYear": "2025",
+  "endMonth": "03",
+  "consentRoute": "可視化アライアンス（EP・REP）",
+  "creationFormat": "CNカルテ(簡易版)",
+  "isForMultibuilding": false,
+  "buildingIdsForSingle": ["1234567890123001001"],
+  "targetType": "個別",
+  "downloads": {
+    "missingData": true,
+    "cnKarteCsv": false,
+    "kpi": false
+  }
+}
+
+
+### ケース2: 単拠点複数件(3件)
+POST http://127.0.0.1:5000/api/report/cn-karte/create/vis
+Content-Type: application/json
+
+{
+  "corporateNumber": "1234567890123",
+  "agreementCategory": "12",
+  "orgId": "ASE",
+  "startYear": "2024",
+  "startMonth": "04",
+  "endYear": "2025",
+  "endMonth": "03",
+  "consentRoute": "可視化アライアンス（EP・REP）",
+  "creationFormat": "CNカルテ(簡易版)",
+  "isForMultibuilding": false,
+  "buildingIdsForSingle": [
+    "0000000000222tokyoA",
+    "0000000000222tokyoB",
+    "0000000000222tokyoC"
+  ],
+  "targetType": "個別",
+  "downloads": {
+    "missingData": true,
+    "cnKarteCsv": false,
+    "kpi": false
+  }
+}
+
+
+### ケース3: 企業全体
+POST http://127.0.0.1:5000/api/report/cn-karte/create/vis
+Content-Type: application/json
+
+{
+  "corporateNumber": "1234567890123",
+  "agreementCategory": "12",
+  "orgId": "ASE",
+  "startYear": "2024",
+  "startMonth": "04",
+  "endYear": "2025",
+  "endMonth": "03",
+  "consentRoute": "可視化アライアンス（EP・REP）",
+  "creationFormat": "CNカルテ(簡易版)",
+  "isForMultibuilding": true,
+  "buildingIdsForSingle": null,
+  "targetType": "企業全体",
+  "downloads": {
+    "missingData": true,
+    "cnKarteCsv": false,
+    "kpi": false
+  }
+}
+
+
+### ケース4: グループ選択
+POST http://127.0.0.1:5000/api/report/cn-karte/create/vis
+Content-Type: application/json
+
+{
+  "corporateNumber": "1234567890123",
+  "agreementCategory": "12",
+  "orgId": "ASE",
+  "startYear": "2024",
+  "startMonth": "04",
+  "endYear": "2025",
+  "endMonth": "03",
+  "consentRoute": "可視化アライアンス（EP・REP）",
+  "creationFormat": "CNカルテ(簡易版)",
+  "isForMultibuilding": true,
+  "buildingIdsForSingle": null,
+  "targetType": "グループ",
+  "multiCondition": {
+    "entireCompany": false,
+    "groupOption": true,
+    "groupItems": [
+      { "groupId": "1", "locationType": "千葉" },
+      { "groupId": "2", "locationType": "愛知" }
+    ]
+  },
+  "downloads": {
+    "missingData": true,
+    "cnKarteCsv": false,
+    "kpi": false
+  }
+}
+

@@ -1,0 +1,240 @@
+/* 
+担当者一覧画面のCSS
+*/
+
+.contactPersonContainer{
+  width: 90%;
+  border-collapse: collapse;
+  margin: 0 auto;
+  display: block;
+}
+
+.contactPersonSearchBlock{
+  margin-top: 10px;
+  width: 70%;
+}
+.contactPerson{
+  width: 100%;
+  table-layout: fixed;
+}
+
+.tableTitle{
+  width: 40%;
+  text-align: center;
+	background-color: lightgray !important;
+}
+
+.inputColumn {
+  width: 60%;
+  text-align: center;
+}
+
+.inputColumn.grayBackground {
+  background-color: lightgray;
+}
+
+.contactPerson th {
+  border: 1px solid;
+  padding: 8px;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.contactPerson td {
+  border: 1px solid;
+  padding: 8px;
+  text-align: center;
+  vertical-align: middle;
+	background-color: white;
+}
+
+.searchBlockContainer{
+  display: flex;
+  justify-content: end;
+}
+
+.searchButton{
+  justify-content: center;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+  gap: 30px;
+  width: 100px;
+  height: 36px;
+  padding: 0 12px 0 12px;
+  cursor: pointer;
+  border-radius: 4px;
+  border: 1px solid #ffffff;
+  box-shadow: 0 1px 2px 0 rgba(16, 24, 40, 0.05);
+  background: #009688;
+  margin-top: 10px;
+  margin-left: auto;
+  text-align: center;
+}
+
+
+.searchText{
+  flex-shrink: 0;
+  flex-basis: auto;
+  /* position: relative; */
+  height: 21px;
+  font-family: var(--default-font-family);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 21px;
+  text-align: center;
+  white-space: nowrap;
+  z-index: 93;
+  color: #ffffff;
+}
+
+.searchResultTable {
+	border: none !important;
+  margin-top: 10px;
+}
+
+.searchResult {
+  width: 100%;
+  border-collapse: collapse;
+	table-layout: fixed;
+}
+
+
+.searchResult td {
+  border: 1px solid;
+  padding: 8px ; 
+  text-align: left;
+  vertical-align: middle;
+  background-color: var(--color-white);
+	white-space: nowrap;
+	overflow: hidden;
+	/* overflow: scroll; */
+	text-overflow: ellipsis;
+}
+
+.searchResult th {
+  border: 1px solid;
+  padding: 8px;
+  text-align: left;
+  vertical-align: middle;
+  box-sizing: border-box;
+  position: relative;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+  /* background-color: var(--color-white-pale); */
+	background-color: lightgray !important;
+}
+
+.tableScroll {
+	max-height: 400px; /* 任意の高さ */
+	overflow-y: scroll; /* 縦スクロールを許可 */
+}
+
+.searchResultHead{
+  position: sticky;
+  top: 0;
+  z-index: 10
+}
+
+.tableScroll {
+	max-height: 400px; /* 任意の高さ */
+	overflow-y: auto; /* 縦スクロールを許可 */
+}
+/* スクロールバーの表示については別途相談 */
+.tableScroll::-webkit-scrollbar {
+  display: none;
+}
+
+
+/* 担当者詳細 */
+.contactPersonEditBlock {
+  margin-top: 10px;
+  width: 70%;
+}
+
+.contactPersonEdit {
+  width: 100%;
+  table-layout: fixed;
+}
+
+.editBlockContainer {
+  display: flex;
+  justify-content: end;
+}
+
+.editButton {
+  justify-content: center;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+  gap: 30px;
+  width: 200px;
+  height: 36px;
+  padding: 0 12px 0 12px;
+  cursor: pointer;
+  border-radius: 4px;
+  border: 1px solid #ffffff;
+  box-shadow: 0 1px 2px 0 rgba(16, 24, 40, 0.05);
+  background: #009688;
+  margin-right: auto;
+  margin-top: 10px;
+  text-align: center;
+  font-family: var(--default-font-family);
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.addContactPersonButton {
+  justify-content: center;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+  gap: 30px;
+  width: 200px;
+  height: 36px;
+  padding: 0 12px 0 12px;
+  cursor: pointer;
+  border-radius: 4px;
+  border: 1px dashed #009688;
+  box-shadow: 0 1px 2px 0 rgba(16, 24, 40, 0.05);
+  background: #ffffff;
+  margin-right: auto;
+  margin-top: 10px;
+  text-align: center;
+  font-family: var(--default-font-family);
+  font-size: 14px;
+  font-weight: 700;
+  color: #009688;
+}
+
+.addContactPersonButton:disabled {
+  border: 1px dashed lightgray;
+  color: lightgray;
+}
+
+.registerButton {
+  justify-content: center;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+  gap: 30px;
+  width: 200px;
+  height: 36px;
+  padding: 0 12px 0 12px;
+  cursor: pointer;
+  border-radius: 4px;
+  border: 1px solid #ffffff;
+  box-shadow: 0 1px 2px 0 rgba(16, 24, 40, 0.05);
+  background: #c30909;
+  margin-left: auto;
+  margin-top: 10px;
+  text-align: center;
+  font-family: var(--default-font-family);
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.registerButton:disabled {
+  border: 1px solid lightgray;
+  color: lightgray;
+  background: #ffffff;
+}

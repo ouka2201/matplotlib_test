@@ -1,0 +1,50 @@
+/* app/styles/components.css */
+
+.base-container {
+    @apply relative p-10 pl-2 pb-20 font-sans w-full;
+  }
+  
+  .breadcrumb {
+    @apply fixed flex items-center gap-2 text-xl text-gray-500 mb-5 z-[500];
+  }
+  
+  .input-base {
+    @apply  p-2 w-full box-border rounded;
+  }
+  
+  .input-editable {
+    @apply border border-gray-300 rounded-md bg-slate-100;
+  }
+  
+  .input-error {
+    @apply border-2 border-red-500 bg-red-100;
+  }
+  
+  .table {
+    @apply w-[90%] border-collapse my-5 shadow-md;
+  }
+  
+  .td {
+    @apply border border-gray-300 p-3 align-top;
+  }
+  
+  .td-gray {
+    @apply border border-gray-300 p-3 align-top bg-gray-100;
+  }
+  
+  .td-section-title {
+    @apply border border-gray-300 p-3 text-center font-bold bg-gray-100 w-[150px];
+  }
+  
+  .td-field-title {
+    @apply border border-gray-300 p-3 font-bold bg-gray-100;
+  }
+  
+  .edit-button {
+    @apply sticky top-[100px] right-5 px-6 py-2.5 rounded-xl bg-blue-400 font-semibold text-lg z-[100];
+  }
+  
+  .submit-button {
+    @apply absolute -bottom-5 right-5 px-6 py-3 rounded-full bg-red-700 text-white font-semibold text-lg shadow-md transition-all;
+  }
+  

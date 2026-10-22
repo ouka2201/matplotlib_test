@@ -1,0 +1,4 @@
+### 取得　2経路同意取得している場合
+GET http://127.0.0.1:5000/api/corp/basic-info?corporate_number=2025060601001
+Authorization: TEST_TOKEN
+Content-Type: application/json

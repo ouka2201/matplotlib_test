@@ -1,0 +1,29 @@
+# 企業建物情報取得 API テスト
+# VSCode プラグイン REST Client が必要
+
+### シナリオ1：お客さま名で部分一致検索
+GET http://127.0.0.1:5000/api/corp/building/list?company_name=株式会社
+Content-Type: application/json
+
+### シナリオ2：法人番号で完全一致検索
+GET http://127.0.0.1:5000/api/corp/building/list?corporate_number=2025042100103
+Content-Type: application/json
+
+### シナリオ3：同意取得経路＝'L' で完全一致検索
+GET http://127.0.0.1:5000/api/corp/building/list?agreement_category=03
+Content-Type: application/json
+
+### シナリオ4：組織ID＋お客さま名＋法人番号の複合検索
+GET http://127.0.0.1:5000/api/corp/building/list?org_name=テスト営業部
+Content-Type: application/json
+
+GET http://127.0.0.1:5000/api/corp/building/list?org_name=テスト営業部&company_name=白い&corporate_number=2025042100103
+Content-Type: application/json
+
+### シナリオ5：パラメータなし（全件取得）
+GET http://127.0.0.1:5000/api/corp/building/list
+Content-Type: application/json
+
+### シナリオ6：企業住所
+GET http://127.0.0.1:5000/api/corp/building/list?building_address=大阪
+Content-Type: application/json

@@ -1,0 +1,51 @@
+# Requirements
+# - VSCodeプラグイン REST Client
+
+### シナリオ1 検索
+GET http://127.0.0.1:5000/api/mst_manage/corpration/info
+Content-Type: application/json
+
+### シナリオ2 検索 企業名: 嗚呼
+GET http://127.0.0.1:5000/api/mst_manage/corpration/info?company_name=%E5%97%9A%E5%91%BC
+Content-Type: application/json
+
+### シナリオ3 検索 法人番号: 202504220
+GET http://127.0.0.1:5000/api/mst_manage/corpration/info?corporate_number=202504220
+Content-Type: application/json
+
+### シナリオ4 検索 企業住所: 千葉県
+GET http://127.0.0.1:5000/api/mst_manage/corpration/info?company_address=%E5%8D%83%E8%91%89%E7%9C%8C
+Content-Type: application/json
+
+### シナリオ5 検索 企業名: 嗚呼 & 法人番号: 202504220 & 企業住所: 千葉県
+GET http://127.0.0.1:5000/api/mst_manage/corpration/info?company_name=%E5%97%9A%E5%91%BC&corporate_number=202504220&company_address=%E5%8D%83%E8%91%89%E7%9C%8C
+Content-Type: application/json
+
+### シナリオ6 想定外パラメータ
+GET http://127.0.0.1:5000/api/mst_manage/corpration/info?unknown=xxx
+Content-Type: application/json
+
+### シナリオ7 事業所数0
+GET http://127.0.0.1:5000/api/mst_manage/corpration/info?corporate_number=2025042210201
+Content-Type: application/json
+
+### シナリオ8 事業所数1
+GET http://127.0.0.1:5000/api/mst_manage/corpration/info?corporate_number=2025042200202
+Content-Type: application/json
+
+### シナリオ9 事業所数2
+GET http://127.0.0.1:5000/api/mst_manage/corpration/info?corporate_number=2025042210203
+Content-Type: application/json
+
+### シナリオ10 事業所数5
+GET http://127.0.0.1:5000/api/mst_manage/corpration/info?corporate_number=2025042200204
+Content-Type: application/json
+
+### シナリオ11 一致したレコードがない
+GET http://127.0.0.1:5000/api/mst_manage/corpration/info?corporate_number=202404220
+Content-Type: application/json
+
+### シナリオ 4-1 検索 企業住所: 都千
+GET http://127.0.0.1:5000/api/mst_manage/corpration/info?company_address=%E9%83%BD%E5%8D%83
+Content-Type: application/json
+

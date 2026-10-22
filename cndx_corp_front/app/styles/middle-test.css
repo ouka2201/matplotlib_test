@@ -1,0 +1,928 @@
+:root {
+  --default-font-family:
+      "Noto Sans JP",
+      "Hiragino Sans",
+      "Yu Gothic",
+      "Meiryo",
+      -apple-system,
+      BlinkMacSystemFont,
+      "Segoe UI",
+      sans-serif;
+}
+
+.main-container {
+  overflow: hidden;
+}
+
+.main-container,
+.main-container * {
+  box-sizing: border-box;
+}
+
+input,
+select,
+textarea,
+button {
+  outline: 0;
+}
+
+.main-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  flex-wrap: nowrap;
+  position: relative;
+  width: 1280px;
+  margin: 0 auto;
+  background: #f9fafb;
+  overflow: hidden;
+}
+
+/* header */
+.frame-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  align-self: stretch;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+  position: relative;
+  min-width: 0;
+  height: 71px;
+  padding: 8px 0 8px 16px;
+  background: #ffffff;
+  border-top: 1px solid #d0d5dd;
+}
+.header-title {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+  gap: 24px;
+  position: relative;
+  width: 199px;
+  z-index: 1;
+}
+.header-title-logo {
+  flex-shrink: 0;
+  position: relative;
+  width: 88px;
+  height: 32px;
+  z-index: 2;
+}
+.tepco-header {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  background: url(../assets/images/c04c37e1-8265-4ea8-bf2e-7668bf534f9e.png)
+    no-repeat center;
+  background-size: 100% 100%;
+  z-index: 3;
+}
+.header-title-text {
+  flex-shrink: 0;
+  flex-basis: auto;
+  position: relative;
+  height: 24px;
+  color: #1d2939;
+  font-family: var(--default-font-family);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 24px;
+  text-align: left;
+  white-space: nowrap;
+  z-index: 4;
+}
+.header-account {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+  gap: 8px;
+  position: relative;
+  width: 168px;
+  height: 71px;
+  padding: 8px 8px 8px 8px;
+  z-index: 5;
+}
+.header-account-popup {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+  position: absolute;
+  width: 168px;
+  height: 88px;
+  top: 71px;
+  left: 0;
+  padding: 8px 0 8px 0;
+  background: #ffffff;
+  z-index: 11;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px 0 rgba(114, 114, 114, 0.4);
+}
+.header-account-popup-setting {
+  display: flex;
+  align-items: center;
+  align-self: stretch;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+  gap: 8px;
+  position: relative;
+  min-width: 0;
+  height: 36px;
+  padding: 7px 12px 7px 12px;
+  z-index: 12;
+}
+.header-account-popup-text-gray {
+  flex-grow: 1;
+  flex-shrink: 0;
+  flex-basis: auto;
+  position: relative;
+  height: 22px;
+  color: #98a1b2;
+  font-family: var(--default-font-family);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 22px;
+  text-align: left;
+  white-space: nowrap;
+  z-index: 13;
+}
+.header-account-popup-logout {
+  display: flex;
+  align-items: center;
+  align-self: stretch;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+  gap: 8px;
+  position: relative;
+  min-width: 0;
+  padding: 7px 12px 7px 12px;
+  z-index: 14;
+}
+.header-account-popup-text-black {
+  flex-grow: 1;
+  flex-shrink: 0;
+  flex-basis: auto;
+  position: relative;
+  height: 22px;
+  color: rgba(8, 11, 25, 0.9);
+  font-family: var(--default-font-family);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 22px;
+  text-align: left;
+  white-space: nowrap;
+  z-index: 15;
+}
+.header-account-icon {
+  flex-shrink: 0;
+  position: relative;
+  width: 32px;
+  height: 32px;
+  background: url(../assets/images/4fffcf7f-e0ee-4552-a3be-11ae4c4f833f.png)
+    no-repeat center;
+  background-size: cover;
+  z-index: 6;
+  overflow: hidden;
+}
+.header-account-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+  position: relative;
+  width: 80px;
+  z-index: 7;
+}
+.header-account-text-branch {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-shrink: 0;
+  flex-basis: auto;
+  position: relative;
+  width: 80px;
+  height: 18px;
+  color: #98a1b2;
+  font-family: var(--default-font-family);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 18px;
+  text-align: left;
+  white-space: nowrap;
+  z-index: 8;
+}
+.header-account-text-username {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-shrink: 0;
+  flex-basis: auto;
+  position: relative;
+  width: 80px;
+  height: 21px;
+  color: #1d2939;
+  font-family: var(--default-font-family);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 21px;
+  text-align: left;
+  white-space: nowrap;
+  z-index: 9;
+}
+.header-account-arrow {
+  flex-shrink: 0;
+  position: relative;
+  width: 24px;
+  height: 24px;
+  background: url(../assets/images/e89889d1-bbbb-428c-bb7c-9a854ec8c7bc.png)
+    no-repeat center;
+  background-size: cover;
+  z-index: 10;
+  overflow: hidden;
+}
+
+/*top*/
+.frame-top {
+  display: flex;
+  align-items: flex-start;
+  align-self: stretch;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+  position: relative;
+  min-width: 0;
+  z-index: 16;
+}
+.frame-top-body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  flex-wrap: nowrap;
+  position: relative;
+  width: 1060px;
+  margin: 0 auto;
+  padding: 0 0 40px 0;
+  overflow: hidden auto;
+}
+
+/*top-sidebar*/
+.sidebar-contentbox {
+  display: flex;
+  align-items: center;
+  align-self: stretch;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+  gap: 8px;
+  position: relative;
+  min-width: 0;
+  height: 40px;
+  padding: 0 16px 0 16px;
+}
+.sidebar-profile {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+  gap: 4px;
+  position: relative;
+  width: 80px;
+  z-index: 1;
+}
+.sidebar-profile-icon {
+  flex-shrink: 0;
+  position: relative;
+  width: 20px;
+  height: 20px;
+  background: url(../assets/images/f935f28e-7c95-4574-9e71-7b15cd86f1ff.png)
+    no-repeat center;
+  background-size: cover;
+  z-index: 2;
+  border-radius: 4px;
+}
+.sidebar-profile-text {
+  flex-shrink: 0;
+  flex-basis: auto;
+  position: relative;
+  height: 21px;
+  color: #1d2939;
+  font-family: var(--default-font-family);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 21px;
+  text-align: left;
+  white-space: nowrap;
+  z-index: 3;
+}
+.sidebar-title {
+  display: flex;
+  align-items: center;
+  align-self: stretch;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+  gap: 8px;
+  position: relative;
+  min-width: 0;
+  padding: 16px 16px 8px 16px;
+  z-index: 4;
+}
+.section-title {
+  flex-grow: 1;
+  flex-shrink: 0;
+  flex-basis: auto;
+  position: relative;
+  height: 18px;
+  color: #98a1b2;
+  font-family: var(--default-font-family);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: left;
+  white-space: nowrap;
+  z-index: 5;
+}
+.sidebar-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  align-self: stretch;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+  position: relative;
+  min-width: 0;
+  height: 40px;
+  padding: 0 16px 0 16px;
+  background: #f9fafb;
+  z-index: 6;
+}
+.create-report-button {
+  flex-grow: 1;
+  flex-shrink: 0;
+  flex-basis: 0;
+  position: relative;
+  height: 21px;
+  cursor: pointer;
+  color: #1d2939;
+  font-family: var(--default-font-family);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 21px;
+  white-space: nowrap;
+  background: transparent;
+  border: none;
+  z-index: 7;
+}
+.chevron-right {
+  flex-shrink: 0;
+  position: relative;
+  width: 24px;
+  height: 24px;
+  background: url(../assets/images/f303f60c-321d-439e-8911-cfa08aba2def.png)
+    no-repeat center;
+  background-size: cover;
+  z-index: 8;
+  overflow: hidden;
+}
+.sidebar-content-1 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  align-self: stretch;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+  position: relative;
+  min-width: 0;
+  height: 40px;
+  padding: 0 16px 0 16px;
+  z-index: 9;
+}
+.text {
+  flex-grow: 1;
+  flex-shrink: 0;
+  flex-basis: auto;
+  position: relative;
+  height: 21px;
+  color: #98a1b2;
+  font-family: var(--default-font-family);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 21px;
+  text-align: left;
+  white-space: nowrap;
+  z-index: 10;
+}
+.chevron-right-dp {
+  flex-shrink: 0;
+  position: relative;
+  width: 24px;
+  height: 24px;
+  background: url(../assets/images/a921b8e9-b2ed-4be5-8060-ce84054e46b3.png)
+    no-repeat center;
+  background-size: cover;
+  z-index: 11;
+  overflow: hidden;
+}
+.sidebar-line {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  align-self: stretch;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+  gap: 8px;
+  position: relative;
+  min-width: 0;
+  padding: 8px 0 8px 0;
+  z-index: 12;
+}
+.rectangle {
+  align-self: stretch;
+  flex-shrink: 0;
+  position: relative;
+  height: 1px;
+  background: #d0d5dd;
+  z-index: 13;
+}
+.sidebar-title-2 {
+  display: flex;
+  align-items: center;
+  align-self: stretch;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+  gap: 8px;
+  position: relative;
+  min-width: 0;
+  height: 42px;
+  padding: 16px 16px 8px 16px;
+  z-index: 14;
+}
+.section-title-3 {
+  flex-grow: 1;
+  flex-shrink: 0;
+  flex-basis: auto;
+  position: relative;
+  height: 18px;
+  color: #98a1b2;
+  font-family: var(--default-font-family);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: left;
+  white-space: nowrap;
+  z-index: 15;
+}
+.sidebar-content-4 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  align-self: stretch;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+  position: relative;
+  min-width: 0;
+  height: 40px;
+  padding: 0 16px 0 16px;
+  z-index: 16;
+}
+.account-management {
+  flex-grow: 1;
+  flex-shrink: 0;
+  flex-basis: 0;
+  position: relative;
+  height: 21px;
+  cursor: pointer;
+  color: #98a1b2;
+  font-family: var(--default-font-family);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 21px;
+  white-space: nowrap;
+  background: transparent;
+  border: none;
+  z-index: 17;
+}
+.chevron-right-5 {
+  flex-shrink: 0;
+  position: relative;
+  width: 24px;
+  height: 24px;
+  background: url(../assets/images/d898cc30-e0e5-4358-95e0-1b75690eab5e.png)
+    no-repeat center;
+  background-size: cover;
+  z-index: 18;
+  overflow: hidden;
+}
+
+/*top-body*/
+.frame-top-body-excelupload {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+  gap: 32px;
+  position: relative;
+  width: 1060px;
+  padding: 0 16px 40px 16px;
+  overflow: hidden auto;
+}
+.top-body-title {
+  display: flex;
+  align-items: center;
+  align-self: stretch;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+  gap: 16px;
+  position: relative;
+  min-width: 0;
+  padding: 32px 0 32px 0;
+  z-index: 1;
+}
+.top-body-title-text {
+  flex-shrink: 0;
+  flex-basis: auto;
+  position: relative;
+  height: 36px;
+  color: #1d2939;
+  font-family: var(--default-font-family);
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 36px;
+  text-align: left;
+  white-space: nowrap;
+  z-index: 2;
+}
+.excelupload-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+  gap: 16px;
+  position: relative;
+  width: 484px;
+  z-index: 3;
+}
+.exceldownloadbutton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+  gap: 8px;
+  position: relative;
+  width: 255px;
+  min-width: 80px;
+  height: 36px;
+  padding: 0 12px 0 12px;
+  cursor: pointer;
+  background: #ffffff;
+  border: 1px solid #98a1b2;
+  z-index: 4;
+  border-radius: 4px;
+  box-shadow: 0 1px 2px 0 rgba(16, 24, 40, 0.05);
+}
+.excel-download-icon {
+  flex-shrink: 0;
+  position: relative;
+  width: 20px;
+  height: 20px;
+  background: url(../assets/images/3f0557f1-d83d-4733-99fc-aaa942feab8c.png)
+    no-repeat center;
+  background-size: cover;
+  z-index: 5;
+  overflow: hidden;
+}
+.excel-download-text {
+  flex-shrink: 0;
+  flex-basis: auto;
+  position: relative;
+  height: 21px;
+  color: #344054;
+  font-family: var(--default-font-family);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 21px;
+  text-align: left;
+  white-space: nowrap;
+  z-index: 6;
+}
+.excel-upload-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+  gap: 8px;
+  position: relative;
+  width: 213px;
+  min-width: 80px;
+  height: 36px;
+  padding: 0 12px 0 12px;
+  cursor: pointer;
+  background: #ffffff;
+  border: 1px solid #0e9384;
+  z-index: 7;
+  border-radius: 4px;
+  box-shadow: 0 1px 2px 0 rgba(16, 24, 40, 0.05);
+}
+.excel-upload-icon {
+  flex-shrink: 0;
+  position: relative;
+  width: 20px;
+  height: 20px;
+  background: url(../assets/images/84817589-387d-495e-a35e-4cd999a65463.png)
+    no-repeat center;
+  background-size: cover;
+  z-index: 8;
+  overflow: hidden;
+}
+.excel-upload-text {
+  flex-shrink: 0;
+  flex-basis: auto;
+  position: relative;
+  height: 21px;
+  color: #0e9384;
+  font-family: var(--default-font-family);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 21px;
+  text-align: left;
+  white-space: nowrap;
+  z-index: 9;
+}
+.excel-upload-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  flex-wrap: nowrap;
+  gap: 24px;
+  position: relative;
+  width: 1028px;
+  margin: 0 auto;
+  padding: 24px 24px 24px 24px;
+  background: #ffffff;
+  border: 1px solid #e6e7e8;
+  overflow: hidden;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px 0 rgba(16, 24, 40, 0.1);
+}
+.excel-upload-content-title {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+  gap: 8px;
+  position: relative;
+  width: 162px;
+}
+.excel-upload-content-title-text {
+  flex-shrink: 0;
+  flex-basis: auto;
+  position: relative;
+  height: 27px;
+  color: #1d2939;
+  font-family: var(--default-font-family);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 27px;
+  text-align: left;
+  white-space: nowrap;
+  z-index: 1;
+}
+.excel-upload-content-fileinfo {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+  position: relative;
+  width: 789px;
+  z-index: 2;
+}
+.excel-upload-content-fileinfo-label {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+  gap: 8px;
+  position: relative;
+  width: 184px;
+  padding: 8px 8px 8px 8px;
+  background: #f2f4f7;
+  border: 1px solid #d0d5dd;
+  z-index: 3;
+  overflow: hidden;
+}
+.excel-upload-input {
+  flex-shrink: 0;
+  position: absolute;
+  width: 184px;
+  height: 34px;
+  top: 0;
+  left: 0;
+  background: transparent;
+  border: none;
+  z-index: 5;
+  outline: none;
+}
+.excel-upload-span {
+  flex-shrink: 0;
+  flex-basis: auto;
+  position: relative;
+  height: 18px;
+  color: #667085;
+  font-family: var(--default-font-family);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 18px;
+  text-align: left;
+  white-space: nowrap;
+  z-index: 4;
+}
+.excel-upload-div {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  flex-grow: 1;
+  flex-shrink: 0;
+  flex-basis: 0;
+  gap: 8px;
+  position: relative;
+  min-width: 64px;
+  padding: 8px 8px 8px 8px;
+  background: #ffffff;
+  border: 1px solid #d0d5dd;
+  z-index: 6;
+  overflow: hidden;
+}
+.excel-upload-input-1 {
+  flex-shrink: 0;
+  position: absolute;
+  width: 605px;
+  height: 37px;
+  top: 0;
+  left: 0;
+  background: transparent;
+  border: none;
+  z-index: 8;
+  outline: none;
+}
+.excel-upload-span-2 {
+  flex-shrink: 0;
+  flex-basis: auto;
+  position: relative;
+  height: 21px;
+  color: #667085;
+  font-family: var(--default-font-family);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 21px;
+  text-align: left;
+  white-space: nowrap;
+  z-index: 7;
+}
+.excel-upload-content-error {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+  position: relative;
+  width: 837px;
+  z-index: 9;
+  border-radius: 0 0 4px 4px;
+}
+.excel-upload-content-error-label {
+  display: flex;
+  align-items: center;
+  align-self: stretch;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+  gap: 4px;
+  position: relative;
+  min-width: 0;
+  padding: 8px 16px 8px 16px;
+  background: #d92d20;
+  z-index: 10;
+  border-radius: 4px 4px 0 0;
+}
+.excel-upload-content-error-label-icon {
+  flex-shrink: 0;
+  position: relative;
+  width: 16px;
+  height: 16px;
+  background: url(../assets/images/3b8ca161-c775-4fb3-baa8-05c90f53c14b.png)
+    no-repeat center;
+  background-size: cover;
+  z-index: 11;
+  overflow: hidden;
+}
+.excel-upload-content-error-label-text {
+  flex-shrink: 0;
+  flex-basis: auto;
+  position: relative;
+  height: 21px;
+  color: #ffffff;
+  font-family: var(--default-font-family);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 21px;
+  text-align: left;
+  white-space: nowrap;
+  z-index: 12;
+}
+.excel-upload-content-error-detail {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  align-self: stretch;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+  gap: 25px;
+  position: relative;
+  min-width: 0;
+  padding: 24px 16px 24px 16px;
+  background: #fee4e2;
+  border: 1px solid #d92d20;
+  z-index: 13;
+  border-radius: 0 0 4px 4px;
+}
+.excel-upload-content-error-3 {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+  gap: 4px;
+  position: relative;
+  width: 398px;
+  z-index: 14;
+}
+.excel-upload-content-error-main {
+  flex-shrink: 0;
+  flex-basis: auto;
+  position: relative;
+  height: 21px;
+  color: #d92d20;
+  font-family: var(--default-font-family);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 21px;
+  text-align: left;
+  white-space: nowrap;
+  z-index: 15;
+}
+.excel-upload-content-error-link {
+  flex-shrink: 0;
+  flex-basis: auto;
+  position: relative;
+  height: 21px;
+  color: #d92d20;
+  font-family: var(--default-font-family);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 21px;
+  text-align: left;
+  text-decoration: underline;
+  white-space: nowrap;
+  z-index: 16;
+}
+.excel-upload-content-registration-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+  gap: 8px;
+  position: relative;
+  width: 122px;
+  min-width: 80px;
+  height: 36px;
+  padding: 0 12px 0 12px;
+  cursor: pointer;
+  background: #15b79e;
+  border: none;
+  z-index: 17;
+  overflow: hidden;
+  border-radius: 4px;
+  box-shadow: 0 1px 2px 0 rgba(16, 24, 40, 0.05);
+}
+.excel-upload-content-registration-button-text {
+  flex-shrink: 0;
+  flex-basis: auto;
+  position: relative;
+  height: 21px;
+  color: #ffffff;
+  font-family: var(--default-font-family);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 21px;
+  text-align: left;
+  white-space: nowrap;
+  z-index: 18;
+}

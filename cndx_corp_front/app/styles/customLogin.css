@@ -1,0 +1,247 @@
+/* 全体容器 */
+.main-container {
+  /* font-family: var(--default-font-family); 'Segoe UI', sans-serif; */
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* 表头：最大加粗 */
+.page-title {
+  font-size: 28px;
+  font-weight: bold;
+  margin-bottom: 12px;
+}
+
+/* ▼基礎情報 标签：偏小加粗 */
+.section-title {
+  font-size: 16px;
+  font-weight: bold;
+  margin-top: 24px;
+  margin-bottom: 12px;
+}
+
+/* 表格通用样式 */
+table {
+  width: 75%;
+  border-collapse: collapse;
+  background-color: #f0f0f0; /* 表格底色为灰色 */
+  border: 1px solid #666;    /* 深灰边框 */
+  margin-bottom: 5px;
+}
+
+td {
+  border: 1px solid #666; /* 深灰边框 */
+  padding: 0;             /* 去除内边距，防止错位 */
+  height: 36px;           /* 保持高度一致 */
+}
+
+/* お客さま基本情報 单元格居中、自动换行但不改变宽度 */
+td:first-child {
+  text-align: center;
+  white-space: normal;
+}
+
+/* お客さま名那一栏样式 */
+.customer-name-label {
+  text-align: center;
+  
+  background-color: #f0f0f0; /* 灰色 */
+  font-size: 16px;
+  font-weight: normal;
+}
+
+/* お客さま名的输入框：底色浅黄色 */
+.customer-name-input,
+.select-input {
+  background-color: #fff8dc;
+  width: 100%;
+  height: 100%;
+  padding: 4px 6px;
+  font-size: 14px;
+  border: 1px solid #ccc; /*  取消内边框 */ 
+  box-sizing: border-box;
+}
+
+/* 通用输入框 */
+/* input[type="text"],
+input[type="number"],
+input[type="email"],
+input[type="password"] {
+  width: 100%;
+  height: 100%;
+  padding: 4px 6px;
+  font-size: 14px;
+  border: none;  
+  background-color: #fff8dc;
+  box-sizing: border-box;
+} */
+
+/* 错误红框 */
+.input-error {
+  border: 2px solid red !important;
+  background-color: #fff0f0 !important;
+}
+
+/* 登録按钮：红底白字 */
+button.submit-button {
+  background-color: #b50000; /* 深红色 */
+  color: white;
+  padding: 4px 55px;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: bold;
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3); /* 轻微阴影 */
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  white-space: nowrap;
+  text-align: center;
+
+}
+
+/* 戻る按钮：灰底白字 */
+button.submit-button-back {
+  background-color: #b1acac; 
+  color: white;
+  padding: 4px 55px;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: bold;
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3); /* 轻微阴影 */
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  white-space: nowrap;
+  text-align: center;
+
+}
+
+button.building-master-button {
+  background-color: #191970;
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: bold;
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3); 
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  white-space: nowrap;
+  text-align: center;
+}
+
+
+button.add-building-button {
+  background-color: white;
+  color: #3a8ee7;
+  padding: 8px 16px;
+  border: 2px dashed #3a8ee7;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+
+.placeholder-gray {
+  color: #999; 
+}
+
+.content-body {
+  padding-left: 32px;
+}
+
+.error-right {
+  position: absolute;
+  top: 50%;
+  left: 100%;
+  transform: translateY(-50%);
+  margin-left: 12px;
+  white-space: nowrap;
+  font-size: 12px;
+  color: red;
+  z-index: 10;
+}
+
+
+
+
+/* エラーボックス */
+.errorBox {
+	display: flex;
+	flex-direction: column;
+	border: 1px solid var(--color-red);
+	border-radius: 4px;
+	width: 80%;
+	overflow: hidden;
+  font-size: 16px;
+  font-weight: bold;
+  margin-top: 24px;
+  margin-bottom: 12px;
+}
+
+.errorBoxLabel {
+	display: flex;
+	background-color: var(--color-red);
+  flex-direction: row;
+  align-items: center;
+	padding: 8px 16px;
+	gap: 4px
+}
+
+.errorBoxDetails {
+	display: flex;
+	background-color: var(--color-pink);
+  flex-direction: column;
+  align-items: flex-start;
+	padding: 16px 24px;
+	gap: 4px
+}
+
+.errorTable {
+	display: flex;
+	flex-direction: column;
+	border: 1px solid var(--color-red);
+	border-radius: 4px;
+	width: 80%;
+	overflow: hidden;
+}
+
+.errorTable label {
+	display: flex;
+	background-color: var(--color-red);
+  flex-direction: row;
+  align-items: center;
+	padding: 8px 16px;
+	gap: 4px
+}
+
+.errorTable details {
+	display: flex;
+	background-color: var(--color-pink);
+  flex-direction: column;
+  align-items: flex-start;
+	padding: 16px 24px;
+	gap: 4px
+}
+
+.errorText {
+	margin-bottom: 4px; /* 各エラーメッセージの間に余白をつける */
+	white-space: pre-line; /* テキストの改行を適用 */
+  }
+
+  .content-error-detail {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    background-color: #fee4e2; /* 背景色を赤に設定 */
+    border: 1px solid #d92d20; /* 赤い枠線 */
+    padding: 24px 16px;
+    border-radius: 0 0 4px 4px;
+    color: #d92d20;
+    cursor: pointer;
+    gap: 25px; /* メッセージ間のスペース */
+  }
+
+

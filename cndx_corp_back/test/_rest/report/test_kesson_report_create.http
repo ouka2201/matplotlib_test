@@ -1,0 +1,81 @@
+### 正常系：標準的な欠損レポート作成
+POST http://127.0.0.1:5000/api/report/kesson-report/create
+Content-Type: application/json
+
+{
+  "corporate_number": "1234567890123",
+  "agreement_category": "01",
+  "org_id": "ORG001",
+  "start_year": 2023,
+  "start_month": 4,
+  "end_year": 2025,
+  "end_month": 3,
+  "consent_route": "可視化アライアンス（JFS）"
+}
+
+### 正常系：標準的な欠損レポート作成
+POST http://127.0.0.1:5000/api/report/kesson-report/create
+Content-Type: application/json
+
+{
+  "corporate_number": "1234567890123",
+  "agreement_category": "01",
+  "org_id": "ORG001",
+  "org_name": "東京営業部",
+  "start_year": 2023,
+  "start_month": 4,
+  "end_year": 2024,
+  "end_month": 3,
+  "consent_route": "VISUALIZATION_PROVIDER",
+  "report_type": "CN_KARTE_SIMPLE",
+  "downloads": {
+    "cn_karte_pdf": false,
+    "cn_karte_csv": false,
+    "missing_data_pdf": true,
+    "kpi_csv": false
+  },
+  "multi_condition": {
+    "entire_company": false,
+    "group_option": true,
+    "group_items": [
+      {
+        "group_id": "関東",
+        "location_type": "東京"
+      }
+    ]
+  }
+}
+
+
+
+### エラー系：corporate_number 不足
+POST http://127.0.0.1:5000/api/report/kesson-report/create
+Content-Type: application/json
+
+{
+  "agreement_category": "01",
+  "org_id": "ORG001",
+  "start_year": 2023,
+  "start_month": 4,
+  "end_year": 2025,
+  "end_month": 3,
+  "consent_route": "可視化アライアンス（JFS）"
+}
+
+### エラー系：期間情報不足
+POST http://127.0.0.1:5000/api/report/kesson-report/create
+Content-Type: application/json
+
+{
+  "corporate_number": "1234567890123",
+  "agreement_category": "01",
+  "org_id": "ORG001",
+  "consent_route": "可視化アライアンス（JFS）"
+}
+
+### エラー系：全パラメータnull
+POST http://127.0.0.1:5000/api/report/kesson-report/create
+Content-Type: application/json
+
+{
+}

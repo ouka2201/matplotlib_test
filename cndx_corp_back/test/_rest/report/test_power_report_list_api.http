@@ -1,0 +1,62 @@
+### シナリオ1：法人番号・org_idあり（データあり）
+GET http://127.0.0.1:5000/api/report/power-report/list?corporate_number=1234567890123&org_id=ORG001
+Content-Type: application/json
+
+###
+GET http://127.0.0.1:5000/api/report/power-report/list?corporate_number=1234567890123&org_id=10001
+Content-Type: application/json
+### シナリオ2：法人番号あり（org_idなし）
+# → 期待結果: 400 Bad Request（org_id 是必須パラメータ）
+GET http://127.0.0.1:5000/api/report/power-report/list?corporate_number=1234567890123
+Content-Type: application/json
+
+###
+
+### シナリオ3：法人番号・org_idあり（データなし）
+# → 期待結果: 200 OK, 空配列 []
+GET http://127.0.0.1:5000/api/report/power-report/list?corporate_number=9999999999999&org_id=ORG999
+Content-Type: application/json
+
+###
+
+### シナリオ4：法人番号なし（パラメータごと無し）
+# → 期待結果: 400 Bad Request
+GET http://127.0.0.1:5000/api/report/power-report/list
+Content-Type: application/json
+
+###
+
+### シナリオ5：法人番号是空文字（""）
+# → 期待結果: 400 Bad Request
+GET http://127.0.0.1:5000/api/report/power-report/list?corporate_number=&org_id=ORG001
+Content-Type: application/json
+
+###
+
+### シナリオ6：org_id是空文字（""）
+# → 期待結果: 400 Bad Request
+GET http://127.0.0.1:5000/api/report/power-report/list?corporate_number=1234567890123&org_id=
+Content-Type: application/json
+
+###
+
+### シナリオ7：両方とも空文字（""）
+# → 期待結果: 400 Bad Request
+GET http://127.0.0.1:5000/api/report/power-report/list?corporate_number=&org_id=
+Content-Type: application/json
+
+###
+
+### シナリオ8：不正なパラメータ付き（無視される想定）
+# → 期待結果: 200 OK（dummyパラメータは無視）
+GET http://127.0.0.1:5000/api/report/power-report/list?corporate_number=1234567890123&org_id=ORG001&dummy=test
+Content-Type: application/json
+
+###
+
+### シナリオ9：不正なHTTPメソッド（POST）
+# → 期待結果: 405 Method Not Allowed
+POST http://127.0.0.1:5000/api/report/power-report/list
+Content-Type: application/json
+
+{}

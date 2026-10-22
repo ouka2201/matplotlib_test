@@ -1,0 +1,74 @@
+# Requirements
+# - VSCodeプラグイン REST Client
+
+### シナリオ1 電力見える化
+
+POST http://127.0.0.1:5000/api/report/electric_vis/create/vis
+Authorization: Bearer TEST_TOKEN
+Content-Type: application/json
+
+{
+    "corporate_number": "0000000000015",
+    "agreement_category": "03",
+    "org_id": "TEP",
+    "building_id": "0000000000015000001",
+    "month_from": "202406",
+    "target_month": "202503",
+    "contracted_power": "180"
+}
+
+### シナリオ1 電力見える化 stg
+
+POST http://127.0.0.1:5000/api/report/electric_vis/create
+Authorization: Bearer TEST_TOKEN
+Content-Type: application/json
+
+{
+    "corporate_number":"0000000000015",
+    "org_id":"TEP",
+    "fiscal_year":"2024",
+    "target_month":"202407",
+    "building_id":"0000000000015000001",
+    "report_classify":"6",
+    "agreement_category":"03",
+    "contracted_power":"124",
+    "month_from":"202404"
+}
+
+### 単拠点
+POST http://127.0.0.1:5000/api/report/cn-karte/create/vis
+Authorization: Bearer TEST_TOKEN
+Content-Type: application/json
+
+{"corporate_number":"0000000000222","agreement_category":"11","org_id":"TEP","start_year":"2023","start_month":"01","end_year":"2023","end_month":"12","consent_route":"可視化アライアンス（EP・REP）","creation_format":"1","need_data_insufficiency_list":false,"need_report_backdata":false,"need_kpi_list":false,"is_for_multibuilding":false,"group_for_multibuilding":[],"building_ids_for_single":["0000000000222T01"]}
+
+### グループ
+POST http://127.0.0.1:5000/api/report/cn-karte/create/vis
+Authorization: Bearer TEST_TOKEN
+Content-Type: application/json
+
+{"corporate_number":"0000000000222","agreement_category":"11","org_id":"TEP","start_year":"2023","start_month":"01","end_year":"2023","end_month":"12","consent_route":"可視化アライアンス（EP・REP）","creation_format":"1","need_data_insufficiency_list":false,"need_report_backdata":false,"need_kpi_list":false,"is_for_multibuilding":true,"group_for_multibuilding":[{"group_no":"1","option_no":"1"}],"building_ids_for_single":[]}
+
+### 全体
+POST http://127.0.0.1:5000/api/report/cn-karte/create/vis
+Authorization: Bearer TEST_TOKEN
+Content-Type: application/json
+
+{"corporate_number":"0000000000222","agreement_category":"11","org_id":"TEP","start_year":"2023","start_month":"01","end_year":"2023","end_month":"12","consent_route":"可視化アライアンス（EP・REP）","creation_format":"1","need_data_insufficiency_list":false,"need_report_backdata":false,"need_kpi_list":false,"is_for_multibuilding":true,"group_for_multibuilding":[],"building_ids_for_single":[]}
+
+###
+POST https://data.ts.tdh.tepcube.jp:10095/api/report/cn-karte/create
+Content-Type: application/json
+Cookie: refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc1Njc3ODg4MywianRpIjoiMmU0MzdmNjktNzM1ZC00YzZmLWE4MDAtN2Y4MTJhOTJlMzQxIiwidHlwZSI6InJlZnJlc2giLCJzdWIiOiJlcDBAdGVzdC5jb20iLCJuYmYiOjE3NTY3Nzg4ODMsImNzcmYiOiIzN2Y5Yjc1Ny00ZDdiLTRjNjgtOGM3NS0wNDg4NGUwZWY0ZDQiLCJleHAiOjE3NTczODM2ODN9.1VkzUElOn7COyM3VCGVddr_3U7oaqxsw663xwCJARCY; refresh_token_cookie=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc1Njc3ODg4MywianRpIjoiMmU0MzdmNjktNzM1ZC00YzZmLWE4MDAtN2Y4MTJhOTJlMzQxIiwidHlwZSI6InJlZnJlc2giLCJzdWIiOiJlcDBAdGVzdC5jb20iLCJuYmYiOjE3NTY3Nzg4ODMsImNzcmYiOiIzN2Y5Yjc1Ny00ZDdiLTRjNjgtOGM3NS0wNDg4NGUwZWY0ZDQiLCJleHAiOjE3NTczODM2ODN9.1VkzUElOn7COyM3VCGVddr_3U7oaqxsw663xwCJARCY; csrf_refresh_token=37f9b757-4d7b-4c68-8c75-04884e0ef4d4; access_token_cookie=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc1Njc3ODk2OSwianRpIjoiZWFhOTczMTctMDc4My00OGQ5LWE1OGUtNjY2ZjlmYjc3ZjA2IiwidHlwZSI6ImFjY2VzcyIsInN1YiI6ImVwMEB0ZXN0LmNvbSIsIm5iZiI6MTc1Njc3ODk2OSwiY3NyZiI6IjMxZWI5ZGMzLWQyNWQtNGFhNy04Y2EzLTgzMGJjMDA4MzI3NiIsImV4cCI6MTc1Njg2NTM2OSwidXNlcl9pZCI6ImVwMEB0ZXN0LmNvbSIsIm9yZ19pZCI6IlRFUCIsIm5hbWUiOiJFUFx1N2JhMVx1NzQwNlx1ODAwNSIsInJvbGUiOiIwIiwib3JnX3R5cGVfY29kZSI6IjAxIiwiYXV0aG9yaXR5X2NvZGVfbWFwIjpbeyJhdXRob3JpdHlfaWQiOiJBMSIsImF1dGhvcml0eV9jb2RlIjoiMCJ9LHsiYXV0aG9yaXR5X2lkIjoiQTMiLCJhdXRob3JpdHlfY29kZSI6IjAifSx7ImF1dGhvcml0eV9pZCI6IkE0IiwiYXV0aG9yaXR5X2NvZGUiOiIwIn0seyJhdXRob3JpdHlfaWQiOiJBNSIsImF1dGhvcml0eV9jb2RlIjoiMCJ9LHsiYXV0aG9yaXR5X2lkIjoiQTYiLCJhdXRob3JpdHlfY29kZSI6IjAifSx7ImF1dGhvcml0eV9pZCI6IkE3IiwiYXV0aG9yaXR5X2NvZGUiOiIwIn0seyJhdXRob3JpdHlfaWQiOiJBOCIsImF1dGhvcml0eV9jb2RlIjoiMCJ9LHsiYXV0aG9yaXR5X2lkIjoiQTkiLCJhdXRob3JpdHlfY29kZSI6IjAifSx7ImF1dGhvcml0eV9pZCI6IkFBIiwiYXV0aG9yaXR5X2NvZGUiOiIwIn0seyJhdXRob3JpdHlfaWQiOiJCMSIsImF1dGhvcml0eV9jb2RlIjoiMCJ9LHsiYXV0aG9yaXR5X2lkIjoiQjIiLCJhdXRob3JpdHlfY29kZSI6IjAifSx7ImF1dGhvcml0eV9pZCI6IkIzIiwiYXV0aG9yaXR5X2NvZGUiOiIwIn0seyJhdXRob3JpdHlfaWQiOiJCNCIsImF1dGhvcml0eV9jb2RlIjoiMCJ9LHsiYXV0aG9yaXR5X2lkIjoiQjUiLCJhdXRob3JpdHlfY29kZSI6IjAifSx7ImF1dGhvcml0eV9pZCI6IkMxIiwiYXV0aG9yaXR5X2NvZGUiOiIwIn0seyJhdXRob3JpdHlfaWQiOiJDMiIsImF1dGhvcml0eV9jb2RlIjoiMCJ9LHsiYXV0aG9yaXR5X2lkIjoiQzMiLCJhdXRob3JpdHlfY29kZSI6IjAifSx7ImF1dGhvcml0eV9pZCI6IkQxIiwiYXV0aG9yaXR5X2NvZGUiOiIwIn1dfQ.9306UhSEdqvxbLyRC0nLl4uvmNuvnl7clPS-H0c1PU4; csrf_access_token=31eb9dc3-d25d-4aa7-8ca3-830bc0083276
+Xx-csrf-token: 31eb9dc3-d25d-4aa7-8ca3-830bc0083276
+
+
+{"corporate_number":"2025071400001","fiscal_year":"2024","org_id":"TEP","registration_seq":6,"agreement_category": "01"}
+
+### 全体
+POST http://127.0.0.1:5000/api/report/cn-karte/create
+Authorization: Bearer TEST_TOKEN
+Content-Type: application/json
+
+
+{"corporate_number":"2025071400001","fiscal_year":"2024","org_id":"TEP","registration_seq":6,"agreement_category": "01"}

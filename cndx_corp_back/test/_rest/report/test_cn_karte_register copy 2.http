@@ -1,0 +1,84 @@
+### 正常系：企業全体 (多个拠点・企业全体模式)
+POST http://127.0.0.1:5000/api/report/cn-karte/register
+Content-Type: application/json
+
+{
+  "corporate_number": "1234567890123",
+  "org_id": "ORG001",
+  "agreement_category": "01",
+  "start_year": "2021",
+  "start_month": "04",
+  "end_year": "2022",
+  "end_month": "03",
+  "consent_route": "可視化アライアンス（EP・REP）",
+
+  "creation_format": "CNカルテ(簡易版)",
+
+  "is_for_multibuilding": true,
+  "group_for_multibuilding": [], 
+  "building_ids_for_single": null,
+
+  "need_data_insufficiency_list": true,
+  "need_report_backdata": true,
+  "need_kpi_list": true,
+
+  "user": "system"
+}
+
+
+### 正常系：グループ (多个拠点・特定グループ模式)
+POST http://127.0.0.1:5000/api/report/cn-karte/register
+Content-Type: application/json
+
+{
+  "corporate_number": "1234567890123",
+  "org_id": "ORG001",
+  "agreement_category": "01",
+  "start_year": "2021",
+  "start_month": "04",
+  "end_year": "2022",
+  "end_month": "03",
+  "consent_route": "可視化アライアンス（EP・REP）",
+
+  "creation_format": "CNカルテ(標準版)",
+
+  "is_for_multibuilding": true,
+  "group_for_multibuilding": [
+    { "group_no": "1", "option_no": "A001" },
+    { "group_no": "2", "option_no": "B100" }
+  ],
+  "building_ids_for_single": [],
+
+  "need_data_insufficiency_list": true,
+  "need_report_backdata": true,
+  "need_kpi_list": false,
+
+  "user": "system"
+}
+
+### 正常系：単拠点 (单拠点模式)
+POST http://127.0.0.1:5000/api/report/cn-karte/register
+Content-Type: application/json
+
+{
+  "corporate_number": "1234567890123",
+  "org_id": "ORG001",
+  "agreement_category": "01",
+  "start_year": "2021",
+  "start_month": "04",
+  "end_year": "2022",
+  "end_month": "03",
+  "consent_route": "可視化アライアンス（EP・REP）",
+
+  "creation_format": "CNカルテ(標準版)",
+
+  "is_for_multibuilding": false,
+  "group_for_multibuilding": [],
+  "building_ids_for_single": ["B001", "B002"],
+
+  "need_data_insufficiency_list": true,
+  "need_report_backdata": true,
+  "need_kpi_list": true,
+
+  "user": "system"
+}

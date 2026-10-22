@@ -1,0 +1,107 @@
+# POST http://127.0.0.1:5000/api/building/info
+# Content-Type: application/json
+
+# {
+#   "building_id": "1001041801001001",
+#   "building_name": "任天堂THビル",
+#   "building_address_pre": "埼玉県",
+#   "building_address_city": "足立区",
+#   "industry_code": "A01",
+#   "industry_name": "農業",
+#   "benchmark_denom": "100BBB",
+#   "benchmark_val": "kWh",
+#   "group1": "1",
+#   "group2": "2",
+#   "group3": "3",
+#   "group4": "4",
+#   "group5": "5",
+#   "updated_by": "admin"
+# }
+
+POST http://127.0.0.1:5000/api/building/info
+Content-Type: application/json
+
+{
+  "corporate_number": "2025042100101",
+  "agreement_category": "01",
+  "org_id": "ORG001",
+  "building_id": "1001041801001001",
+  "building_name": "任天堂THビル",
+  "building_address_prefecture": "埼玉県",
+  "building_address_city": "足立区",
+  "industry_class_detail_code": "A01",
+  "industry_class_detail_name": "農業",
+  "benchmark_denom": "100BBB",
+  "benchmark_val": "123.45",
+  "group1": "1",
+  "group2": "2",
+  "group3": "3",
+  "group4": "4",
+  "group5": "5",
+  "updated_by": "admin"
+}
+
+
+# 建物・エネルギー情報照会 API テスト
+# Requirements
+# - VSCodeプラグイン REST Client
+
+### 建物照会 シナリオ1
+GET http://127.0.0.1:5000/api/building/info?corporate_number=0000000000333
+Content-Type: application/json
+
+### 建物照会 シナリオ2
+GET http://127.0.0.1:5000/api/building/info?corporate_number=2025042100102
+Content-Type: application/json
+
+### 建物照会 シナリオ3
+GET http://127.0.0.1:5000/api/building/info?corporate_number=2025042100103
+Content-Type: application/json
+
+### 建物照会 シナリオ4
+GET http://127.0.0.1:5000/api/building/info?corporate_number=2025042100104
+Content-Type: application/json
+
+### 建物照会 シナリオ5
+GET http://127.0.0.1:5000/api/building/info?corporate_number=2025042100105
+Content-Type: application/json
+
+### 建物照会 シナリオ6
+GET http://127.0.0.1:5000/api/building/info?corporate_number=2025042200202
+Content-Type: application/json
+
+### TEST
+POST http://192.168.1.26:5000/api/mst_manage/corpration/info
+Content-Type: application/json
+
+{
+	"user_id": "abcdef@test.co.jp",
+	"company_name": "株式会社愛媛自動車",
+	"company_name_kana": "ヤマダ タロウ",
+	"corporate_number": "1234567890123",
+	"company_address_pre": "東京都",
+	"company_address_city": "新宿区西新宿2-8-1",
+	"usage_type": "0",
+	"office_info_list": [
+		{
+			"org_id": "組織ID",
+			"agreement_category": "00",
+			"building_name": "新宿オフィス",
+			"building_address_pre": "東京都",
+			"building_address_city": "新宿区西新宿2-1-1",
+			"ep_customer_number": "EP12345678",
+			"supply_point_id": "SP987654321",
+			"building_id": "1234567890123001001"
+		},
+		{
+			"org_id": "組織ID",
+			"agreement_category": "00",
+			"building_name": "渋谷オフィス",
+			"building_address_pre": "東京都",
+			"building_address_city": "渋谷区渋谷1-1-1",
+			"ep_customer_number": "EP87654321",
+			"supply_point_id": "SP123456789",
+			"building_id": "1234567890123001002"
+		}
+	]
+}

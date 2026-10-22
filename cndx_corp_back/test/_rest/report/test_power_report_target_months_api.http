@@ -1,0 +1,51 @@
+### シナリオ1：正常系（building_id と 期間あり）
+GET http://127.0.0.1:5000/api/report/power-report/target-months?corporate_number=1234567890123&org_id=ORG001&building_id=B101&start_year=2024&start_month=01&end_year=2025&end_month=12
+Content-Type: application/json
+
+###
+
+### シナリオ2：building_id あり、期間未指定（対象月は返らない）
+GET http://127.0.0.1:5000/api/report/power-report/target-months?corporate_number=1234567890123&org_id=ORG001&building_id=B101
+Content-Type: application/json
+
+###
+
+### シナリオ3：building_id なし（400エラー）
+GET http://127.0.0.1:5000/api/report/power-report/target-months?corporate_number=1234567890123&org_id=ORG001&start_year=2024&start_month=01&end_year=2025&end_month=12
+Content-Type: application/json
+
+###
+
+### シナリオ4：法人番号なし（400エラー）
+GET http://127.0.0.1:5000/api/report/power-report/target-months?org_id=ORG001&building_id=B101&start_year=2024&start_month=01&end_year=2025&end_month=12
+Content-Type: application/json
+
+###
+
+### シナリオ5：org_id なし（400エラー）
+GET http://127.0.0.1:5000/api/report/power-report/target-months?corporate_number=1234567890123&building_id=B101&start_year=2024&start_month=01&end_year=2025&end_month=12
+Content-Type: application/json
+
+###
+
+### シナリオ6：building_id あり、start_month が不正（400エラー）
+GET http://127.0.0.1:5000/api/report/power-report/target-months?corporate_number=1234567890123&org_id=ORG001&building_id=B101&start_year=2024&start_month=abc&end_year=2025&end_month=12
+Content-Type: application/json
+
+###
+
+### シナリオ7：全項目空（400エラー）
+GET http://127.0.0.1:5000/api/report/power-report/target-months?corporate_number=&org_id=&building_id=&start_year=&start_month=&end_year=&end_month=
+Content-Type: application/json
+
+###
+
+### シナリオ8：ダミーパラメータ付き（無視される想定）
+GET http://127.0.0.1:5000/api/report/power-report/target-months?corporate_number=1234567890123&org_id=ORG001&building_id=B101&start_year=2024&start_month=01&end_year=2025&end_month=12&foo=bar
+Content-Type: application/json
+
+###
+
+### シナリオ9：データが存在しない建物ID（空配列想定）
+GET http://127.0.0.1:5000/api/report/power-report/target-months?corporate_number=1234567890123&org_id=ORG001&building_id=NOTFOUND&start_year=2024&start_month=01&end_year=2025&end_month=12
+Content-Type: application/json

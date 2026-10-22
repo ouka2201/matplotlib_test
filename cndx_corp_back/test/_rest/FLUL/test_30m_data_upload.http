@@ -1,0 +1,509 @@
+# Requirements
+# - VSCodeプラグイン REST Client
+
+### シナリオ0
+POST http://127.0.0.1:5000/api/file/per-30m-data
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="corp_number"
+Content-Type: text/plain
+
+2025051601003
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="building_id"
+Content-Type: text/plain
+
+2025051601003001001
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="ep_customer_number"
+Content-Type: text/plain
+
+2025051602003
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="supply_point_number"
+Content-Type: text/plain
+
+1000199999001
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="corp_name"
+Content-Type: text/plain
+
+テスト３株式会社
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="building_name"
+Content-Type: text/plain
+
+テスト３ビル
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="user_id"
+Content-Type: text/plain
+
+localtest4@test.com
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="1.csv"
+Content-Type: text/csv; charset=shift-jis
+
+< C:\Work\resources\WORK_30MIN_test_0.csv
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### シナリオ 0-1
+POST http://127.0.0.1:5000/api/file/per-30m-data
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="corp_number"
+Content-Type: text/plain
+
+1000199999001
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="building_id"
+Content-Type: text/plain
+
+1000199999001001001
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="ep_customer_number"
+Content-Type: text/plain
+
+1000199999001
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="supply_point_number"
+Content-Type: text/plain
+
+1000199999001
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="corp_name"
+Content-Type: text/plain
+
+1000199999001
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="building_name"
+Content-Type: text/plain
+
+1000199999001001001
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="1.csv"
+Content-Type: text/csv; charset=utf-8
+
+< C:\Work\resources\WORK_30MIN_test_1.csv
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### シナリオ 0-2
+POST http://127.0.0.1:5000/api/file/per-30m-data
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="corp_number"
+Content-Type: text/plain
+
+1000199999001
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="building_id"
+Content-Type: text/plain
+
+1000199999001001001
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="ep_customer_number"
+Content-Type: text/plain
+
+0160007068002
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="supply_point_number"
+Content-Type: text/plain
+
+1000199999001
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="corp_name"
+Content-Type: text/plain
+
+1000199999001
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="building_name"
+Content-Type: text/plain
+
+1000199999001001001
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="user_id"
+Content-Type: text/plain
+
+testuser
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="1.csv"
+Content-Type: text/csv; charset=utf-8
+
+< C:\Work\resources\WORK_30MIN_test_2.csv
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### 🧊シナリオ 1 1ヶ月分データの登録
+POST http://127.0.0.1:5000/api/file/per-30m-data
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="corp_number"
+Content-Type: text/plain
+
+2025051601001
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="building_id"
+Content-Type: text/plain
+
+2025051601001001001
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="ep_customer_number"
+Content-Type: text/plain
+
+2025051602001
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="supply_point_number"
+Content-Type: text/plain
+
+1000199999001
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="corp_name"
+Content-Type: text/plain
+
+テスト１株式会社
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="building_name"
+Content-Type: text/plain
+
+テスト１ビル
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="user_id"
+Content-Type: text/plain
+
+localtest1@test.com
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="1.csv"
+Content-Type: text/csv; charset=utf-8
+
+< C:\Work\resources\localtest1.csv
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### 🧊シナリオ 2 同じデータの再登録
+POST http://127.0.0.1:5000/api/file/per-30m-data
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="corp_number"
+Content-Type: text/plain
+
+2025051601001
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="building_id"
+Content-Type: text/plain
+
+2025051601001001001
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="ep_customer_number"
+Content-Type: text/plain
+
+2025051602001
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="supply_point_number"
+Content-Type: text/plain
+
+1000199999001
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="user_id"
+Content-Type: text/plain
+
+localtest2@test.com
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="1.csv"
+Content-Type: text/csv; charset=utf-8
+
+< C:\Work\resources\localtest1.csv
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### 🧊シナリオ 3 2ヶ月分データの登録
+POST http://127.0.0.1:5000/api/file/per-30m-data
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="corp_number"
+Content-Type: text/plain
+
+2025051601003
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="building_id"
+Content-Type: text/plain
+
+2025051601003001001
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="ep_customer_number"
+Content-Type: text/plain
+
+2025051602003
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="supply_point_number"
+Content-Type: text/plain
+
+1000199999001
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="corp_name"
+Content-Type: text/plain
+
+テスト３株式会社
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="building_name"
+Content-Type: text/plain
+
+テスト３ビル
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="user_id"
+Content-Type: text/plain
+
+localtest3@test.com
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="1.csv"
+Content-Type: text/csv; charset=utf-8
+
+< C:\Work\resources\localtest3.csv
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### 🧊シナリオ 4 12ヶ月分データの登録(重複レコード含む)
+POST http://127.0.0.1:5000/api/file/per-30m-data
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="corp_number"
+Content-Type: text/plain
+
+2025051601003
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="building_id"
+Content-Type: text/plain
+
+2025051601003001001
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="ep_customer_number"
+Content-Type: text/plain
+
+2025051602003
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="supply_point_number"
+Content-Type: text/plain
+
+202506031111100000111102003
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="corp_name"
+Content-Type: text/plain
+
+テスト３株式会社
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="building_name"
+Content-Type: text/plain
+
+テスト３ビル
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="user_id"
+Content-Type: text/plain
+
+localtest4@test.com
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="1.csv"
+Content-Type: text/csv; charset=utf-8
+
+< C:\Work\resources\localtest4.csv
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### 🧊シナリオ 5 欠損値
+POST http://127.0.0.1:5000/api/file/per-30m-data
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="corp_number"
+Content-Type: text/plain
+
+2025051601005
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="building_id"
+Content-Type: text/plain
+
+2025051601005001001
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="ep_customer_number"
+Content-Type: text/plain
+
+2025051602005
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="supply_point_number"
+Content-Type: text/plain
+
+1000199999001
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="user_id"
+Content-Type: text/plain
+
+localtest5@test.com
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="1.csv"
+Content-Type: text/csv; charset=utf-8
+
+< C:\Work\resources\localtest5.csv
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### 🧊シナリオ 6 お客さま番号なし
+POST http://127.0.0.1:5000/api/file/per-30m-data
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="corp_number"
+Content-Type: text/plain
+
+2025051601006
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="building_id"
+Content-Type: text/plain
+
+2025051601006001001
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="ep_customer_number"
+Content-Type: text/plain
+
+2025051602006
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="supply_point_number"
+Content-Type: text/plain
+
+1000199999001
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="user_id"
+Content-Type: text/plain
+
+localtest6@test.com
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="1.csv"
+Content-Type: text/csv; charset=utf-8
+
+< C:\Work\resources\localtest6.csv
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### 🧊シナリオ 6 お客さま番号なし
+POST http://127.0.0.1:5000/api/file/per-30m-data
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="corp_number"
+Content-Type: text/plain
+
+2025051601006
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="building_id"
+Content-Type: text/plain
+
+2025051601006001001
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="ep_customer_number"
+Content-Type: text/plain
+
+2025051602006
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="supply_point_number"
+Content-Type: text/plain
+
+1000199999001
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="user_id"
+Content-Type: text/plain
+
+localtest6@test.com
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="1.csv"
+Content-Type: text/csv; charset=utf-8
+
+< C:\Work\_resource\testcase7.csv
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### 🧊シナリオ 7 新しいフォーマット対応 フォーマット1
+POST http://127.0.0.1:5000/api/file/per-30m-data
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="corp_number"
+Content-Type: text/plain
+
+2025051601007
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="building_id"
+Content-Type: text/plain
+
+2025051601006001001
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="ep_customer_number"
+Content-Type: text/plain
+
+1234512345001
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="supply_point_number"
+Content-Type: text/plain
+
+0310112010478947201229
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="agreement_category"
+Content-Type: text/plain
+
+01
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="org_id"
+Content-Type: text/plain
+
+REP
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="user_id"
+Content-Type: text/plain
+
+localtest7@test.com
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="1.csv"
+Content-Type: text/csv; charset=utf-8
+
+< C:\Work\_resource\testcase7.csv
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### 🧊シナリオ 8 新しいフォーマット対応 フォーマット2
+POST http://127.0.0.1:5000/api/file/per-30m-data
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="corp_number"
+Content-Type: text/plain
+
+2025051601008
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="building_id"
+Content-Type: text/plain
+
+2025051601006001001
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="ep_customer_number"
+Content-Type: text/plain
+
+1234512345001
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="supply_point_number"
+Content-Type: text/plain
+
+0310112010478947201229
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="agreement_category"
+Content-Type: text/plain
+
+01
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="org_id"
+Content-Type: text/plain
+
+REP
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="user_id"
+Content-Type: text/plain
+
+localtest7@test.com
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="1.csv"
+Content-Type: text/csv; charset=utf-8
+
+< C:\Work\_resource\testcase8.csv
+------WebKitFormBoundary7MA4YWxkTrZu0gW--

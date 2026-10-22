@@ -1,0 +1,68 @@
+from sqlalchemy import Boolean, Column, DateTime, Numeric, PrimaryKeyConstraint, String,  func
+from sqlalchemy.orm import Mapped, declarative_base, mapped_column
+from sqlalchemy.orm.base import Mapped
+
+Base = declarative_base()
+
+
+class MWeatherDataInfo(Base):
+    __tablename__ = 'm_weather_data_info'
+    __table_args__ = (
+        PrimaryKeyConstraint('target_year', 'target_month', name='m_weather_data_info_pkey'),
+        {'comment': '気象データ情報', 'schema': 'db_corp'}
+    )
+
+    target_year = mapped_column(String(4), nullable=False, comment='年（西暦）')
+    target_month = mapped_column(String(2), nullable=False, comment='月（1〜12）')
+    hokkaido = mapped_column(Numeric(5, 2), comment='北海道の平均気温（℃）')
+    aomori = mapped_column(Numeric(5, 2), comment='青森県の平均気温（℃）')
+    iwate = mapped_column(Numeric(5, 2), comment='岩手県の平均気温（℃）')
+    akita = mapped_column(Numeric(5, 2), comment='秋田県の平均気温（℃）')
+    miyagi = mapped_column(Numeric(5, 2), comment='宮城県の平均気温（℃）')
+    yamagata = mapped_column(Numeric(5, 2), comment='山形県の平均気温（℃）')
+    fukushima = mapped_column(Numeric(5, 2), comment='福島県の平均気温（℃）')
+    ibaraki = mapped_column(Numeric(5, 2), comment='茨城県の平均気温（℃）')
+    tochigi = mapped_column(Numeric(5, 2), comment='栃木県の平均気温（℃）')
+    gunma = mapped_column(Numeric(5, 2), comment='群馬県の平均気温（℃）')
+    saitama = mapped_column(Numeric(5, 2), comment='埼玉県の平均気温（℃）')
+    chiba = mapped_column(Numeric(5, 2), comment='千葉県の平均気温（℃）')
+    yamanashi = mapped_column(Numeric(5, 2), comment='山梨県の平均気温（℃）')
+    nagano = mapped_column(Numeric(5, 2), comment='長野県の平均気温（℃）')
+    tokyo = mapped_column(Numeric(5, 2), comment='東京都の平均気温（℃）')
+    kanagawa = mapped_column(Numeric(5, 2), comment='神奈川県の平均気温（℃）')
+    niigata = mapped_column(Numeric(5, 2), comment='新潟県の平均気温（℃）')
+    toyama = mapped_column(Numeric(5, 2), comment='富山県の平均気温（℃）')
+    ishikawa = mapped_column(Numeric(5, 2), comment='石川県の平均気温（℃）')
+    fukui = mapped_column(Numeric(5, 2), comment='福井県の平均気温（℃）')
+    gifu = mapped_column(Numeric(5, 2), comment='岐阜県の平均気温（℃）')
+    shizuoka = mapped_column(Numeric(5, 2), comment='静岡県の平均気温（℃）')
+    aichi = mapped_column(Numeric(5, 2), comment='愛知県の平均気温（℃）')
+    mie = mapped_column(Numeric(5, 2), comment='三重県の平均気温（℃）')
+    shiga = mapped_column(Numeric(5, 2), comment='滋賀県の平均気温（℃）')
+    nara = mapped_column(Numeric(5, 2), comment='奈良県の平均気温（℃）')
+    kyoto = mapped_column(Numeric(5, 2), comment='京都府の平均気温（℃）')
+    hyogo = mapped_column(Numeric(5, 2), comment='兵庫県の平均気温（℃）')
+    osaka = mapped_column(Numeric(5, 2), comment='大阪府の平均気温（℃）')
+    wakayama = mapped_column(Numeric(5, 2), comment='和歌山県の平均気温（℃）')
+    tottori = mapped_column(Numeric(5, 2), comment='鳥取県の平均気温（℃）')
+    shimane = mapped_column(Numeric(5, 2), comment='島根県の平均気温（℃）')
+    okayama = mapped_column(Numeric(5, 2), comment='岡山県の平均気温（℃）')
+    hiroshima = mapped_column(Numeric(5, 2), comment='広島県の平均気温（℃）')
+    yamaguchi = mapped_column(Numeric(5, 2), comment='山口県の平均気温（℃）')
+    kagawa = mapped_column(Numeric(5, 2), comment='香川県の平均気温（℃）')
+    ehime = mapped_column(Numeric(5, 2), comment='愛媛県の平均気温（℃）')
+    tokushima = mapped_column(Numeric(5, 2), comment='徳島県の平均気温（℃）')
+    kochi = mapped_column(Numeric(5, 2), comment='高知県の平均気温（℃）')
+    fukuoka = mapped_column(Numeric(5, 2), comment='福岡県の平均気温（℃）')
+    saga = mapped_column(Numeric(5, 2), comment='佐賀県の平均気温（℃）')
+    nagasaki = mapped_column(Numeric(5, 2), comment='長崎県の平均気温（℃）')
+    oita = mapped_column(Numeric(5, 2), comment='大分県の平均気温（℃）')
+    kumamoto = mapped_column(Numeric(5, 2), comment='熊本県の平均気温（℃）')
+    miyazaki = mapped_column(Numeric(5, 2), comment='宮崎県の平均気温（℃）')
+    kagoshima = mapped_column(Numeric(5, 2), comment='鹿児島県の平均気温（℃）')
+    okinawa = mapped_column(Numeric(5, 2), comment='沖縄県の平均気温（℃）')
+    delete_flag = mapped_column(Boolean, comment='削除フラグ', default=False)
+    created_by = mapped_column(String(50), comment='作成者')
+    created_at = mapped_column(DateTime, comment='作成日時', default=func.now())
+    updated_by = mapped_column(String(50), comment='更新者')
+    updated_at = mapped_column(DateTime, comment='更新日時', onupdate=func.now())

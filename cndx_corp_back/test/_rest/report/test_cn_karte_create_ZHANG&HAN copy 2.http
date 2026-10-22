@@ -1,0 +1,92 @@
+### 1. 仅生成默认 CNレポート（PDF）
+POST http://127.0.0.1:5000/api/report/cn-karte/create/vis
+Content-Type: application/json
+
+{
+  "corporate_number": "1234567890123",
+  "agreement_category": "01",
+  "org_id": "ORG001",
+  "start_year": "2024",
+  "start_month": "04",
+  "end_year": "2025",
+  "end_month": "03",
+  "creation_format": "CNカルテ(簡易版)",
+  "consent_route": "可視化アライアンス（EP・REP）",
+  "need_data_insufficiency_list": false,
+  "need_report_backdata": false,
+  "need_kpi_list": false,
+  "is_for_multibuilding": true,
+  "group_for_multibuilding": null,
+  "building_ids_for_single": null
+}
+
+### 2. 生成默认 CNレポート + データ欠損一覧（PDF）
+POST http://127.0.0.1:5000/api/report/cn-karte/create/vis
+Content-Type: application/json
+
+{
+  "corporate_number": "1234567890123",
+  "agreement_category": "01",
+  "org_id": "ORG001",
+  "start_year": "2023",
+  "start_month": "04",
+  "end_year": "2024",
+  "end_month": "03",
+  "creation_format": "CNカルテ(簡易版)",
+  "consent_route": "可視化アライアンス（EP・REP）",
+  "need_data_insufficiency_list": true,
+  "need_report_backdata": false,
+  "need_kpi_list": false,
+  "is_for_multibuilding": true,
+  "group_for_multibuilding": null,
+  "building_ids_for_single": null
+}
+
+### 3. 生成默认 CNレポート + 全部オプション（データ欠損一覧・レポートバックデータ・KPI）
+POST http://127.0.0.1:5000/api/report/cn-karte/create/vis
+Content-Type: application/json
+
+{
+  "corporate_number": "1234567890123",
+  "agreement_category": "01",
+  "org_id": "ORG001",
+  "start_year": "2024",
+  "start_month": "04",
+  "end_year": "2025",
+  "end_month": "03",
+  "creation_format": "CNカルテ(簡易版)",
+  "consent_route": "可視化アライアンス（EP・REP）",
+  "need_data_insufficiency_list": true,
+  "need_report_backdata": true,
+  "need_kpi_list": true,
+  "is_for_multibuilding": true,
+  "group_for_multibuilding": [
+    {
+      "group_no": "01",
+      "option_no": "関東"
+    }
+  ],
+  "building_ids_for_single": null
+}
+
+### 4. 単拠点カルテ作成（默认 CNレポート + KPI）
+POST http://127.0.0.1:5000/api/report/cn-karte/create/vis
+Content-Type: application/json
+
+{
+  "corporate_number": "1234567890123",
+  "agreement_category": "01",
+  "org_id": "ORG001",
+  "start_year": "2024",
+  "start_month": "04",
+  "end_year": "2025",
+  "end_month": "03",
+  "creation_format": "CNカルテ(簡易版)",
+  "consent_route": "可視化アライアンス（EP・REP）",
+  "need_data_insufficiency_list": false,
+  "need_report_backdata": false,
+  "need_kpi_list": true,
+  "is_for_multibuilding": false,
+  "group_for_multibuilding": null,
+  "building_ids_for_single": ["BUILDING001", "BUILDING002"]
+}

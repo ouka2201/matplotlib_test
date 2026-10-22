@@ -1,0 +1,17 @@
+cd /opt/hadoop-3.3.5/etc/hadoop
+vi core-site.xml
+
+<property>
+    <name>fs.dtap.impl</name>
+    <value>com.bluedata.hadoop.bdfs.Bdfs</value>
+</property>
+
+<property>
+    <name>fs.AbstractFileSystem.dtap.impl</name>
+    <value>com.bluedata.hadoop.bdfs.BdAbstractFS</value>
+</property>
+
+<property>
+    <name>fs.dtap.impl.disable.cache</name>
+    <value>false</value>
+</property>

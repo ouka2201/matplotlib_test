@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>エネルギー欠損レポート</title>
+  <style>
+    :root {
+      --default-font-family: "Noto Sans JP", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Ubuntu,
+        "Helvetica Neue", Helvetica, Arial, "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif;
+    }
+
+    @font-face {
+      font-family: var(--default-font-family);
+      src: url("file:///{{ font_path }}") format("opentype");
+    }
+
+    body {
+      font-family: var(--default-font-family);
+      font-size: 12px;
+    }
+
+    h1 {
+      color: #333;
+      text-align: center;
+    }
+
+    .table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 20px;
+    }
+
+    .table th, .table td {
+      border: 1px solid #ccc;
+      padding: 4px 6px;
+      text-align: left;
+    }
+
+    .table th {
+      background-color: #f2f2f2;
+    }
+  </style>
+</head>
+<body>
+  <h1>エネルギー欠損一覧</h1>
+  {{ table | safe }}
+</body>
+</html>

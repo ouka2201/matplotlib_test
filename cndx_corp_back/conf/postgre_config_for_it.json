@@ -1,0 +1,9 @@
+{
+    "postgre": {
+        "host": "data.ts.tdh.tepcube.jp",
+        "port": 10132,
+        "database": "epdb",
+        "user": "postgres",
+        "password": "b0x-Ox3d;0"
+    }
+}

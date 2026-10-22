@@ -1,0 +1,32 @@
+# Requirements
+# - VSCodeプラグイン REST Client
+
+### 都道府県
+GET http://127.0.0.1:5000/api/ui/option/pref
+Authorization: TEST_TOKEN
+Content-Type: application/json
+
+### 産業分類
+GET http://127.0.0.1:5000/api/ui/option/industry
+Authorization: Bearer TEST_TOKEN
+Content-Type: application/json
+
+### 同意取得区分
+GET http://127.0.0.1:5000/api/ui/option/consent-route
+Authorization: Bearer TEST_TOKEN
+Content-Type: application/json
+
+### 同意取得区分
+GET http://127.0.0.1:5000/api/ui/option/consent-route?group_code=1
+Authorization: TEST_TOKEN
+Content-Type: application/json
+
+### 同意取得区分
+GET http://127.0.0.1:5000/api/ui/option/consent-route?group_code=1&org_id=ASE
+Authorization: Bearer TEST_TOKEN
+Content-Type: application/json
+
+### 同意取得区分
+GET http://127.0.0.1:5000/api/ui/option/consent-route?org_id=ASE
+Authorization: TEST_TOKEN
+Content-Type: application/json

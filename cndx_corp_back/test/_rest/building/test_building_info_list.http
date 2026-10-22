@@ -1,0 +1,90 @@
+# 建物・エネルギー情報照会 API テスト
+# Requirements
+# - VSCodeプラグイン REST Client
+
+### 建物照会 シナリオ1 地銀
+GET http://127.0.0.1:5000/api/building/energy-info-list?corporate_number=2025062401003&agreement_code=1
+Authorization: TEST_TOKEN
+Content-Type: application/json
+
+### 建物照会 シナリオ1 地銀
+GET http://127.0.0.1:5000/api/building/energy-info-list?corporate_number=2025060901001&agreement_code=1
+Authorization: TEST_TOKEN
+Content-Type: application/json
+
+### 建物照会 可視化 シナリオ-1 事業所数 2 年度数 2
+GET http://127.0.0.1:5000/api/building/energy-info-list?corporate_number=2025061101001&agreement_code=2
+Authorization: TEST_TOKEN
+Content-Type: application/json
+
+### 建物照会 可視化 シナリオ-2 事業所数 2 年度数 1
+GET http://127.0.0.1:5000/api/building/energy-info-list?corporate_number=2025061101002&agreement_code=2
+Authorization: TEST_TOKEN
+Content-Type: application/json
+
+### 建物照会 可視化 シナリオ-3 事業所数 2 年度数 1 / 2
+GET http://127.0.0.1:5000/api/building/energy-info-list?corporate_number=2025061101003&agreement_code=2
+Authorization: TEST_TOKEN
+Content-Type: application/json
+
+### 建物照会 可視化 🚫 シナリオ-4 事業所数 2 年度数 0
+GET http://127.0.0.1:5000/api/building/energy-info-list?corporate_number=2025061101004&agreement_code=2
+Authorization: TEST_TOKEN
+Content-Type: application/json
+
+### 建物照会 可視化 シナリオ-5 事業所数 1 年度数 2
+GET http://127.0.0.1:5000/api/building/energy-info-list?corporate_number=2025061101005&agreement_code=2
+Authorization: TEST_TOKEN
+Content-Type: application/json
+
+### 建物照会 可視化 シナリオ-6 事業所数 1 年度数 1
+GET http://127.0.0.1:5000/api/building/energy-info-list?corporate_number=2025061101006&agreement_code=2
+Authorization: TEST_TOKEN
+Content-Type: application/json
+
+### 建物照会 可視化 🚫 シナリオ-7 事業所数 1 年度数 0
+GET http://127.0.0.1:5000/api/building/energy-info-list?corporate_number=2025061101007&agreement_code=2
+Authorization: TEST_TOKEN
+Content-Type: application/json
+
+### 建物照会 可視化 シナリオ-8 事業所数 0 年度数 0
+GET http://127.0.0.1:5000/api/building/energy-info-list?corporate_number=2025061101008&agreement_code=2
+Authorization: TEST_TOKEN
+Content-Type: application/json
+
+### 建物照会 可視化 シナリオ-1-8
+GET http://127.0.0.1:5000/api/building/energy-info-list?corporate_number=2025042100104&agreement_code=2
+Authorization: TEST_TOKEN
+Content-Type: application/json
+
+### test
+POST http://127.0.0.1:5000/api/building/energy-info/detail
+Authorization: Bearer TEST_TOKEN
+Content-Type: application/json
+
+{
+    "corporate_number":"2025062401001",
+    "agreement_category":"01",
+    "org_id":"REP",
+    "start_year_month":"202404",
+    "end_year_month":"202503",
+    "entry_draft_flag":"0",
+    "registration_seq":2
+}
+
+### test
+POST http://127.0.0.1:5000/api/building/group/master/update
+Authorization: TEST_TOKEN
+Content-Type: application/json
+
+{}
+
+### test
+OPTIONS  http://127.0.0.1:5000/api/building/group/master/update
+Authorization: TEST_TOKEN
+Content-Type: application/json
+
+### test
+GET http://127.0.0.1:5000/api/building/basic_info?corporate_number=8740000000002&agreement_code=12&org_id=TEP&building_id=8740000000002001001
+Authorization: TEST_TOKEN
+Content-Type: application/json

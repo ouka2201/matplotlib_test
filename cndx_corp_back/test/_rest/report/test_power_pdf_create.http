@@ -1,0 +1,56 @@
+### 正常系：単一拠点（B001）
+POST http://127.0.0.1:5000/api/report/power-report/create
+Content-Type: application/json
+
+{
+  "corporate_number": "0000000000015",
+  "org_id": "TEP",
+  "building_id": "B102",
+  "agreement_category": "03",
+  "target_month": "202407"
+}
+
+### エラー系：存在しない building_id
+POST http://127.0.0.1:5000/api/report/power-report/create
+Content-Type: application/json
+
+{
+  "corporate_number": "1234567890123",
+  "org_id": "ORG001",
+  "fiscal_year": "2024",
+  "building_id": "ZZZZ",
+  "report_classify": "6"
+}
+
+### エラー系：building_id 不足
+POST http://127.0.0.1:5000/api/report/power-report/create
+Content-Type: application/json
+
+{
+  "corporate_number": "1234567890123",
+  "org_id": "ORG001",
+  "fiscal_year": "2024",
+  "report_classify": "6"
+}
+
+### エラー系：building_id = null
+POST http://127.0.0.1:5000/api/report/power-report/create
+Content-Type: application/json
+
+{
+  "corporate_number": "1234567890123",
+  "org_id": "ORG001",
+  "fiscal_year": "2024",
+  "building_id": null
+}
+
+### 正常系：別建物 B002
+POST http://127.0.0.1:5000/api/report/power-report/create
+Content-Type: application/json
+
+{
+  "corporate_number": "1234567890123",
+  "org_id": "ORG001",
+  "fiscal_year": "2024",
+  "building_id": "B002"
+}

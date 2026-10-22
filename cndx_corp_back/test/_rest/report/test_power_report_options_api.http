@@ -1,0 +1,62 @@
+### シナリオ1：正常系（建物・期間なし）
+GET http://127.0.0.1:5000/api/report/power-report/options?corporate_number=1234567890123&org_id=ORG001
+Content-Type: application/json
+
+###
+GET http://127.0.0.1:5000/api/report/power-report/options?corporate_number=1234567890123&org_id=ORG001&building_id=BLD001&start_year=2024&start_month=12&end_year=2025&end_month=3
+Content-Type: application/json
+
+### シナリオ2：正常系（建物・期間あり）
+GET http://127.0.0.1:5000/api/report/power-report/options?corporate_number=1234567890123&org_id=ORG001&building_id=B101&start_year=2024&start_month=01&end_year=2025&end_month=12
+Content-Type: application/json
+
+###
+GET http://127.0.0.1:5000/api/report/power-report/options?corporate_number=1234567890123&org_id=ORG001&building_id=B102&start_year=2024&start_month=01&end_year=2025&end_month=12
+Content-Type: application/json
+
+
+### シナリオ3：法人番号だけあり、組織IDなし（400エラー想定）
+GET http://127.0.0.1:5000/api/report/power-report/options?corporate_number=1234567890123
+Content-Type: application/json
+
+###
+
+### シナリオ4：組織IDだけあり、法人番号なし（400エラー想定）
+GET http://127.0.0.1:5000/api/report/power-report/options?org_id=ORG001
+Content-Type: application/json
+
+###
+
+### シナリオ5：法人番号と組織IDが空文字（400エラー想定）
+GET http://127.0.0.1:5000/api/report/power-report/options?corporate_number=&org_id=
+Content-Type: application/json
+
+###
+
+### シナリオ6：法人番号はあり、組織IDパラメータなし（400エラー想定）
+GET http://127.0.0.1:5000/api/report/power-report/options?corporate_number=1234567890123
+Content-Type: application/json
+
+###
+
+### シナリオ7：余分なダミーパラメータ付き（無視される想定）
+GET http://127.0.0.1:5000/api/report/power-report/options?corporate_number=1234567890123&org_id=ORG001&foo=bar
+Content-Type: application/json
+
+###
+
+### シナリオ8：building_idがあり、期間が未指定（対象月なし想定）
+GET http://127.0.0.1:5000/api/report/power-report/options?corporate_number=1234567890123&org_id=ORG001&building_id=B101
+Content-Type: application/json
+
+###
+
+### シナリオ9：start_monthが不正（400エラー想定）
+GET http://127.0.0.1:5000/api/report/power-report/options?corporate_number=1234567890123&org_id=ORG001&building_id=B101&start_year=2024&start_month=abc
+Content-Type: application/json
+
+###
+
+### シナリオ10：データなし想定（架空法人番号）
+GET http://127.0.0.1:5000/api/report/power-report/options?corporate_number=9999999999999&org_id=ORG999
+Content-Type: application/json

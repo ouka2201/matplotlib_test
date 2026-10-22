@@ -1,0 +1,45 @@
+# Requirements
+# - VSCodeプラグイン REST Client
+
+### シナリオ1 再読込
+GET http://127.0.0.1:5000/api/mst_data/refresh
+Content-Type: application/json
+
+
+### シナリオ2 取得
+POST http://127.0.0.1:5000/api/mst_data/inquiry
+Content-Type: application/json
+
+{
+    "table": "db_common.activity_minor_category_mst",
+    "column": "conversion_coef",
+    "major_category_id": "01",
+    "middle_category_id": "0013",
+    "minor_category_id": "0000"
+}
+
+
+### シナリオ3 取得 None
+POST http://127.0.0.1:5000/api/mst_data/inquiry
+Content-Type: application/json
+
+{
+    "table": "db_common.activity_minor_category_mst",
+    "column": "conversion_coef",
+    "major_category_id": "01",
+    "middle_category_id": "0013",
+    "minor_category_id": "0009"
+}
+
+
+### シナリオ4 取得 dict
+POST http://127.0.0.1:5000/api/mst_data/inquiry
+Content-Type: application/json
+
+{
+    "table": "db_common.activity_minor_category_mst",
+    "major_category_id": "01",
+    "middle_category_id": "0013",
+    "minor_category_id": "0000"
+}
+

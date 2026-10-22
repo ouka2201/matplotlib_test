@@ -1,0 +1,8 @@
+### 30分値データ管理の建物検索API テスト
+
+GET http://localhost:5000/api/building/per_30min_data?corp_number=1000199999001&building_id=1000199999001001001
+Content-Type: application/json
+
+### 2
+GET http://localhost:5000/api/building/per_30min_data?corp_number=2025051601003&building_id=2025051601003001001
+Content-Type: application/json

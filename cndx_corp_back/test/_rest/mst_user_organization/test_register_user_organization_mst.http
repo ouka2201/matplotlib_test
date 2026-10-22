@@ -1,0 +1,62 @@
+# Requirements
+# - VSCodeプラグイン REST Client
+
+### シナリオ1 全項目入力
+POST http://127.0.0.1:5000/api/user/mst_organization/corpration/auth_register
+Content-Type: application/json
+
+{
+    "org_id": "org_id_case01",
+    "user_id": "user_id_case01",
+    "org_name": "org_name_case01",
+    "org_type": "org_type_case01",
+    "user_company_name": "user_company_name_case01",
+    "user_company_code": "company_code_case01",
+    "user_org_dept_name": "user_org_dept_name_case01",
+    "user_org_dept_code": "dept_code_case01"
+}
+
+### シナリオ2 任意項目省略
+POST http://127.0.0.1:5000/api/user/mst_organization/corpration/auth_register
+Content-Type: application/json
+
+{
+    "org_id": "org_id_case02",
+    "user_id": "user_id_case02",
+    "org_name": "",
+    "org_type": "",
+    "user_company_name": "",
+    "user_company_code": "",
+    "user_org_dept_name": "",
+    "user_org_dept_code": ""
+}
+
+### シナリオ3 重複リクエスト
+POST http://127.0.0.1:5000/api/user/mst_organization/corpration/auth_register
+Content-Type: application/json
+
+{
+    "org_id": "org_id_case01",
+    "user_id": "user_id_case01",
+    "org_name": "org_name_case01",
+    "org_type": "org_type_case01",
+    "user_company_name": "user_company_name_case01",
+    "user_company_code": "company_code_case01",
+    "user_org_dept_name": "user_org_dept_name_case01",
+    "user_org_dept_code": "dept_code_case01"
+}
+
+### シナリオ4 サーバー内部エラー
+POST http://127.0.0.1:5000/api/user/mst_organization/corpration/auth_register
+Content-Type: application/json
+
+{
+    "org_id": "org_id_case01",
+    "user_id": "user_id_case01",
+    "org_name": "org_name_case01",
+    "org_type": "org_type_case01",
+    "user_company_name": "user_company_name_case01",
+    "user_company_code": "company_code_case01",
+    "user_org_dept_name": "user_org_dept_name_case01",
+    "user_org_dept_code": "dept_code_case01"
+}

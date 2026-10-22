@@ -1,0 +1,99 @@
+.itemColumn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+	width : 100%;
+}
+
+.itemRow {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+	width : 100%;
+}
+
+.itemLabel {
+	flex: 1;
+	background-color: darkgray;
+	padding: 8px;
+	text-align: left;
+}
+
+.itemValue {
+	flex: 3;
+	background-color: white;
+	padding: 8px;
+	text-align: left;
+}
+
+.itemSingle {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	width: 80%;
+}
+
+.itemTable {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	width: 100%;
+}
+
+/* 基本のペアスタイル */
+.itemPair {
+  display: flex;
+  width: 100%; /* 幅を親要素に合わせる */
+}
+
+/* ラベルのスタイル */
+.itemPair__label {
+  background-color: #f0f0f0;
+  padding: 8px; /* 全周8pxのパディング */
+  font-weight: bold;
+  text-align: left;
+}
+
+/* 内容のスタイル */
+.itemPair__value {
+  background-color: #ffffff;
+  padding: 8px; /* 全周8pxのパディング */
+  text-align: left;
+}
+
+/* 単体で使う場合（親クラスの80% / ラベル:内容 = 1:3） */
+.itemPair--single {
+  width: 80%;
+}
+
+.itemPair--single .itemPair__label {
+  flex: 1;
+}
+
+.itemPair--single .itemPair__value {
+  flex: 3;
+}
+
+/* 表形式で使う場合（親クラスの100% / ラベル固定幅） */
+.itemPair--table {
+  width: 100%;
+}
+
+.itemPair--table .itemPair__label {
+  width: 25%; /* ラベル固定幅 */
+  flex: none; /* 固定幅にする */
+}
+
+.itemPair--table .itemPair__value {
+  flex: 1; /* 内容部分が残りの幅を占める */
+}
+
+/* 縦並びの場合 */
+.itemPair--vertical {
+  flex-direction: column;
+}
+
+.itemPair--vertical .itemPair__label,
+.itemPair--vertical .itemPair__value {
+  width: 100%; /* 幅を揃える */
+}
