@@ -19,6 +19,9 @@ def context():
     return SimpleNamespace(
         logger=logging.LoggerAdapter(logging.getLogger("test"), {}),
         batch_id="test", batch_name="BLMMVMVBUILDING",
+        config=SimpleNamespace(
+            cut_off_day=16, report_month_offset_before=3, report_month_offset_after=2,
+        ),
     )
 
 

@@ -19,7 +19,10 @@ class LinkCustomer30MinJob(BaseJob):
         self.batch_size = batch_size
         # 更新仕様No.1・2：18日までは3か月前、19日以降は2か月前を対象とする。
         self.batch_date = batch_date or get_current_time().date()
-        target = calc_offset_month(self.batch_date, 19, 3, 2).replace(day=1)
+        target = calc_offset_month(self.batch_date, 
+            self.context.config.cut_off_day,
+            self.context.config.report_month_offset_before,
+            self.context.config.report_month_offset_after,).replace(day=1)
         self.params = {
             "target_year_month": target.strftime("%Y%m"),
             "start_date": target.strftime("%Y%m%d"),

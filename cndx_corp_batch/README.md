@@ -71,6 +71,11 @@ python -m pytest .\tests\generate_all_power_report -q --cov --cov-report=term-mi
 
 ## 顧客情報と30分値データ連携用のテストデータ
 
+PG2-1-01の単体テスト仕様書に沿ってケース別のデータを準備する場合は、
+`test/prepare_link_customer_30min_cases.py` を使用します。
+一覧表示、投入方法、仕様書との差異は [ケース別データ準備の手順](test/link_customer_30min_cases.md) を参照してください。
+以下の既存PGは、件数・日数を指定した正常系のデータ生成に使用できます。
+
 連携バッチの確認に必要な、取込管理・企業・建物・ARVE顧客情報・EP30分値を
 まとめて登録するPGを `test/insert_link_customer_30min_data.py` に用意しています。
 接続先は `--db-config` の `url` または `url_env` から取得します。

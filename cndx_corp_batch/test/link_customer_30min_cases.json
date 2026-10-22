@@ -1,0 +1,726 @@
+{
+  "source": "docs/PG2-1-01_単体テスト1ケース・結果一覧表_顧客情報と30分値データの連携機能バッチ.xls",
+  "sheet": "単体テスト1ケース・結果一覧表",
+  "cases": [
+    {
+      "case_id": "1",
+      "number": 1,
+      "source_row": 8,
+      "category": "実行年月・対象年月\n起動",
+      "title": "正常起動",
+      "kind": "正常系",
+      "procedure": "バッチを起動する。",
+      "expected": "バッチが正常に開始されて、正常終了する。"
+    },
+    {
+      "case_id": "2",
+      "number": 2,
+      "source_row": 9,
+      "category": "実行年月・対象年月\n起動",
+      "title": "処理対象なしで起動",
+      "kind": "正常系",
+      "procedure": "対象となる30分値取込管理データを0件として実行する。",
+      "expected": "登録、更新処理を行わずに正常終了する。"
+    },
+    {
+      "case_id": "3",
+      "number": 3,
+      "source_row": 10,
+      "category": "実行年月・対象年月\n対象年月判定",
+      "title": "1日",
+      "kind": "正常系",
+      "procedure": "バッチ実行日時を2026/8/1として実行する。",
+      "expected": "紐づけ対象年月が2026年5月として実行される"
+    },
+    {
+      "case_id": "4",
+      "number": 4,
+      "source_row": 11,
+      "category": "実行年月・対象年月\n対象年月判定",
+      "title": "15日",
+      "kind": "正常系",
+      "procedure": "バッチ実行日時を2026/8/15として実行する。",
+      "expected": "紐づけ対象年月が2026年5月として実行される"
+    },
+    {
+      "case_id": "5",
+      "number": 5,
+      "source_row": 12,
+      "category": "実行年月・対象年月\n対象年月判定",
+      "title": "16日",
+      "kind": "正常系",
+      "procedure": "バッチ実行日時を2026/8/16として実行する。",
+      "expected": "紐づけ対象年月が2026年6月として実行される"
+    },
+    {
+      "case_id": "6",
+      "number": 6,
+      "source_row": 13,
+      "category": "実行年月・対象年月\n対象年月判定",
+      "title": "月末日",
+      "kind": "正常系",
+      "procedure": "バッチ実行日時を2026/8/31として実行する。",
+      "expected": "紐づけ対象年月が2026年6月として実行される"
+    },
+    {
+      "case_id": "7",
+      "number": 7,
+      "source_row": 14,
+      "category": "実行年月・対象年月\n対象年月判定",
+      "title": "1/15日（年またぎ）",
+      "kind": "正常系",
+      "procedure": "バッチ実行日時を2026/1/15として実行する。",
+      "expected": "紐づけ対象年月が2025年10月として実行される"
+    },
+    {
+      "case_id": "8",
+      "number": 8,
+      "source_row": 15,
+      "category": "実行年月・対象年月\n対象年月判定",
+      "title": "1/16日（年またぎ）",
+      "kind": "正常系",
+      "procedure": "バッチ実行日時を2026/1/16として実行する。",
+      "expected": "紐づけ対象年月が2025年11月として実行される"
+    },
+    {
+      "case_id": "9",
+      "number": 9,
+      "source_row": 16,
+      "category": "実行年月・対象年月\n対象年月判定",
+      "title": "うるう年",
+      "kind": "正常系",
+      "procedure": "バッチ実行日時を2028/2/29として実行する。",
+      "expected": "紐づけ対象年月が2027年12月として実行される"
+    },
+    {
+      "case_id": "10",
+      "number": 10,
+      "source_row": 17,
+      "category": "処理対象取得\n抽出条件",
+      "title": "全条件一致",
+      "kind": "正常系",
+      "procedure": "状態を3、対象年月が一致、紐付け日時がNULL,建物マスタとの紐付けがあるデータを1件用意する。",
+      "expected": "一件を処理対象として実行される。"
+    },
+    {
+      "case_id": "11",
+      "number": 11,
+      "source_row": 18,
+      "category": "処理対象取得\n抽出条件",
+      "title": "状態が3以外",
+      "kind": "正常系",
+      "procedure": "状態を3以外、対象年月が一致、紐付け日時がNULL,建物マスタとの紐付けがあるデータを1件用意する。",
+      "expected": "処理対象として処理されない。"
+    },
+    {
+      "case_id": "12",
+      "number": 12,
+      "source_row": 19,
+      "category": "処理対象取得\n抽出条件",
+      "title": "対象年月不一致",
+      "kind": "正常系",
+      "procedure": "状態を3、対象年月が不一致、紐付け日時がNULL,建物マスタとの紐付けがあるデータを1件用意する。",
+      "expected": "処理対象として処理されない。"
+    },
+    {
+      "case_id": "13",
+      "number": 13,
+      "source_row": 20,
+      "category": "処理対象取得\n抽出条件",
+      "title": "紐付け日時あり",
+      "kind": "正常系",
+      "procedure": "状態を3、対象年月が不一致、紐付け日時が存在する,建物マスタとの紐付けがあるデータを1件用意する。",
+      "expected": "処理対象として処理されない。"
+    },
+    {
+      "case_id": "14",
+      "number": 14,
+      "source_row": 21,
+      "category": "処理対象取得\n結合条件",
+      "title": "建物マスタとの紐付けあり",
+      "kind": "正常系",
+      "procedure": "30分値取込管理と建物マスタの供給地点特定番号を一致させる。",
+      "expected": "処理対象として処理される"
+    },
+    {
+      "case_id": "15",
+      "number": 15,
+      "source_row": 22,
+      "category": "処理対象取得\n結合条件",
+      "title": "建物マスタなし",
+      "kind": "正常系",
+      "procedure": "対応する建物マスタを登録しない。",
+      "expected": "処理対象として処理されない。"
+    },
+    {
+      "case_id": "16",
+      "number": 16,
+      "source_row": 23,
+      "category": "処理対象取得\n結合条件",
+      "title": "建物マスタの削除フラグTRUE",
+      "kind": "正常系",
+      "procedure": "30分値取込管理と建物マスタの供給地点特定番号を一致させ、建物マスタの削除フラグをTRUEにする。",
+      "expected": "処理対象として処理されない。"
+    },
+    {
+      "case_id": "17",
+      "number": 17,
+      "source_row": 24,
+      "category": "処理対象取得\n結合条件",
+      "title": "建物マスタの削除フラグFALSE",
+      "kind": "正常系",
+      "procedure": "30分値取込管理と建物マスタの供給地点特定番号を一致させ、建物マスタの削除フラグをFALSEにする。",
+      "expected": "処理対象として処理される"
+    },
+    {
+      "case_id": "18",
+      "number": 18,
+      "source_row": 25,
+      "category": "処理対象取得\n結合条件",
+      "title": "供給地点特定番号が不一致",
+      "kind": "正常系",
+      "procedure": "30分値取込管理と建物マスタの供給地点特定番号を一致させない。",
+      "expected": "処理対象として処理されない。"
+    },
+    {
+      "case_id": "19",
+      "number": 19,
+      "source_row": 26,
+      "category": "処理対象取得\n件数制御",
+      "title": "処理件数0件",
+      "kind": "正常系",
+      "procedure": "抽出条件を満たすレコードを0件とする。",
+      "expected": "処理対象が0件で正常終了する。"
+    },
+    {
+      "case_id": "20",
+      "number": 20,
+      "source_row": 27,
+      "category": "処理対象取得\n件数制御",
+      "title": "処理件数1件",
+      "kind": "正常系",
+      "procedure": "抽出条件を満たすレコードを1件とする。",
+      "expected": "一回の取得で1件を処理できる。"
+    },
+    {
+      "case_id": "21",
+      "number": 21,
+      "source_row": 28,
+      "category": "処理対象取得\n件数制御",
+      "title": "処理件数9件",
+      "kind": "正常系",
+      "procedure": "抽出条件を満たすレコードを9件とする。",
+      "expected": "一回の取得で9件を処理できる。"
+    },
+    {
+      "case_id": "22",
+      "number": 22,
+      "source_row": 29,
+      "category": "処理対象取得\n件数制御",
+      "title": "処理件数10件",
+      "kind": "正常系",
+      "procedure": "抽出条件を満たすレコードを10件とする。",
+      "expected": "一回の取得で10件を処理できる。"
+    },
+    {
+      "case_id": "23",
+      "number": 23,
+      "source_row": 30,
+      "category": "処理対象取得\n件数制御",
+      "title": "処理件数11件",
+      "kind": "正常系",
+      "procedure": "抽出条件を満たすレコードを11件とする。",
+      "expected": "一回目の取得は10件、残る一件は次ループで処理される。"
+    },
+    {
+      "case_id": "24",
+      "number": 24,
+      "source_row": 31,
+      "category": "処理対象取得\n件数制御",
+      "title": "処理件数21件",
+      "kind": "正常系",
+      "procedure": "抽出条件を満たすレコードを21件とする。",
+      "expected": "複数回取得して全21件を処理する。"
+    },
+    {
+      "case_id": "25",
+      "number": 25,
+      "source_row": 32,
+      "category": "項目設定・データ変換\n建物マスタ",
+      "title": "法人番号",
+      "kind": "正常系",
+      "procedure": "建物マスタの法人番号を用意する。",
+      "expected": "用意したデータと30分値の生データテーブルの値が一致する。"
+    },
+    {
+      "case_id": "26",
+      "number": 26,
+      "source_row": 33,
+      "category": "項目設定・データ変換\n建物マスタ",
+      "title": "同意書取得区分",
+      "kind": "正常系",
+      "procedure": "建物マスタの同意書取得区分を用意する。",
+      "expected": "用意したデータと30分値の生データテーブルの値が一致する。"
+    },
+    {
+      "case_id": "27",
+      "number": 27,
+      "source_row": 34,
+      "category": "項目設定・データ変換\n建物マスタ",
+      "title": "組織ID",
+      "kind": "正常系",
+      "procedure": "建物マスタの組織IDを用意する。",
+      "expected": "用意したデータと30分値の生データテーブルの値が一致する。"
+    },
+    {
+      "case_id": "28",
+      "number": 28,
+      "source_row": 35,
+      "category": "項目設定・データ変換\n建物マスタ",
+      "title": "拠点ID",
+      "kind": "正常系",
+      "procedure": "建物マスタの拠点IDを用意する。",
+      "expected": "用意したデータと30分値の生データテーブルの値が一致する。"
+    },
+    {
+      "case_id": "29",
+      "number": 29,
+      "source_row": 36,
+      "category": "項目設定・データ変換\n建物マスタ",
+      "title": "建物名",
+      "kind": "正常系",
+      "procedure": "建物マスタの拠点識別名を用意する。",
+      "expected": "用意したデータと30分値の生データテーブルの値が一致する。"
+    },
+    {
+      "case_id": "30",
+      "number": 30,
+      "source_row": 37,
+      "category": "項目設定・データ変換\n建物マスタ",
+      "title": "EPお客さま番号",
+      "kind": "正常系",
+      "procedure": "建物マスタのEPお客さま番号を用意する。",
+      "expected": "用意したデータと30分値の生データテーブルの値が一致する。"
+    },
+    {
+      "case_id": "31",
+      "number": 31,
+      "source_row": 38,
+      "category": "項目設定・データ変換\n企業基本情報マスタ",
+      "title": "お客さま名",
+      "kind": "正常系",
+      "procedure": "企業基本情報マスタの企業名を用意する。",
+      "expected": "用意したデータと30分値の生データテーブルの値が一致する。"
+    },
+    {
+      "case_id": "32",
+      "number": 32,
+      "source_row": 39,
+      "category": "項目設定・データ変換\nARVEお客さま情報",
+      "title": "企業ID",
+      "kind": "正常系",
+      "procedure": "ARVEお客さま情報の企業IDを用意する。",
+      "expected": "用意したデータと30分値の生データテーブルの値が一致する。"
+    },
+    {
+      "case_id": "33",
+      "number": 33,
+      "source_row": 40,
+      "category": "項目設定・データ変換\nARVEお客さま情報",
+      "title": "ARVE連携お客さま名",
+      "kind": "正常系",
+      "procedure": "ARVEお客さま情報の契約場所_名義(姓)＿契約場所_名義(名)を用意する。",
+      "expected": "用意したデータと30分値の生データテーブルの値が一致する。"
+    },
+    {
+      "case_id": "34",
+      "number": 34,
+      "source_row": 41,
+      "category": "項目設定・データ変換\nARVEお客さま情報",
+      "title": "ARVE連携お客さま番号（正常）",
+      "kind": "正常系",
+      "procedure": "ARVEお客さま情報のEPお客さま番号が16文字のデータを用意する。",
+      "expected": "用意したデータと4文字以降が一致する。"
+    },
+    {
+      "case_id": "35",
+      "number": 35,
+      "source_row": 42,
+      "category": "項目設定・データ変換\nARVEお客さま情報",
+      "title": "ARVE連携お客さま番号（空文字）",
+      "kind": "正常系",
+      "procedure": "ARVEお客さま情報のEPお客さま番号が3文字のデータを用意する。",
+      "expected": "空文字で登録される。"
+    },
+    {
+      "case_id": "36",
+      "number": 36,
+      "source_row": 43,
+      "category": "項目設定・データ変換\nARVEお客さま情報",
+      "title": "ARVE連携お客さま番号（1文字）",
+      "kind": "正常系",
+      "procedure": "ARVEお客さま情報のEPお客さま番号が4文字のデータを用意する。",
+      "expected": "用意したデータと4文字以降が一致する。"
+    },
+    {
+      "case_id": "37",
+      "number": 37,
+      "source_row": 44,
+      "category": "項目設定・データ変換\nARVEお客さま情報",
+      "title": "ARVE連携事業所コード(正常)",
+      "kind": "正常系",
+      "procedure": "ARVEお客さま情報のEPお客さま番号が16文字のデータを用意する。",
+      "expected": "用意したデータと先頭3文字が一致する。"
+    },
+    {
+      "case_id": "38",
+      "number": 38,
+      "source_row": 45,
+      "category": "項目設定・データ変換\nARVEお客さま情報",
+      "title": "ARVE連携事業所コード(3文字)",
+      "kind": "正常系",
+      "procedure": "ARVEお客さま情報のEPお客さま番号が3文字のデータを用意する。",
+      "expected": "用意したデータと先頭3文字が一致する。"
+    },
+    {
+      "case_id": "39",
+      "number": 39,
+      "source_row": 46,
+      "category": "項目設定・データ変換\nARVEお客さま情報",
+      "title": "ARVE連携事業所コード(2文字)",
+      "kind": "正常系",
+      "procedure": "ARVEお客さま情報のEPお客さま番号が2文字のデータを用意する。",
+      "expected": "用意したデータと先頭2文字が一致する。"
+    },
+    {
+      "case_id": "40",
+      "number": 40,
+      "source_row": 47,
+      "category": "項目設定・データ変換\nEPデータ参照基盤データ30分値",
+      "title": "供給地点特定番号",
+      "kind": "正常系",
+      "procedure": "EPデータ参照基盤データ30分値の供給地点特定番号を用意する。",
+      "expected": "用意したデータと30分値の生データテーブルの値が一致する。"
+    },
+    {
+      "case_id": "41",
+      "number": 41,
+      "source_row": 48,
+      "category": "項目設定・データ変換\nEPデータ参照基盤データ30分値",
+      "title": "欠測時間帯_件数（整数）",
+      "kind": "正常系",
+      "procedure": "EPデータ参照基盤データ30分値の欠測時間帯_件数に「12」のデータを用意する。",
+      "expected": "用意したデータと30分値の生データテーブルの値が一致する。"
+    },
+    {
+      "case_id": "42",
+      "number": 42,
+      "source_row": 49,
+      "category": "項目設定・データ変換\nEPデータ参照基盤データ30分値",
+      "title": "欠測時間帯_件数（0）",
+      "kind": "正常系",
+      "procedure": "EPデータ参照基盤データ30分値の欠測時間帯_件数に「0」のデータを用意する。",
+      "expected": "用意したデータと30分値の生データテーブルの値が一致する。"
+    },
+    {
+      "case_id": "43",
+      "number": 43,
+      "source_row": 50,
+      "category": "項目設定・データ変換\nEPデータ参照基盤データ30分値",
+      "title": "欠測時間帯_件数（空文字）",
+      "kind": "異常系",
+      "procedure": "EPデータ参照基盤データ30分値の欠測時間帯_件数に「」のデータを用意する。",
+      "expected": "エラーが発生する。"
+    },
+    {
+      "case_id": "44",
+      "number": 44,
+      "source_row": 51,
+      "category": "項目設定・データ変換\nEPデータ参照基盤データ30分値",
+      "title": "欠測時間帯_件数（数字以外）",
+      "kind": "異常系",
+      "procedure": "EPデータ参照基盤データ30分値の欠測時間帯_件数に「AB」のデータを用意する。",
+      "expected": "エラーが発生する。"
+    },
+    {
+      "case_id": "45",
+      "number": 45,
+      "source_row": 52,
+      "category": "項目設定・データ変換\nEPデータ参照基盤データ30分値",
+      "title": "欠測時間帯_件数（負数）",
+      "kind": "異常系",
+      "procedure": "EPデータ参照基盤データ30分値の欠測時間帯_件数に「-1」のデータを用意する。",
+      "expected": "エラーが発生する。"
+    },
+    {
+      "case_id": "46",
+      "number": 46,
+      "source_row": 53,
+      "category": "項目設定・データ変換\nEPデータ参照基盤データ30分値",
+      "title": "不正値時間帯_件数（整数）",
+      "kind": "正常系",
+      "procedure": "EPデータ参照基盤データ30分値の不正値時間帯_件数に「12」のデータを用意する。",
+      "expected": "用意したデータと30分値の生データテーブルの値が一致する。"
+    },
+    {
+      "case_id": "47",
+      "number": 47,
+      "source_row": 54,
+      "category": "項目設定・データ変換\nEPデータ参照基盤データ30分値",
+      "title": "不正値時間帯_件数（0）",
+      "kind": "正常系",
+      "procedure": "EPデータ参照基盤データ30分値の不正値時間帯_件数に「0」のデータを用意する。",
+      "expected": "用意したデータと30分値の生データテーブルの値が一致する。"
+    },
+    {
+      "case_id": "48",
+      "number": 48,
+      "source_row": 55,
+      "category": "項目設定・データ変換\nEPデータ参照基盤データ30分値",
+      "title": "不正値時間帯_件数（空文字）",
+      "kind": "異常系",
+      "procedure": "EPデータ参照基盤データ30分値の不正値時間帯_件数に「」のデータを用意する。",
+      "expected": "エラーが発生する。"
+    },
+    {
+      "case_id": "49",
+      "number": 49,
+      "source_row": 56,
+      "category": "項目設定・データ変換\nEPデータ参照基盤データ30分値",
+      "title": "不正値時間帯_件数（数字以外）",
+      "kind": "異常系",
+      "procedure": "EPデータ参照基盤データ30分値の不正値時間帯_件数に「AB」のデータを用意する。",
+      "expected": "エラーが発生する。"
+    },
+    {
+      "case_id": "50",
+      "number": 50,
+      "source_row": 57,
+      "category": "項目設定・データ変換\nEPデータ参照基盤データ30分値",
+      "title": "不正値時間帯_件数（負数）",
+      "kind": "異常系",
+      "procedure": "EPデータ参照基盤データ30分値の不正値時間帯_件数に「-1」のデータを用意する。",
+      "expected": "エラーが発生する。"
+    },
+    {
+      "case_id": "51",
+      "number": 51,
+      "source_row": 58,
+      "category": "項目設定・データ変換\nEPデータ参照基盤データ30分値",
+      "title": "電力量48コマ（整数）",
+      "kind": "正常系",
+      "procedure": "EPデータ参照基盤データ30分値のV30分_使用_電力量_1～48にすべて異なる数値を設定する。",
+      "expected": "各列の対応する数値が一致する。"
+    },
+    {
+      "case_id": "52",
+      "number": 52,
+      "source_row": 59,
+      "category": "項目設定・データ変換\nEPデータ参照基盤データ30分値",
+      "title": "V30分_使用_電力量_1（小数）",
+      "kind": "正常系",
+      "procedure": "EPデータ参照基盤データ30分値の不正値時間帯_件数に「0.12」のデータを用意する。",
+      "expected": "用意したデータと30分値の生データテーブルの値が一致する。"
+    },
+    {
+      "case_id": "53",
+      "number": 53,
+      "source_row": 60,
+      "category": "項目設定・データ変換\nEPデータ参照基盤データ30分値",
+      "title": "V30分_使用_電力量_1（ゼロ）",
+      "kind": "正常系",
+      "procedure": "EPデータ参照基盤データ30分値の不正値時間帯_件数に「0」のデータを用意する。",
+      "expected": "用意したデータと30分値の生データテーブルの値が一致する。"
+    },
+    {
+      "case_id": "54",
+      "number": 54,
+      "source_row": 61,
+      "category": "項目設定・データ変換\nEPデータ参照基盤データ30分値",
+      "title": "V30分_使用_電力量_1（空文字）",
+      "kind": "異常系",
+      "procedure": "EPデータ参照基盤データ30分値の不正値時間帯_件数に「」のデータを用意する。",
+      "expected": "エラーが発生する。"
+    },
+    {
+      "case_id": "55",
+      "number": 55,
+      "source_row": 62,
+      "category": "項目設定・データ変換\nEPデータ参照基盤データ30分値",
+      "title": "V30分_使用_電力量_1（数字以外）",
+      "kind": "異常系",
+      "procedure": "EPデータ参照基盤データ30分値の不正値時間帯_件数に「AB」のデータを用意する。",
+      "expected": "エラーが発生する。"
+    },
+    {
+      "case_id": "56",
+      "number": 56,
+      "source_row": 63,
+      "category": "項目設定・データ変換",
+      "title": "削除フラグ初期値",
+      "kind": "正常系",
+      "procedure": "新規登録を実行する。",
+      "expected": "FALSEで登録されている。"
+    },
+    {
+      "case_id": "57",
+      "number": 57,
+      "source_row": 64,
+      "category": "項目設定・データ変換",
+      "title": "新規登録時の作成者",
+      "kind": "正常系",
+      "procedure": "新規登録を実行する。",
+      "expected": "バッチ実行ユーザーで登録されている。"
+    },
+    {
+      "case_id": "58",
+      "number": 58,
+      "source_row": 65,
+      "category": "項目設定・データ変換",
+      "title": "新規登録時の作成日時",
+      "kind": "正常系",
+      "procedure": "新規登録を実行する。",
+      "expected": "バッチ実行日時で登録されている。"
+    },
+    {
+      "case_id": "59",
+      "number": 59,
+      "source_row": 66,
+      "category": "項目設定・データ変換",
+      "title": "新規登録時の更新者",
+      "kind": "正常系",
+      "procedure": "新規登録を実行する。",
+      "expected": "NULLで登録されている。"
+    },
+    {
+      "case_id": "60",
+      "number": 60,
+      "source_row": 67,
+      "category": "項目設定・データ変換",
+      "title": "新規登録時の更新日時",
+      "kind": "正常系",
+      "procedure": "新規登録を実行する。",
+      "expected": "NULLで登録されている。"
+    },
+    {
+      "case_id": "61",
+      "number": 61,
+      "source_row": 68,
+      "category": "項目設定・データ変換",
+      "title": "更新時の作成者",
+      "kind": "正常系",
+      "procedure": "更新を実行する。",
+      "expected": "更新されていない。"
+    },
+    {
+      "case_id": "62",
+      "number": 62,
+      "source_row": 69,
+      "category": "項目設定・データ変換",
+      "title": "更新時の作成日時",
+      "kind": "正常系",
+      "procedure": "更新を実行する。",
+      "expected": "更新されていない。"
+    },
+    {
+      "case_id": "63",
+      "number": 63,
+      "source_row": 70,
+      "category": "項目設定・データ変換",
+      "title": "更新時の更新者",
+      "kind": "正常系",
+      "procedure": "更新を実行する。",
+      "expected": "バッチ実行ユーザーで更新されている。"
+    },
+    {
+      "case_id": "64",
+      "number": 64,
+      "source_row": 71,
+      "category": "項目設定・データ変換",
+      "title": "更新時の更新日時",
+      "kind": "正常系",
+      "procedure": "更新を実行する。",
+      "expected": "バッチ実行日時で更新されている。"
+    },
+    {
+      "case_id": "65",
+      "number": 65,
+      "source_row": 72,
+      "category": "項目設定・データ変換",
+      "title": "ファイル更新日時初期値",
+      "kind": "正常系",
+      "procedure": "新規登録を実行する。",
+      "expected": "\"\"で登録されている。"
+    },
+    {
+      "case_id": "66",
+      "number": 66,
+      "source_row": 73,
+      "category": "UPSERT登録・更新\n新規登録",
+      "title": "未登録データをINSERT",
+      "kind": "正常系",
+      "procedure": "同一ユニークキーの生データが存在しない状態で1件処理する。",
+      "expected": "新規データが作成され、各項目が期待値になる。"
+    },
+    {
+      "case_id": "67",
+      "number": 67,
+      "source_row": 74,
+      "category": "UPSERT登録・更新\n既存更新",
+      "title": "既存データをUPDATE",
+      "kind": "正常系",
+      "procedure": "同一ユニークキーの生データを登録し、元値を変更して再実行する。",
+      "expected": "既存データが更新される。"
+    },
+    {
+      "case_id": "68",
+      "number": 68,
+      "source_row": 75,
+      "category": "処理対象の成功更新\n管理テーブル更新",
+      "title": "紐付け日時設定",
+      "kind": "正常系",
+      "procedure": "1件の登録を正常終了させ、対象の30分値取込管理を照会する。",
+      "expected": "対象行の紐付け日時に現在日時が設定される。"
+    },
+    {
+      "case_id": "69",
+      "number": 69,
+      "source_row": 76,
+      "category": "処理対象の成功更新\n管理テーブル更新",
+      "title": "紐付けエラーメッセージ消去",
+      "kind": "正常系",
+      "procedure": "更新前に紐付けエラーメッセージを設定し、正常処理させる。",
+      "expected": "対象行の紐付けエラーメッセージが空文字になる。"
+    },
+    {
+      "case_id": "70",
+      "number": 70,
+      "source_row": 77,
+      "category": "処理対象の成功更新\n管理テーブル更新",
+      "title": "成功時に次回抽出対象外",
+      "kind": "正常系",
+      "procedure": "1件成功後、再度実行する。",
+      "expected": "紐付け日時がNULLでなくなり、同じ行は再抽出されない。"
+    },
+    {
+      "case_id": "71",
+      "number": 71,
+      "source_row": 78,
+      "category": "異常系・トランザクション\nエラー記録",
+      "title": "紐付けエラーメッセージ登録",
+      "kind": "異常系",
+      "procedure": "DBエラーを発生させる。",
+      "expected": "管理テーブルの紐付けエラーメッセージに該当エラーが登録されている。"
+    },
+    {
+      "case_id": "72",
+      "number": 72,
+      "source_row": 79,
+      "category": "異常系・トランザクション\nエラー記録",
+      "title": "トランザクション",
+      "kind": "異常系",
+      "procedure": "15件のデータを用意する。\n10件は正常なデータ、エラーになるデータを用意する。",
+      "expected": "正常なデータだけが登録されていることを確認する。"
+    }
+  ]
+}
