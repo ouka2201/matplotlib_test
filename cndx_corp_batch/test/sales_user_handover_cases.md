@@ -20,7 +20,7 @@ python -m cndx_corp_batch.test.prepare_sales_user_handover_cases `
 
 出力JSONには物理列名を使った全投入行、Excel行番号、ケースの期待結果、識別子対応、バッチ実行日・コマンド、追加操作を含みます。
 `--output` のファイルは投入前の計画です。投入成功やバッチの合格証跡ではありません。
-DBへの投入に成功したときだけ、コンソールに「投入完了」と各テーブルの件数を出力します。
+DBへの投入に成功したときだけ、コンソールに「投入完了」（`--reset` は「初期化・再投入完了」）と各テーブルの件数を出力します。
 
 ## PostgreSQLへ投入する
 
@@ -121,7 +121,7 @@ python -m cndx_corp_batch.test.prepare_sales_user_handover_cases `
     --case 56 --variant comparison --dry-run --output output/sales_user_handover/case56_comparison.json
 ```
 
-`target` を投入して対象行が更新されることを確認後、検証DBを初期化し `comparison` を投入します。
+`target` を投入して対象行が更新されることを確認後、同じ設定・開始番号で `--variant comparison --reset` を指定して比較用の初期状態に戻します。
 比較時にも**元のC1/O1/U1→O2/U2、予定日D**を状態更新処理の引数として使い、比較行が更新されないことを確認します。
 比較行の値を引数に渡してはいけません。ケース57・58も同様です。
 
@@ -142,18 +142,69 @@ python -m cndx_corp_batch.entrypoints.sales_user_handover_batch --batch-date 202
 
 ## 既存データと再実行
 
-投入は全テーブルを1トランザクションで行います。途中で失敗した場合は全INSERTをロールバックします。
-UPDATE・DELETE・UPSERT・制約解除は行いません。
+### 同じケースを最初からやり直す
+
+`--reset` を付けると、指定ケースの法人番号に属する作成済みデータを削除し、初回実行前の状態を再投入します。
+初回も同じコマンドを使えます。完了・登録エラー・予定のどの状態からでも初期化できます。
+引継ぎ済みの担当者・過去データ、削除済みの引継情報も復元対象です。
+
+```powershell
+# 変更範囲を確認（DB接続なし。作成者の実データ検査は本実行時）
+python -m cndx_corp_batch.test.prepare_sales_user_handover_cases `
+    --case 61 --reset --dry-run --db-config output/sales_user_handover/database.json
+
+# ケース61を初期化。初回も再テスト時もこのコマンド
+python -m cndx_corp_batch.test.prepare_sales_user_handover_cases `
+    --case 61 --reset --db-config output/sales_user_handover/database.json `
+    --output output/sales_user_handover/case61.json
+
+# 「初期化・再投入完了」を確認後に実行し、結果を確認・保存する
+$env:DATABASE_URL = $env:REPORT_DATABASE_URL
+$env:TZ = 'Asia/Tokyo'
+python -m cndx_corp_batch.entrypoints.sales_user_handover_batch --batch-date 2026-10-26
+```
+
+同じケースをやり直す際は、初期化とバッチ実行を繰り返してください。
+以前 `--start-id` を指定した場合は同じ値を使用します。`identifiers`・参照コード・接続先・テーブル設定も初回と揃えてください。
+初期化すると前回の結果は消えるため、結果の確認・保存を先に済ませます。バッチと準備PGは同時実行しないでください。
+
+### 別ケースに切り替える
+
+前のケースを `--cleanup` で片付けてから、次のケースを投入します。`--cleanup` は再投入を行いません。
+前のケースの未処理予定や担当者が次のテストに影響するのを防げます。
+
+```powershell
+python -m cndx_corp_batch.test.prepare_sales_user_handover_cases `
+    --case 61 --cleanup --db-config output/sales_user_handover/database.json
+
+# 「削除完了」を確認後、次のケースを準備
+python -m cndx_corp_batch.test.prepare_sales_user_handover_cases `
+    --case 12 --reset --db-config output/sales_user_handover/database.json
+```
+
+まず試す組み合わせはケース1・12・24・26・31・61・63・66・73です。
+**ケース63・65の1回目と2回目のバッチ実行の間には、reset・cleanupを行いません。** 初回の結果を残して二重処理しないことを確認します。
+ケース1の時計固定、ケース73の例外注入などの追加操作は、引き続き計画JSONに従って実施してください。
+
+### 削除範囲と失敗時の動作
+
+通常実行は従来どおりINSERTのみです。`--reset` / `--cleanup` は、このPGが扱う11テーブルのうち、計画JSONの `cleanup_scope.corporate_numbers` に一致する行を削除します。
+対象法人に `created_by = 'handover_test_seed'` 以外（NULLを含む）の行が1件でもあれば、削除前に中止します。
+別法人、利用者・組織等の参照マスタは削除しません。制約解除・CASCADE指定は行いません。
+検証DB専用で使用してください。DBに外部キーの削除連鎖がある場合、そのDB定義による影響も事前に確認してください。
+
+削除と再投入は全テーブルを1トランザクションで行います。再投入・制約検査・COMMITで失敗した場合は、削除も含めてロールバックします。
+`--cleanup` も削除全件を1トランザクションで行い、対象が既に空なら0件で完了します。
 
 次の場合は投入を中止します。
 
-- 同じ法人番号が対象テーブルに既に存在する（未存在条件の汚染も防止）。
+- 通常実行で同じ法人番号が対象テーブルに既に存在する（`--reset` でやり直せます）。
 - 引継元ユーザーIDが別法人の担当者として既に存在する。
 - バッチ実行日の予定状態の行が既に存在する（別ケースの巻込みを防止）。
 - 主キーが既存行と重複する、または計画内で重複する。
 - 必須列・値が不足する、または状態・引継種別コードが定義外。
 
-`--start-id` を変えても未処理予定の混在は許可しません。ケースごとに検証DBを復元してください。
+`--reset` や `--start-id` を指定しても、別ケースの未処理予定の混在は許可しません。前ケースを `--cleanup` で削除するか、ケース専用の検証DBを使用してください。
 再実行ケース63～65は、データ準備PGの再実行ではなく、同じ準備データに対する**バッチの再実行**を確認します。
 
 ## NoSuchTableErrorが表示された場合
@@ -189,7 +240,7 @@ python -m pytest cndx_corp_batch/tests/test_prepare_sales_user_handover_cases.py
 ```
 
 SQLiteの一時DBに、既存エンティティから作ったテーブルと設計書準拠の引継情報テーブルを使用します。
-全78ケース（56～58の分割を含む81パターン）の投入、実際の対象抽出SQL・8種類の更新SQL、重複防止、失敗時のロールバックを検証します。
+全78ケース（56～58の分割を含む81パターン）の投入、実際の対象抽出SQL・8種類の更新SQL、重複防止、初期化・片付け、他法人・他作成者の保護、失敗時のロールバックを検証します。
 これは投入PGの検証であり、PostgreSQL上の担当者引継ぎバッチの単体テスト結果ではありません。
 
 参照資料：`docs/STEP4_テーブル一覧・定義書・ER図.xlsx`、担当者引継ぎバッチ設計書、

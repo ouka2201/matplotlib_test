@@ -22,6 +22,7 @@ from .insert_link_customer_30min_data import _column_map, _require_columns, _row
 
 CATALOG = Path(__file__).with_name("sales_user_handover_cases.json")
 BASE_DATE = date(2026, 10, 26)
+SEED_CREATOR = "handover_test_seed"
 TABLE_NAMES = {
     "corporate": "m_corporate_basic",
     "staff": "m_staff_info",
@@ -63,7 +64,7 @@ def load_catalog():
 
 def _audit():
     return {
-        "CREATED_BY": "handover_test_seed",
+        "CREATED_BY": SEED_CREATOR,
         "CREATED_AT": datetime(2026, 1, 1),
         "UPDATED_BY": None,
         "UPDATED_AT": None,
@@ -455,8 +456,34 @@ def build_plan(
     }
 
 
-def insert_plan(settings, plan):
-    """既存行を変更せず、投入データ全件を1トランザクションで登録する。"""
+def _delete_seed_rows(connection, tables, corporations):
+    """対象法人に手作業等の行が混ざっていれば、削除前に停止する。"""
+    scopes = []
+    for key, table in tables.items():
+        _require_columns(table, ("CORPORATE_NUMBER", "CREATED_BY"))
+        columns = _column_map(table)
+        scope = table.c[columns["CORPORATE_NUMBER"]].in_(corporations)
+        creator = table.c[columns["CREATED_BY"]]
+        if connection.execute(
+            select(table)
+            .where(scope, (creator != SEED_CREATOR) | creator.is_(None))
+            .limit(1)
+        ).first():
+            raise ValueError(
+                f"{table.name}の対象法人に準備PG以外が作成した行があります。削除を中止しました。"
+            )
+        scopes.append((key, table, scope))
+    counts = {}
+    # 子テーブルから削除し、法人・建物の親データを最後に削除する。
+    for key, table, scope in reversed(scopes):
+        counts[key] = connection.execute(table.delete().where(scope)).rowcount
+    return counts
+
+
+def insert_plan(settings, plan, *, reset=False, cleanup=False):
+    """投入と、明示指定されたケースの削除を1トランザクションで行う。"""
+    if reset and cleanup:
+        raise ValueError("resetとcleanupは同時に指定できません。")
     for row in plan["rows"]["handover"]:
         if row["HANDOVER_TYPE"] not in (HANDOVER_TYPE_INDIVIDUAL, HANDOVER_TYPE_BULK):
             raise ValueError('HANDOVER_TYPEは"0"（個別）または"1"（一括）が必要です。')
@@ -499,6 +526,13 @@ def insert_plan(settings, plan):
                         "\n接続先DB、schema、テーブル名の大文字・小文字、参照権限を確認してください。"
                         "\n未作成の場合は検証DBに正式なDDLを適用してください。データは投入していません。"
                     ) from exc
+            corporations = [
+                v for k, v in plan["identifiers"].items() if k.startswith("C")
+            ]
+            if reset or cleanup:
+                deleted = _delete_seed_rows(connection, tables, corporations)
+                if cleanup:
+                    return deleted
             handover = tables["handover"]
             columns = _column_map(handover)
             _require_columns(
@@ -518,9 +552,6 @@ def insert_plan(settings, plan):
                 raise ValueError(
                     "実行日の未処理予定が既に存在します。ケース専用の検証DBを初期化してください。"
                 )
-            corporations = [
-                v for k, v in plan["identifiers"].items() if k.startswith("C")
-            ]
             prepared = []
             for key, table in tables.items():
                 _require_columns(table, ("CORPORATE_NUMBER",))
@@ -635,6 +666,15 @@ def main(argv=None):
     parser.add_argument(
         "--dry-run", action="store_true", help="DB接続せず投入計画だけを作成"
     )
+    repeat = parser.add_mutually_exclusive_group()
+    repeat.add_argument(
+        "--reset",
+        action="store_true",
+        help="対象ケースの作成済みデータを削除して再投入",
+    )
+    repeat.add_argument(
+        "--cleanup", action="store_true", help="対象ケースの作成済みデータだけを削除"
+    )
     parser.add_argument(
         "--output", type=Path, help="全投入行・追加操作を含む計画JSONの保存先"
     )
@@ -670,6 +710,19 @@ def main(argv=None):
             agreement_category=settings.get("agreement_category", "01"),
             energy_code=settings.get("energy_code", "ELECTRICITY"),
         )
+        operation = "reset" if args.reset else "cleanup" if args.cleanup else "insert"
+        plan["operation"] = operation
+        if args.reset or args.cleanup:
+            plan["cleanup_scope"] = {
+                "corporate_numbers": [
+                    v for k, v in plan["identifiers"].items() if k.startswith("C")
+                ],
+                "tables": {
+                    k: settings.get("tables", {}).get(k, v)
+                    for k, v in TABLE_NAMES.items()
+                },
+                "required_created_by": SEED_CREATOR,
+            }
         if args.output:
             args.output.parent.mkdir(parents=True, exist_ok=True)
             args.output.write_text(
@@ -684,11 +737,18 @@ def main(argv=None):
         summary["planned_counts"] = {
             key: len(rows) for key, rows in plan["rows"].items()
         }
-        summary["mode"] = "dry-run" if args.dry_run else "insert"
+        summary["mode"] = "dry-run" if args.dry_run else operation
         print(json.dumps(summary, ensure_ascii=False, indent=2, default=str))
         if not args.dry_run:
-            counts = insert_plan(settings, plan)
-            print("投入完了: " + json.dumps(counts, ensure_ascii=False))
+            counts = insert_plan(settings, plan, reset=args.reset, cleanup=args.cleanup)
+            label = (
+                "削除完了"
+                if args.cleanup
+                else "初期化・再投入完了"
+                if args.reset
+                else "投入完了"
+            )
+            print(label + ": " + json.dumps(counts, ensure_ascii=False))
     except (ValueError, TypeError, OSError) as exc:
         parser.exit(1, f"準備失敗: {exc}\n")
     except SQLAlchemyError as exc:

@@ -325,6 +325,116 @@ def test_failed_last_insert_rolls_back_all_tables(database):
     assert all(not read_rows(database, k) for k in seed.TABLE_NAMES)
 
 
+@pytest.mark.parametrize("number", [24, 26, 61, 66])
+def test_reset_restores_processed_rows_and_can_be_repeated(database, number):
+    prepared = plan(number)
+    seed.insert_plan(database[0], prepared, reset=True)
+    before = {key: read_rows(database, key) for key in seed.TABLE_NAMES}
+    with database[1].begin() as conn:
+        for key in seed.HISTORY:
+            table = database[2].tables[seed.TABLE_NAMES[key]]
+            field = "agreement_org" if key == "F" else "org_id"
+            conn.execute(table.update().values({field: prepared["identifiers"]["O2"]}))
+        conn.execute(
+            text(
+                "UPDATE t_sales_user_handover_info SET handover_status = '0', handovered_at = CURRENT_TIMESTAMP"
+            )
+        )
+        conn.execute(text("DELETE FROM m_staff_info"))
+        if number == 26:
+            conn.execute(text("DELETE FROM t_sales_user_handover_info"))
+    for _ in range(2):
+        seed.insert_plan(database[0], prepared, reset=True)
+        assert {key: read_rows(database, key) for key in seed.TABLE_NAMES} == before
+
+
+def test_cleanup_allows_switching_cases_and_keeps_other_corporations(database):
+    other = plan(8)
+    seed.insert_plan(database[0], other)
+    before = {key: read_rows(database, key) for key in seed.TABLE_NAMES}
+    prepared = plan(61)
+    seed.insert_plan(database[0], prepared)
+    counts = seed.insert_plan(database[0], prepared, cleanup=True)
+    assert counts == {key: len(rows) for key, rows in prepared["rows"].items()}
+    assert {key: read_rows(database, key) for key in seed.TABLE_NAMES} == before
+    assert not any(seed.insert_plan(database[0], prepared, cleanup=True).values())
+    seed.insert_plan(database[0], plan(12), reset=True)
+
+
+@pytest.mark.parametrize("operation", ["reset", "cleanup"])
+@pytest.mark.parametrize("creator", [None, "manual"])
+def test_reset_and_cleanup_refuse_unowned_rows(database, operation, creator):
+    prepared = plan(30)
+    seed.insert_plan(database[0], prepared)
+    with database[1].begin() as conn:
+        table = database[2].tables[seed.TABLE_NAMES["G"]]
+        conn.execute(table.update().values(created_by=creator))
+    before = {key: read_rows(database, key) for key in seed.TABLE_NAMES}
+    with pytest.raises(ValueError, match="準備PG以外"):
+        seed.insert_plan(database[0], prepared, **{operation: True})
+    assert {key: read_rows(database, key) for key in seed.TABLE_NAMES} == before
+
+
+def test_reset_reinsertion_failure_restores_deleted_data(database):
+    prepared = plan(61)
+    seed.insert_plan(database[0], prepared)
+    with database[1].begin() as conn:
+        conn.execute(
+            text("UPDATE t_sales_user_handover_info SET handover_status = '0'")
+        )
+        conn.execute(
+            text(
+                "CREATE TRIGGER reject_reset BEFORE INSERT ON t_sales_user_handover_info "
+                "BEGIN SELECT RAISE(ABORT, 'injected failure'); END"
+            )
+        )
+    before = {key: read_rows(database, key) for key in seed.TABLE_NAMES}
+    with pytest.raises(IntegrityError):
+        seed.insert_plan(database[0], prepared, reset=True)
+    assert {key: read_rows(database, key) for key in seed.TABLE_NAMES} == before
+
+
+def test_reset_does_not_bypass_other_pending_check(database):
+    prepared = plan(8)
+    seed.insert_plan(database[0], prepared)
+    seed.insert_plan(database[0], plan(61))
+    before = {key: read_rows(database, key) for key in seed.TABLE_NAMES}
+    with pytest.raises(ValueError, match="未処理予定"):
+        seed.insert_plan(database[0], prepared, reset=True)
+    assert {key: read_rows(database, key) for key in seed.TABLE_NAMES} == before
+
+
+@pytest.mark.parametrize("operation", ["reset", "cleanup"])
+def test_cli_repeat_dry_run_is_offline_and_shows_scope(
+    tmp_path, monkeypatch, capsys, operation
+):
+    monkeypatch.setattr(
+        seed, "create_engine", lambda *a, **k: pytest.fail("DB接続は不要")
+    )
+    output = tmp_path / "repeat.json"
+    assert (
+        seed.main(
+            ["--case", "61", f"--{operation}", "--dry-run", "--output", str(output)]
+        )
+        == 0
+    )
+    saved = json.loads(output.read_text(encoding="utf-8"))
+    assert saved["operation"] == operation
+    assert saved["cleanup_scope"]["corporate_numbers"] == [
+        "9900000061001",
+        "9900000061002",
+        "9900000061003",
+    ]
+    assert saved["cleanup_scope"]["required_created_by"] == seed.SEED_CREATOR
+    assert '"mode": "dry-run"' in capsys.readouterr().out
+
+
+def test_cli_reset_and_cleanup_are_mutually_exclusive():
+    with pytest.raises(SystemExit) as error:
+        seed.main(["--case", "61", "--reset", "--cleanup", "--dry-run"])
+    assert error.value.code == 2
+
+
 def test_missing_required_column_rejected_before_any_insert(database):
     with database[1].begin() as conn:
         conn.execute(
