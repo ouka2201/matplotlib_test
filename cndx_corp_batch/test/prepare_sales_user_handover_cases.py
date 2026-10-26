@@ -7,7 +7,7 @@ from datetime import date, datetime, timedelta
 from pathlib import Path
 
 from sqlalchemy import DateTime, MetaData, String, Table, create_engine, select
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import NoSuchTableError, SQLAlchemyError
 
 from cndx_corp_batch.domains.sales_user_handover.constants import (
     HANDOVER_STATUS_CANCELLED,
@@ -480,15 +480,25 @@ def insert_plan(settings, plan):
     try:
         with engine.begin() as connection:
             metadata = MetaData()
-            tables = {
-                key: Table(
-                    settings.get("tables", {}).get(key, name),
-                    metadata,
-                    schema=settings.get("schema", "db_corp"),
-                    autoload_with=connection,
-                )
-                for key, name in TABLE_NAMES.items()
-            }
+            tables = {}
+            schema = settings.get("schema", "db_corp")
+            for key, default_name in TABLE_NAMES.items():
+                name = settings.get("tables", {}).get(key, default_name)
+                qualified_name = f"{schema}.{name}" if schema else name
+                try:
+                    tables[key] = Table(
+                        name, metadata, schema=schema, autoload_with=connection
+                    )
+                except NoSuchTableError as exc:
+                    # NoSuchTableErrorの引数はテーブル識別子。接続URLは出力しない。
+                    missing = str(exc) or qualified_name
+                    raise ValueError(
+                        f"NoSuchTableError: テーブルが存在しないか、接続ユーザーから参照できません。"
+                        f"\n見つからないテーブル: {missing}"
+                        f"\n定義取得対象: {qualified_name}（設定キー: tables.{key}）"
+                        "\n接続先DB、schema、テーブル名の大文字・小文字、参照権限を確認してください。"
+                        "\n未作成の場合は検証DBに正式なDDLを適用してください。データは投入していません。"
+                    ) from exc
             handover = tables["handover"]
             columns = _column_map(handover)
             _require_columns(

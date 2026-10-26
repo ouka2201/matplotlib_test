@@ -1,6 +1,7 @@
 """投入内容・実DB列への適合・投入失敗時の原子性を検証する。"""
 
 import importlib.util
+import json
 from copy import deepcopy
 from datetime import datetime
 from pathlib import Path
@@ -334,6 +335,47 @@ def test_missing_required_column_rejected_before_any_insert(database):
     assert not read_rows(database, "corporate")
 
 
+@pytest.mark.parametrize("key", ["corporate", "F", "handover"])
+def test_missing_table_reports_lookup_name_and_config_key(database, key):
+    table_name = seed.TABLE_NAMES[key]
+    database[2].tables[table_name].drop(database[1])
+    with pytest.raises(ValueError, match="NoSuchTableError") as error:
+        seed.insert_plan(database[0], plan(30))
+    assert f"見つからないテーブル: {table_name}" in str(error.value)
+    assert f"定義取得対象: {table_name}（設定キー: tables.{key}）" in str(error.value)
+    assert all(not read_rows(database, k) for k in seed.TABLE_NAMES if k != key)
+
+
+def test_missing_configured_table_reports_actual_name(database):
+    settings = {**database[0], "tables": {"handover": "CUSTOM_HANDOVER"}}
+    with pytest.raises(ValueError, match="CUSTOM_HANDOVER") as error:
+        seed.insert_plan(settings, plan(30))
+    assert "tables.handover" in str(error.value)
+    assert all(not read_rows(database, k) for k in seed.TABLE_NAMES)
+
+
+def test_cli_missing_table_shows_actionable_error_without_connection_url(
+    database, tmp_path, monkeypatch, capsys
+):
+    database[2].tables[seed.TABLE_NAMES["handover"]].drop(database[1])
+    settings = {
+        **database[0],
+        "url": "postgresql://test_user:secret_token@host/test_db",
+    }
+    config = tmp_path / "database.json"
+    config.write_text(json.dumps(settings), encoding="utf-8")
+    monkeypatch.setattr(seed, "create_engine", lambda *args, **kwargs: database[1])
+    with pytest.raises(SystemExit) as error:
+        seed.main(["--case", "30", "--db-config", str(config)])
+    assert error.value.code == 1
+    captured = capsys.readouterr()
+    assert "t_sales_user_handover_info" in captured.err
+    assert "tables.handover" in captured.err
+    assert "secret_token" not in captured.out + captured.err
+    assert "postgresql://" not in captured.out + captured.err
+    assert "投入完了" not in captured.out
+
+
 @pytest.mark.parametrize(
     "field,value",
     [("HANDOVER_TYPE", None), ("HANDOVER_TYPE", "2"), ("HANDOVER_STATUS", "4")],
@@ -429,8 +471,6 @@ def test_cli_dry_run_does_not_connect_and_saves_full_plan(
     output = tmp_path / "plan.json"
     assert seed.main(["--case", "62", "--dry-run", "--output", str(output)]) == 0
     assert '"mode": "dry-run"' in capsys.readouterr().out
-    import json
-
     saved = json.loads(output.read_text(encoding="utf-8"))
     assert len(saved["rows"]["handover"]) == 300
     assert {r["HANDOVER_TYPE"] for r in saved["rows"]["handover"]} == {"1"}

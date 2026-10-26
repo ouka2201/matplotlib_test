@@ -156,6 +156,32 @@ UPDATE・DELETE・UPSERT・制約解除は行いません。
 `--start-id` を変えても未処理予定の混在は許可しません。ケースごとに検証DBを復元してください。
 再実行ケース63～65は、データ準備PGの再実行ではなく、同じ準備データに対する**バッチの再実行**を確認します。
 
+## NoSuchTableErrorが表示された場合
+
+接続先DBで、指定したテーブルが見つからないか参照できない状態です。
+PGは「見つからないテーブル」「定義取得対象」「設定キー」を表示して、INSERT前に停止します。
+外部キーの参照先が未作成の場合は、見つからないテーブルが定義取得対象と異なることもあります。
+
+`schema` が `db_corp` の場合は、接続しているDBで次のSQLを実行して確認します。
+
+```sql
+SELECT current_database(), current_user;
+
+SELECT table_schema, table_name
+FROM information_schema.tables
+WHERE lower(table_schema) = 'db_corp'
+ORDER BY table_schema, table_name;
+```
+
+エラーに出た名前と、一覧の実際のスキーマ・テーブル名（大文字・小文字も含む）を比較してください。
+接続先が違う場合は `REPORT_DATABASE_URL`、スキーマが違う場合は設定の `schema` を修正します。
+検証DBでテーブル名を変更している場合は、`tables` の該当キーに実際の名前を指定します。
+たとえば `tables.handover` は営業担当引継情報のテーブル名に対応します。
+バッチ本体のSQLは `db_corp` の既定テーブル名を使用するため、準備PGの設定だけでは本体の参照先は変わりません。
+
+未作成の場合は正式なDDLを適用してください。自動で空テーブルを作ったり、見つからないテーブルをスキップしたりはしません。
+一覧に表示されない場合は、テーブルの存在に加えて接続ユーザーの参照権限も確認してください。
+
 ## 投入PGの確認
 
 ```powershell
