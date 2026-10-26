@@ -1,8 +1,12 @@
 """担当者引継ぎ実行バッチで使用する定数。"""
 
-HANDOVER_STATUS_PLANNED = "1"
-HANDOVER_STATUS_DONE = "0"
-HANDOVER_STATUS_ERROR = "3"
+HANDOVER_STATUS_DONE = "0"  # 完了
+HANDOVER_STATUS_PLANNED = "1"  # 予定
+HANDOVER_STATUS_CANCELLED = "2"  # 引継中止
+HANDOVER_STATUS_ERROR = "3"  # 登録エラー
+
+HANDOVER_TYPE_INDIVIDUAL = "0"  # 個別
+HANDOVER_TYPE_BULK = "1"  # 一括
 
 HANDOVER_DATA_QUERY_FILES = {
     "monthly_building": "update_handover_monthly_building.sql",
