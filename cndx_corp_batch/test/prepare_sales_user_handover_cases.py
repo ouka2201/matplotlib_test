@@ -1,4 +1,4 @@
-"""担当者引継ぎの単体テストケース1～78の初期データを準備する。"""
+"""担当者引継ぎの単体テストケース1～80の初期データを準備する。"""
 
 import argparse
 import json
@@ -85,7 +85,7 @@ def build_plan(
     catalog = load_catalog()
     case = next((c for c in catalog["cases"] if c["case_id"] == str(case_id)), None)
     if case is None:
-        raise ValueError("ケースIDは1～78を指定してください。")
+        raise ValueError("ケースIDは1～80を指定してください。")
     number = case["number"]
     if number in SPLIT_CASES:
         if variant not in ("target", "comparison"):
@@ -366,6 +366,11 @@ def build_plan(
             all_history(exclude="F")
         if number == 50:
             history("F", org="O3")
+    elif number in (79, 80):
+        rows["staff"].clear()
+        staff(user="U2", org="O2")
+        main["REPORT_DATA_FLG"] = number == 80
+        all_history()
     elif 54 <= number <= 59:
         if number == 54:
             target(2)
@@ -381,7 +386,9 @@ def build_plan(
         else:
             target(HANDOVER_FROM_USER_ID=ids["U3"], HANDOVER_TO_USER_ID=ids["U1"])
         actions.append(
-            "バッチ全体ではなく、C1/O1/U1→O2/U2をパラメータとして状態更新処理10・12を個別実行する。毎回データを復元する。"
+            f"バッチ全体ではなく、法人番号{corp()}、引継元組織{ids['O1']}・担当者{ids['U1']}、"
+            f"引継先組織{ids['O2']}・担当者{ids['U2']}をパラメータとして"
+            "状態更新処理11・13を個別実行する。毎回データを復元する。"
         )
     elif number in (61, 62):
         for i in range(2, 301 if number == 62 else 4):
@@ -648,7 +655,7 @@ def insert_plan(settings, plan, *, reset=False, cleanup=False):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--list", action="store_true", help="ケース一覧")
-    parser.add_argument("--case", help="Excelの項番1～78")
+    parser.add_argument("--case", help="Excelの項番1～80")
     parser.add_argument(
         "--start-id", type=int, help="識別番号の開始値（既定：ケース番号×1000+1）"
     )

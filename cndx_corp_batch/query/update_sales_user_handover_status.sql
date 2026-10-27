@@ -1,4 +1,4 @@
--- バッチ処理内容定義書 10・12：引継実施ステータスと引継実施日時を更新する。
+-- バッチ処理内容定義書 11・13：引継実施ステータスと引継実施日時を更新する。
 UPDATE db_corp.t_sales_user_handover_info
 SET handover_status = :handover_status,
     handovered_at = CURRENT_TIMESTAMP

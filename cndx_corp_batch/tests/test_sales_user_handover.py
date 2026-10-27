@@ -165,11 +165,19 @@ def test_report_data_flag_false_updates_staff_and_completes(
     assert not any("CASE WHEN EXISTS" in sql for sql, _ in process_session.calls)
 
 
-def test_missing_source_staff_deletes_handover_record(
+@pytest.mark.parametrize("destination_exists", [False, True])
+@pytest.mark.parametrize("report_data_flg", [False, True])
+def test_missing_source_staff_checks_destination(
     monkeypatch: pytest.MonkeyPatch,
+    destination_exists: bool,
+    report_data_flg: bool,
 ) -> None:
-    target_session = FakeSession(targets=[make_target()])
-    process_session = FakeSession(source_exists=False)
+    target_session = FakeSession(targets=[make_target(report_data_flg)])
+    process_session = FakeSession(
+        source_exists=False,
+        destination_exists=destination_exists,
+        data_flags=all_data_flags(),
+    )
     monkeypatch.setattr(
         sales_user_handover_job,
         "get_session",
@@ -178,11 +186,54 @@ def test_missing_source_staff_deletes_handover_record(
 
     SalesUserHandoverJob(make_context(), date(2026, 12, 21)).execute()
 
-    assert any(
+    deleted = any(
         "DELETE FROM db_corp.t_sales_user_handover_info" in sql
         for sql, _ in process_session.calls
     )
-    assert not any("handovered_at" in sql for sql, _ in process_session.calls)
+    assert deleted is (not destination_exists)
+    assert not any(
+        "UPDATE db_corp.m_staff_info" in sql for sql, _ in process_session.calls
+    )
+    status = [p for sql, p in process_session.calls if "handovered_at" in sql]
+    assert [p["handover_status"] for p in status] == (
+        ["0"] if destination_exists else []
+    )
+    assert any("CASE WHEN EXISTS" in sql for sql, _ in process_session.calls) is (
+        destination_exists and report_data_flg
+    )
+    history = [
+        sql
+        for sql, _ in process_session.calls
+        if "SET org_id" in sql or "SET agreement_org" in sql
+    ]
+    assert len(history) == (8 if destination_exists and report_data_flg else 0)
+
+
+@pytest.mark.parametrize("missing", ["building", "building_info"])
+def test_missing_source_existing_destination_uses_history_validation(
+    monkeypatch, missing
+):
+    process = FakeSession(
+        source_exists=False,
+        destination_exists=True,
+        data_flags=all_data_flags(**{missing: 0}),
+    )
+    monkeypatch.setattr(
+        sales_user_handover_job,
+        "get_session",
+        SessionFactory(FakeSession(targets=[make_target()]), process),
+    )
+    SalesUserHandoverJob(make_context(), date(2026, 10, 26)).execute()
+    statuses = [
+        p["handover_status"] for sql, p in process.calls if "handovered_at" in sql
+    ]
+    assert statuses == (["3"] if missing == "building" else ["0"])
+    history = [
+        sql
+        for sql, _ in process.calls
+        if "SET org_id" in sql or "SET agreement_org" in sql
+    ]
+    assert len(history) == (0 if missing == "building" else 7)
 
 
 def test_existing_destination_staff_deletes_source_staff(
@@ -204,6 +255,36 @@ def test_existing_destination_staff_deletes_source_staff(
     assert not any(
         "UPDATE db_corp.m_staff_info" in sql for sql, _ in process_session.calls
     )
+
+
+@pytest.mark.parametrize("destination_exists", [False, True])
+def test_missing_source_finishes_only_current_corporation(
+    monkeypatch: pytest.MonkeyPatch,
+    destination_exists: bool,
+) -> None:
+    first = make_target()
+    following = {**make_target(False), "corporate_number": "1234567890124"}
+    first_session = FakeSession(
+        source_exists=False,
+        destination_exists=destination_exists,
+        data_flags=all_data_flags(),
+    )
+    following_session = FakeSession()
+    monkeypatch.setattr(
+        sales_user_handover_job,
+        "get_session",
+        SessionFactory(
+            FakeSession(targets=[first, following]), first_session, following_session
+        ),
+    )
+    assert SalesUserHandoverJob(make_context(), date(2026, 12, 21)).execute() == 2
+    assert any(
+        "DELETE FROM db_corp.t_sales_user_handover_info" in sql
+        for sql, _ in first_session.calls
+    ) is (not destination_exists)
+    done = [p for sql, p in following_session.calls if "handovered_at" in sql]
+    assert done[0]["corporate_number"] == following["corporate_number"]
+    assert done[0]["handover_status"] == HANDOVER_STATUS_DONE
 
 
 def test_missing_past_data_sets_registration_error_without_updates(

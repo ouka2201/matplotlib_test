@@ -2,6 +2,7 @@ __pycache__/
 *.py[cod]
 .venv/
 output/
+outputs/
 .coverage
 .coverage.*
 .pytest_cache/

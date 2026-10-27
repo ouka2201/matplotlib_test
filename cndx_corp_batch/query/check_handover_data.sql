@@ -1,4 +1,4 @@
--- バッチ処理内容定義書 7：法人番号と引継元組織IDのデータ存在をA～Hで確認する。
+-- バッチ処理内容定義書 8：法人番号と引継元組織IDで過去データ8表の存在を確認する。
 SELECT
     CASE WHEN EXISTS (
         SELECT 1 FROM db_corp.t_monthly_building_energy_aggregation

@@ -2,8 +2,9 @@
 
 import importlib.util
 import json
+from contextlib import contextmanager
 from copy import deepcopy
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
 
 import pytest
@@ -27,7 +28,7 @@ QUERY = ROOT / "cndx_corp_batch" / "query"
 ENTITY = ROOT / "cndx_corp_back" / "entity"
 VARIANTS = [
     (n, v)
-    for n in range(1, 79)
+    for n in range(1, 81)
     for v in (("target", "comparison") if n in seed.SPLIT_CASES else (None,))
 ]
 
@@ -88,8 +89,8 @@ def read_rows(database, key):
 
 def test_catalog_matches_case_numbers():
     cases = seed.load_catalog()["cases"]
-    assert [c["number"] for c in cases] == list(range(1, 79))
-    assert [c["source_row"] for c in cases] == list(range(7, 85))
+    assert [c["number"] for c in cases] == list(range(1, 81))
+    assert [c["source_row"] for c in cases] == list(range(7, 87))
     assert cases[55]["title"] == "引継先組織ID不一致を除外"
 
 
@@ -230,6 +231,69 @@ def test_missing_rows_and_other_corporation_presence():
         )
     p = plan(50)
     assert p["rows"]["F"][0]["AGREEMENT_ORG"] == p["identifiers"]["O3"]
+
+
+@pytest.mark.parametrize(
+    "number,destination_other_corp", [(26, False), (79, False), (80, False), (79, True)]
+)
+def test_missing_source_behavior_with_real_sql(
+    database, monkeypatch, number, destination_other_corp
+):
+    from cndx_corp_batch.domains.sales_user_handover.jobs import sales_user_handover_job
+    from cndx_corp_batch.tests.test_sales_user_handover import make_context
+
+    prepared = plan(number)
+    if destination_other_corp:
+        other_corp = str(int(prepared["identifiers"]["C1"]) + 1)
+        prepared["rows"]["corporate"].append(
+            {**prepared["rows"]["corporate"][0], "CORPORATE_NUMBER": other_corp}
+        )
+        prepared["rows"]["staff"][0]["CORPORATE_NUMBER"] = other_corp
+    seed.insert_plan(database[0], prepared)
+    before = {key: read_rows(database, key) for key in seed.TABLE_NAMES}
+
+    @contextmanager
+    def sqlite_session():
+        with database[1].begin() as connection:
+
+            class Session:
+                def execute(self, statement, params):
+                    return connection.execute(
+                        text(str(statement).replace("db_corp.", "")), params
+                    )
+
+            yield Session()
+
+    monkeypatch.setattr(sales_user_handover_job, "get_session", sqlite_session)
+    count = sales_user_handover_job.SalesUserHandoverJob(
+        make_context(), date(2026, 10, 26)
+    ).execute()
+    assert count == (2 if number == 26 else 1)
+    remaining = read_rows(database, "handover")
+    assert read_rows(database, "corporate") == before["corporate"]
+    if number == 26:
+        assert len(remaining) == 1
+        assert remaining[0]["corporate_number"] == prepared["identifiers"]["C2"]
+        assert remaining[0]["handover_status"] == "0"
+        assert (
+            read_rows(database, "staff")[0]["user_id"] == prepared["identifiers"]["U2"]
+        )
+    elif destination_other_corp:
+        assert not remaining
+        assert read_rows(database, "staff") == before["staff"]
+    else:
+        assert len(remaining) == 1
+        assert remaining[0]["handover_status"] == "0"
+        assert remaining[0]["handovered_at"] is not None
+        assert read_rows(database, "staff") == before["staff"]
+    for key in seed.HISTORY:
+        expected = [dict(row) for row in before[key]]
+        if number == 80:
+            for row in expected:
+                row["agreement_org" if key == "F" else "org_id"] = prepared[
+                    "identifiers"
+                ]["O2"]
+        assert read_rows(database, key) == expected
 
 
 def test_staff_control_rows_and_nullable_flag():
@@ -546,7 +610,7 @@ def test_cancelled_handover_is_not_selected_or_status_updated(database):
     "kwargs",
     [
         {"case_id": "0"},
-        {"case_id": "79"},
+        {"case_id": "81"},
         {"case_id": "1", "start_id": 0},
         {"case_id": "1", "start_id": 999701},
         {"case_id": "1", "handover_type": "XX"},

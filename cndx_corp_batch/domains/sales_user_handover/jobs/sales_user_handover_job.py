@@ -86,26 +86,27 @@ class SalesUserHandoverJob(BaseJob):
         params = self._target_params(target)
         try:
             with get_session() as session:
-                if not self._source_staff_exists(session, params):
+                if self._source_staff_exists(session, params):
+                    if params["handover_from_user_id"] != params[
+                        "handover_to_user_id"
+                    ] and self._destination_staff_exists(session, params):
+                        session.execute(self.delete_source_staff, params)
+                        self.logger.info(
+                            "引継先担当者が登録済みのため引継元担当者を削除しました。"
+                            "法人番号=%s",
+                            params["corporate_number"],
+                        )
+                    else:
+                        session.execute(self.update_staff, params)
+                elif not self._destination_staff_exists(session, params):
                     session.execute(self.delete_invalid_target, params)
                     self.logger.warning(
-                        "引継元担当者が存在しないため引継情報を削除しました。"
-                        "法人番号=%s",
+                        "引継元・引継先担当者が存在しないため対象の引継情報を削除し、"
+                        "当該法人の処理を終了します。法人番号=%s",
                         params["corporate_number"],
                     )
                     return
-
-                if params["handover_from_user_id"] != params[
-                    "handover_to_user_id"
-                ] and self._destination_staff_exists(session, params):
-                    session.execute(self.delete_source_staff, params)
-                    self.logger.info(
-                        "引継先担当者が登録済みのため引継元担当者を削除しました。"
-                        "法人番号=%s",
-                        params["corporate_number"],
-                    )
-                else:
-                    session.execute(self.update_staff, params)
+                # 元が不在でも同じ法人に先がいれば、過去データ引継ぎ判定へ進む。
 
                 if not target.get("report_data_flg"):
                     self._update_status(session, params, HANDOVER_STATUS_DONE)

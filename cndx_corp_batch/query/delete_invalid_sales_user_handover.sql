@@ -1,4 +1,4 @@
--- バッチ処理内容定義書 5：引継元担当者が存在しない対象の引継情報を削除する。
+-- バッチ処理内容定義書 5：引継元・引継先担当者がともに存在しない対象の引継情報を削除する。
 DELETE FROM db_corp.t_sales_user_handover_info
 WHERE corporate_number = :corporate_number
   AND handover_from_org_id = :handover_from_org_id
