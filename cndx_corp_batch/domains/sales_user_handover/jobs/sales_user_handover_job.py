@@ -1,7 +1,7 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from datetime import date
-from typing import Mapping
 
 from sqlalchemy import text
 from sqlalchemy.orm import Session
@@ -107,12 +107,12 @@ class SalesUserHandoverJob(BaseJob):
                 else:
                     session.execute(self.update_staff, params)
 
-                if not self._as_bool(target.get("report_data_flg")):
+                if not target.get("report_data_flg"):
                     self._update_status(session, params, HANDOVER_STATUS_DONE)
                     return
 
                 data_flags = self._check_data_exists(session, params)
-                if not self._as_bool(data_flags.get("building")):
+                if not data_flags.get("building"):
                     self._update_status(session, params, HANDOVER_STATUS_ERROR)
                     self.logger.error(
                         "建物マスタに引継元データがないため登録エラーにしました。"
@@ -122,7 +122,7 @@ class SalesUserHandoverJob(BaseJob):
                     return
 
                 for key, query in self.update_data_queries.items():
-                    if self._as_bool(data_flags.get(key)):
+                    if data_flags.get(key):
                         session.execute(query, params)
                 self._update_status(session, params, HANDOVER_STATUS_DONE)
         except Exception:
@@ -190,9 +190,3 @@ class SalesUserHandoverJob(BaseJob):
             "handover_to_user_id": target["handover_to_user_id"],
             "batch_date": self.batch_date_text,
         }
-
-    @staticmethod
-    def _as_bool(value: object) -> bool:
-        if isinstance(value, str):
-            return value.strip().lower() in {"1", "true", "t", "yes", "y"}
-        return bool(value)
