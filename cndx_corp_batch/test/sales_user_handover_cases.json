@@ -14,8 +14,7 @@
       "issues": null,
       "preparation_status": "未実施",
       "case_id": "1",
-      "source_row": 7,
-      "scenario_id": 1
+      "source_row": 7
     },
     {
       "number": 2,
@@ -29,8 +28,7 @@
       "issues": null,
       "preparation_status": "未実施",
       "case_id": "2",
-      "source_row": 8,
-      "scenario_id": 2
+      "source_row": 8
     },
     {
       "number": 3,
@@ -44,8 +42,7 @@
       "issues": null,
       "preparation_status": "未実施",
       "case_id": "3",
-      "source_row": 9,
-      "scenario_id": 3
+      "source_row": 9
     },
     {
       "number": 4,
@@ -59,8 +56,7 @@
       "issues": null,
       "preparation_status": "未実施",
       "case_id": "4",
-      "source_row": 10,
-      "scenario_id": 12
+      "source_row": 10
     },
     {
       "number": 5,
@@ -74,8 +70,7 @@
       "issues": null,
       "preparation_status": "未実施",
       "case_id": "5",
-      "source_row": 11,
-      "scenario_id": 13
+      "source_row": 11
     },
     {
       "number": 6,
@@ -89,8 +84,7 @@
       "issues": null,
       "preparation_status": "未実施",
       "case_id": "6",
-      "source_row": 12,
-      "scenario_id": 14
+      "source_row": 12
     },
     {
       "number": 7,
@@ -104,8 +98,7 @@
       "issues": null,
       "preparation_status": "未実施",
       "case_id": "7",
-      "source_row": 13,
-      "scenario_id": 15
+      "source_row": 13
     },
     {
       "number": 8,
@@ -119,8 +112,7 @@
       "issues": "Q01",
       "preparation_status": "仕様確認待ち",
       "case_id": "8",
-      "source_row": 14,
-      "scenario_id": 16
+      "source_row": 14
     },
     {
       "number": 9,
@@ -134,8 +126,7 @@
       "issues": "Q01",
       "preparation_status": "仕様確認待ち",
       "case_id": "9",
-      "source_row": 15,
-      "scenario_id": 17
+      "source_row": 15
     },
     {
       "number": 10,
@@ -149,8 +140,7 @@
       "issues": "Q01",
       "preparation_status": "仕様確認待ち",
       "case_id": "10",
-      "source_row": 16,
-      "scenario_id": 18
+      "source_row": 16
     },
     {
       "number": 11,
@@ -164,8 +154,7 @@
       "issues": "Q01",
       "preparation_status": "仕様確認待ち",
       "case_id": "11",
-      "source_row": 17,
-      "scenario_id": 19
+      "source_row": 17
     },
     {
       "number": 12,
@@ -179,8 +168,7 @@
       "issues": null,
       "preparation_status": "未実施",
       "case_id": "12",
-      "source_row": 18,
-      "scenario_id": 21
+      "source_row": 18
     },
     {
       "number": 13,
@@ -194,8 +182,7 @@
       "issues": null,
       "preparation_status": "未実施",
       "case_id": "13",
-      "source_row": 19,
-      "scenario_id": 22
+      "source_row": 19
     },
     {
       "number": 14,
@@ -209,8 +196,7 @@
       "issues": "Q02",
       "preparation_status": "未実施",
       "case_id": "14",
-      "source_row": 20,
-      "scenario_id": 23
+      "source_row": 20
     },
     {
       "number": 15,
@@ -224,8 +210,7 @@
       "issues": "Q03",
       "preparation_status": "仕様確認待ち",
       "case_id": "15",
-      "source_row": 21,
-      "scenario_id": 24
+      "source_row": 21
     },
     {
       "number": 16,
@@ -239,8 +224,7 @@
       "issues": null,
       "preparation_status": "未実施",
       "case_id": "16",
-      "source_row": 22,
-      "scenario_id": 26
+      "source_row": 22
     },
     {
       "number": 17,
@@ -254,8 +238,7 @@
       "issues": null,
       "preparation_status": "未実施",
       "case_id": "17",
-      "source_row": 23,
-      "scenario_id": 27
+      "source_row": 23
     },
     {
       "number": 18,
@@ -269,8 +252,7 @@
       "issues": null,
       "preparation_status": "未実施",
       "case_id": "18",
-      "source_row": 24,
-      "scenario_id": 28
+      "source_row": 24
     },
     {
       "number": 19,
@@ -284,8 +266,7 @@
       "issues": null,
       "preparation_status": "未実施",
       "case_id": "19",
-      "source_row": 25,
-      "scenario_id": 30
+      "source_row": 25
     },
     {
       "number": 20,
@@ -299,8 +280,7 @@
       "issues": null,
       "preparation_status": "未実施",
       "case_id": "20",
-      "source_row": 26,
-      "scenario_id": 31
+      "source_row": 26
     },
     {
       "number": 21,
@@ -314,8 +294,7 @@
       "issues": "Q08",
       "preparation_status": "仕様確認待ち",
       "case_id": "21",
-      "source_row": 27,
-      "scenario_id": 32
+      "source_row": 27
     },
     {
       "number": 22,
@@ -329,8 +308,7 @@
       "issues": null,
       "preparation_status": "未実施",
       "case_id": "22",
-      "source_row": 28,
-      "scenario_id": 33
+      "source_row": 28
     },
     {
       "number": 23,
@@ -344,8 +322,7 @@
       "issues": null,
       "preparation_status": "未実施",
       "case_id": "23",
-      "source_row": 29,
-      "scenario_id": 34
+      "source_row": 29
     },
     {
       "number": 24,
@@ -359,8 +336,7 @@
       "issues": null,
       "preparation_status": "未実施",
       "case_id": "24",
-      "source_row": 30,
-      "scenario_id": 35
+      "source_row": 30
     },
     {
       "number": 25,
@@ -374,8 +350,7 @@
       "issues": null,
       "preparation_status": "未実施",
       "case_id": "25",
-      "source_row": 31,
-      "scenario_id": 36
+      "source_row": 31
     },
     {
       "number": 26,
@@ -389,8 +364,7 @@
       "issues": null,
       "preparation_status": "未実施",
       "case_id": "26",
-      "source_row": 32,
-      "scenario_id": 37
+      "source_row": 32
     },
     {
       "number": 27,
@@ -404,8 +378,7 @@
       "issues": null,
       "preparation_status": "未実施",
       "case_id": "27",
-      "source_row": 33,
-      "scenario_id": 38
+      "source_row": 33
     },
     {
       "number": 28,
@@ -419,8 +392,7 @@
       "issues": null,
       "preparation_status": "未実施",
       "case_id": "28",
-      "source_row": 34,
-      "scenario_id": 39
+      "source_row": 34
     },
     {
       "number": 29,
@@ -434,8 +406,7 @@
       "issues": null,
       "preparation_status": "未実施",
       "case_id": "29",
-      "source_row": 35,
-      "scenario_id": 40
+      "source_row": 35
     },
     {
       "number": 30,
@@ -449,8 +420,7 @@
       "issues": null,
       "preparation_status": "未実施",
       "case_id": "30",
-      "source_row": 36,
-      "scenario_id": 41
+      "source_row": 36
     },
     {
       "number": 31,
@@ -464,8 +434,7 @@
       "issues": null,
       "preparation_status": "未実施",
       "case_id": "31",
-      "source_row": 37,
-      "scenario_id": 42
+      "source_row": 37
     },
     {
       "number": 32,
@@ -479,8 +448,7 @@
       "issues": null,
       "preparation_status": "未実施",
       "case_id": "32",
-      "source_row": 38,
-      "scenario_id": 43
+      "source_row": 38
     },
     {
       "number": 33,
@@ -494,8 +462,7 @@
       "issues": null,
       "preparation_status": "未実施",
       "case_id": "33",
-      "source_row": 39,
-      "scenario_id": 44
+      "source_row": 39
     },
     {
       "number": 34,
@@ -509,8 +476,7 @@
       "issues": null,
       "preparation_status": "未実施",
       "case_id": "34",
-      "source_row": 40,
-      "scenario_id": 45
+      "source_row": 40
     },
     {
       "number": 35,
@@ -524,8 +490,7 @@
       "issues": null,
       "preparation_status": "未実施",
       "case_id": "35",
-      "source_row": 41,
-      "scenario_id": 46
+      "source_row": 41
     },
     {
       "number": 36,
@@ -539,8 +504,7 @@
       "issues": null,
       "preparation_status": "未実施",
       "case_id": "36",
-      "source_row": 42,
-      "scenario_id": 47
+      "source_row": 42
     },
     {
       "number": 37,
@@ -554,8 +518,7 @@
       "issues": null,
       "preparation_status": "未実施",
       "case_id": "37",
-      "source_row": 43,
-      "scenario_id": 48
+      "source_row": 43
     },
     {
       "number": 38,
@@ -569,8 +532,7 @@
       "issues": "Q05",
       "preparation_status": "仕様確認待ち",
       "case_id": "38",
-      "source_row": 44,
-      "scenario_id": 49
+      "source_row": 44
     },
     {
       "number": 39,
@@ -584,8 +546,7 @@
       "issues": "Q05",
       "preparation_status": "仕様確認待ち",
       "case_id": "39",
-      "source_row": 45,
-      "scenario_id": 50
+      "source_row": 45
     },
     {
       "number": 40,
@@ -599,8 +560,7 @@
       "issues": "Q05",
       "preparation_status": "仕様確認待ち",
       "case_id": "40",
-      "source_row": 46,
-      "scenario_id": 51
+      "source_row": 46
     },
     {
       "number": 41,
@@ -614,8 +574,7 @@
       "issues": null,
       "preparation_status": "未実施",
       "case_id": "41",
-      "source_row": 47,
-      "scenario_id": 53
+      "source_row": 47
     },
     {
       "number": 42,
@@ -629,8 +588,7 @@
       "issues": null,
       "preparation_status": "未実施",
       "case_id": "42",
-      "source_row": 48,
-      "scenario_id": 54
+      "source_row": 48
     },
     {
       "number": 43,
@@ -644,8 +602,7 @@
       "issues": null,
       "preparation_status": "未実施",
       "case_id": "43",
-      "source_row": 49,
-      "scenario_id": 55
+      "source_row": 49
     },
     {
       "number": 44,
@@ -659,8 +616,7 @@
       "issues": null,
       "preparation_status": "未実施",
       "case_id": "44",
-      "source_row": 50,
-      "scenario_id": 56
+      "source_row": 50
     },
     {
       "number": 45,
@@ -674,8 +630,7 @@
       "issues": null,
       "preparation_status": "未実施",
       "case_id": "45",
-      "source_row": 51,
-      "scenario_id": 57
+      "source_row": 51
     },
     {
       "number": 46,
@@ -689,8 +644,7 @@
       "issues": null,
       "preparation_status": "未実施",
       "case_id": "46",
-      "source_row": 52,
-      "scenario_id": 58
+      "source_row": 52
     },
     {
       "number": 47,
@@ -704,8 +658,7 @@
       "issues": "Q07",
       "preparation_status": "仕様確認待ち",
       "case_id": "47",
-      "source_row": 53,
-      "scenario_id": 59
+      "source_row": 53
     },
     {
       "number": 48,
@@ -719,8 +672,7 @@
       "issues": null,
       "preparation_status": "未実施",
       "case_id": "48",
-      "source_row": 54,
-      "scenario_id": 60
+      "source_row": 54
     },
     {
       "number": 49,
@@ -734,8 +686,7 @@
       "issues": null,
       "preparation_status": "未実施",
       "case_id": "49",
-      "source_row": 55,
-      "scenario_id": 61
+      "source_row": 55
     },
     {
       "number": 50,
@@ -749,8 +700,7 @@
       "issues": null,
       "preparation_status": "未実施",
       "case_id": "50",
-      "source_row": 56,
-      "scenario_id": 63
+      "source_row": 56
     },
     {
       "number": 51,
@@ -764,8 +714,7 @@
       "issues": null,
       "preparation_status": "未実施",
       "case_id": "51",
-      "source_row": 57,
-      "scenario_id": 64
+      "source_row": 57
     },
     {
       "number": 52,
@@ -779,8 +728,7 @@
       "issues": "Q05、Q06",
       "preparation_status": "仕様確認待ち",
       "case_id": "52",
-      "source_row": 58,
-      "scenario_id": 66
+      "source_row": 58
     },
     {
       "number": 53,
@@ -794,8 +742,7 @@
       "issues": "Q06",
       "preparation_status": "仕様確認待ち",
       "case_id": "53",
-      "source_row": 59,
-      "scenario_id": 67
+      "source_row": 59
     },
     {
       "number": 54,
@@ -809,8 +756,7 @@
       "issues": "Q06",
       "preparation_status": "仕様確認待ち",
       "case_id": "54",
-      "source_row": 60,
-      "scenario_id": 68
+      "source_row": 60
     },
     {
       "number": 55,
@@ -824,8 +770,7 @@
       "issues": "Q06",
       "preparation_status": "仕様確認待ち",
       "case_id": "55",
-      "source_row": 61,
-      "scenario_id": 69
+      "source_row": 61
     },
     {
       "number": 56,
@@ -839,8 +784,7 @@
       "issues": "Q06",
       "preparation_status": "仕様確認待ち",
       "case_id": "56",
-      "source_row": 62,
-      "scenario_id": 70
+      "source_row": 62
     },
     {
       "number": 57,
@@ -854,8 +798,7 @@
       "issues": "Q06",
       "preparation_status": "仕様確認待ち",
       "case_id": "57",
-      "source_row": 63,
-      "scenario_id": 71
+      "source_row": 63
     },
     {
       "number": 58,
@@ -869,8 +812,7 @@
       "issues": "Q06",
       "preparation_status": "仕様確認待ち",
       "case_id": "58",
-      "source_row": 64,
-      "scenario_id": 72
+      "source_row": 64
     },
     {
       "number": 59,
@@ -884,8 +826,7 @@
       "issues": "Q06",
       "preparation_status": "仕様確認待ち",
       "case_id": "59",
-      "source_row": 65,
-      "scenario_id": 73
+      "source_row": 65
     },
     {
       "number": 60,
@@ -899,8 +840,7 @@
       "issues": "Q06",
       "preparation_status": "仕様確認待ち",
       "case_id": "60",
-      "source_row": 66,
-      "scenario_id": 74
+      "source_row": 66
     },
     {
       "number": 61,
@@ -914,8 +854,7 @@
       "issues": "Q06",
       "preparation_status": "仕様確認待ち",
       "case_id": "61",
-      "source_row": 67,
-      "scenario_id": 75
+      "source_row": 67
     },
     {
       "number": 62,
@@ -929,8 +868,7 @@
       "issues": "Q06",
       "preparation_status": "仕様確認待ち",
       "case_id": "62",
-      "source_row": 68,
-      "scenario_id": 76
+      "source_row": 68
     },
     {
       "number": 63,
@@ -944,8 +882,7 @@
       "issues": null,
       "preparation_status": "未実施",
       "case_id": "63",
-      "source_row": 69,
-      "scenario_id": 79
+      "source_row": 69
     },
     {
       "number": 64,
@@ -959,8 +896,7 @@
       "issues": null,
       "preparation_status": "未実施",
       "case_id": "64",
-      "source_row": 70,
-      "scenario_id": 80
+      "source_row": 70
     }
   ]
 }
