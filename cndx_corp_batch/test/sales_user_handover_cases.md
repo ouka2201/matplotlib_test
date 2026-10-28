@@ -1,11 +1,16 @@
 # 担当者引継ぎ実行のケース別テストデータ準備
 
-`prepare_sales_user_handover_cases.py` は、単体テストケース表の項番1～80に対応する初期データを作成します。
+`prepare_sales_user_handover_cases.py` は、単体テストケース表の項番1～64に対応する初期データを作成します。
 ケースの前提・手順・期待結果・仕様確認事項は `sales_user_handover_cases.json` に保存しています。
 実行時にExcelは不要です。Python 3.12とバッチの既存依存ライブラリSQLAlchemyを使用します。
 PostgreSQLへの投入には既存の `psycopg2-binary` も必要です。
 
 ## 使い方
+
+2026-10-28に80ケースから64ケースへ整理し、1～64に再採番しました。以降のコマンドはすべて**新番号**です。
+[削除・統合理由と新旧対応](sales_user_handover_case_reorganization.md)を参照してください。
+旧計画JSONは再利用せず再生成します。準備データの法人番号・組織ID・担当者IDも新番号に合わせています。
+
 
 リポジトリのルートで実行します。既存のバッチ実行用Python環境を使ってください。
 
@@ -13,9 +18,9 @@ PostgreSQLへの投入には既存の `psycopg2-binary` も必要です。
 Set-Location C:\STEP4\electricity_report
 python -m cndx_corp_batch.test.prepare_sales_user_handover_cases --list
 
-# DB接続せず、ケース30の全投入行と実行手順を保存
+# DB接続せず、ケース19の全投入行と実行手順を保存
 python -m cndx_corp_batch.test.prepare_sales_user_handover_cases `
-    --case 30 --dry-run --output output/sales_user_handover/case30.json
+    --case 19 --dry-run --output output/sales_user_handover/case19.json
 ```
 
 出力JSONには物理列名を使った全投入行、Excel行番号、ケースの期待結果、識別子対応、バッチ実行日・コマンド、追加操作を含みます。
@@ -37,16 +42,16 @@ Copy-Item cndx_corp_batch/test/sales_user_handover_database.example.json `
 # コピー先JSONの接続先・参照マスタ設定を確認して実行
 $env:REPORT_DATABASE_URL = 'postgresql+psycopg2://ユーザー:パスワード@ホスト/検証用DB名'
 python -m cndx_corp_batch.test.prepare_sales_user_handover_cases `
-    --case 30 --db-config output/sales_user_handover/database.json `
-    --output output/sales_user_handover/case30.json
+    --case 19 --db-config output/sales_user_handover/database.json `
+    --output output/sales_user_handover/case19.json
 ```
 
 `--handover-type 0`（個別）または `--handover-type 1`（一括）を指定すると、設定JSONの値より優先します。
-ケース61・62は `bulk`、それ以外は `individual` を参照します。
-未指定の場合はケース61・62に `1`、それ以外に `0` を設定します。`0`・`1`以外の値は受け付けません。
+ケース49は `bulk`、それ以外は `individual` を参照します。
+未指定の場合はケース49に `1`、それ以外に `0` を設定します。`0`・`1`以外の値は受け付けません。
 
 引継実施ステータスは `0=完了`、`1=予定`、`2=引継中止`、`3=登録エラー` です。
-ケース12には引継中止の行を含め、実行日が一致しても予定以外の行を処理しないことを確認します。
+ケース4には引継中止の行を含め、実行日が一致しても予定以外の行を処理しないことを確認します。
 
 既存のデータ投入PGと同じ `url` / `url_env` / `schema` を利用できます。
 本PGの既定環境変数は `REPORT_DATABASE_URL`、既定スキーマは `db_corp` です。
@@ -83,7 +88,7 @@ python -m cndx_corp_batch.test.prepare_sales_user_handover_cases `
 
 法人番号は `9900000000000 + 開始番号 + 法人の通番` を使用します（通番は0開始）。
 開始番号の既定値は `ケース番号×1000+1`。`--start-id` で1～999700の範囲に変更できます。
-組織・担当者IDも開始番号に連動し、元・先・比較用を区別します。ExcelのC1/O1/U1等と実値の対応はJSONの `identifiers` にあります。
+組織・担当者IDも開始番号に連動し、元・先・比較用を区別します。Excelには既定の実値を記載し、設定変更時の実値はJSONの `identifiers` で確認できます。
 担当者IDは引継情報の列定義に合わせて8文字以内です。
 
 更新範囲ケースでは、同一法人・元組織の対象2行と、別組織・別法人・引継先組織の比較行を生成します。
@@ -92,29 +97,30 @@ python -m cndx_corp_batch.test.prepare_sales_user_handover_cases `
 
 ## ケースごとの追加操作
 
-Q02は2026-10-28に確定しました。担当者情報マスタは担当者ユーザーIDだけを更新し、組織IDを保持します。ケース23では組織IDが引継元の値のままであることを確認します。過去データ8表の組織更新は従来どおり、過去データ引継ぎフラグに従います。
+Q02は2026-10-28に確定しました。担当者情報マスタは担当者ユーザーIDだけを更新し、組織IDを保持します。ケース14では組織IDが引継元の値のままであることを確認します。過去データ8表の組織更新は従来どおり、過去データ引継ぎフラグに従います。
 
 | 項番 | 準備内容・実施上の注意 |
 | --- | --- |
-| 1～19 | 日付、0件、状態、抽出順、締切境界。ケース1は時計をDに固定し、日付引数なしで実施 |
-| 20～27 | 担当者の更新範囲、引継先登録済み、引継元不在 |
-| 28～32 | 過去データフラグFALSE／TRUE／NULLと建物マスタの有無 |
-| 33～48 | A～Hの対象／非対象行、各テーブル未存在、建物マスタの同意書取得組織 |
-| 49～51 | 建物マスタ未存在、組織不一致、過去データ全件なし |
-| 52～53 | 実施日時。NOW()の検証は実行前後のDB時刻を記録 |
-| 54～59 | バッチ全体ではなく状態更新処理を単体で呼ぶ。改訂設計の処理11と13は各回初期化して実施 |
-| 60～62 | 個別、TRUE/FALSE混在の一括、300法人 |
-| 63・65 | **初回実行前**の状態を生成。初回完了／削除後にデータを再投入せず、同日再実行 |
-| 64 | 登録エラー状態から再実行。履歴日時保持を確認 |
-| 66 | 先頭は建物マスタ未存在、後続は正常 |
-| 67～76 | 障害到達用データと `fault_injection` / `manual_actions` を出力。例外・COMMIT失敗自体はスタブ等で設定 |
-| 77～78 | 正常・業務エラーログの確認用データ |
-| 79～80 | 引継元不在・引継先登録済み。登録済み担当者を保持し、FALSEは過去データを保持して完了、TRUEは過去データを引き継いで完了 |
+| 1～3 | 日付引数・対象0件。ケース1はアプリ内時計を2026-10-26に固定 |
+| 4～7 | 対象・非対象混在、抽出順。同時刻の順序は合否対象外 |
+| 8～11 | 登録締切の境界。Q01の回答後に期待結果を確定 |
+| 12～15 | 担当者更新範囲、組織ID保持、先担当者登録済み |
+| 16～17 | 元・先不在時の削除、他法人だけに担当者が存在する場合。16は後続法人と2回目も確認 |
+| 18～21 | 過去データFALSE／TRUE／NULL。19で完了日時と正常ログも確認 |
+| 22～37 | 各過去データテーブルの更新範囲・存在確認、建物マスタの同意書取得組織 |
+| 38～40 | 建物マスタ不在・取得組織不一致・全過去データなし。38で業務エラーログも確認 |
+| 41 | 過去日引数でも実施日時はDB現在時刻。処理前後のDB時刻を記録 |
+| 42～47 | 状態更新処理11／13を単体で呼ぶ。44～46はtarget／comparisonに分けて実施 |
+| 48～49 | 個別1法人とTRUE／FALSE混在の一括3法人 |
+| 50～51 | 完了後の2回目、登録エラー状態の再実行。16・50は途中で再投入しない |
+| 52 | 業務エラー後の後続法人。Q05・Q06を確認 |
+| 53～62 | 障害到達用データ。例外・COMMIT失敗はスタブ等で別途設定 |
+| 63～64 | 元不在・同じ法人に先登録済み。FALSEは過去データ保持、TRUEは過去データ更新 |
 
 追加要件画像の指示を優先し、引継元が不在でも同じ法人に引継先が存在すれば、過去データ引継ぎフラグの判定へ進みます。FALSEは過去データを変更せず完了更新、TRUEは過去データの存在確認・更新へ進みます。元・先とも不在なら該当法人の引継情報を削除し、次の法人を処理します。
-ケース26では元・先とも不在の法人の後に正常法人が完了すること、ケース79・80では引継先登録済みのFALSE／TRUEを確認します。
+ケース16では元・先とも不在の法人の後に正常法人が完了し、同日再実行で変更がないこと、ケース63・64では引継先登録済みのFALSE／TRUEを確認します。
 
-### ケース56～58は2回に分けて実施する
+### ケース44～46は2回に分けて実施する
 
 営業担当引継情報の主キーは `(corporate_number, handover_from_org_id, handover_from_user_id)` です。
 先組織・状態・予定日だけを変えた2行は同時に登録できません。
@@ -122,19 +128,19 @@ Q02は2026-10-28に確定しました。担当者情報マスタは担当者ユ�
 
 ```powershell
 python -m cndx_corp_batch.test.prepare_sales_user_handover_cases `
-    --case 56 --variant target --dry-run --output output/sales_user_handover/case56_target.json
+    --case 44 --variant target --dry-run --output output/sales_user_handover/case44_target.json
 python -m cndx_corp_batch.test.prepare_sales_user_handover_cases `
-    --case 56 --variant comparison --dry-run --output output/sales_user_handover/case56_comparison.json
+    --case 44 --variant comparison --dry-run --output output/sales_user_handover/case44_comparison.json
 ```
 
 `target` を投入して対象行が更新されることを確認後、同じ設定・開始番号で `--variant comparison --reset` を指定して比較用の初期状態に戻します。
 比較時にも**元のC1/O1/U1→O2/U2、予定日D**を状態更新処理の引数として使い、比較行が更新されないことを確認します。
-比較行の値を引数に渡してはいけません。ケース57・58も同様です。
+比較行の値を引数に渡してはいけません。ケース45・46も同様です。
 
 ## バッチの実行
 
 投入PGはバッチを自動実行しません。データ準備後、計画JSONのコマンドと追加操作に従って実施します。
-通常のケース30は次のコマンドです。
+通常のケース19は次のコマンドです。
 
 ```powershell
 $env:DATABASE_URL = $env:REPORT_DATABASE_URL
@@ -143,7 +149,7 @@ python -m cndx_corp_batch.entrypoints.sales_user_handover_batch --batch-date 202
 ```
 
 `BatchContext` が必要とする環境設定は既存のバッチ環境を使用します。
-ケース1・67は引数を付けず、テスト用時計を固定してください。本PGはOS時計を変更しません。
+ケース1・53は引数を付けず、テスト用時計を固定してください。本PGはOS時計を変更しません。
 仕様確認待ちの期待結果は元のケース表に従い、確認後に確定してください。現在の実装の挙動を設計上の正解として書き換えません。
 
 ## 既存データと再実行
@@ -157,12 +163,12 @@ python -m cndx_corp_batch.entrypoints.sales_user_handover_batch --batch-date 202
 ```powershell
 # 変更範囲を確認（DB接続なし。作成者の実データ検査は本実行時）
 python -m cndx_corp_batch.test.prepare_sales_user_handover_cases `
-    --case 61 --reset --dry-run --db-config output/sales_user_handover/database.json
+    --case 49 --reset --dry-run --db-config output/sales_user_handover/database.json
 
-# ケース61を初期化。初回も再テスト時もこのコマンド
+# ケース49を初期化。初回も再テスト時もこのコマンド
 python -m cndx_corp_batch.test.prepare_sales_user_handover_cases `
-    --case 61 --reset --db-config output/sales_user_handover/database.json `
-    --output output/sales_user_handover/case61.json
+    --case 49 --reset --db-config output/sales_user_handover/database.json `
+    --output output/sales_user_handover/case49.json
 
 # 「初期化・再投入完了」を確認後に実行し、結果を確認・保存する
 $env:DATABASE_URL = $env:REPORT_DATABASE_URL
@@ -181,16 +187,16 @@ python -m cndx_corp_batch.entrypoints.sales_user_handover_batch --batch-date 202
 
 ```powershell
 python -m cndx_corp_batch.test.prepare_sales_user_handover_cases `
-    --case 61 --cleanup --db-config output/sales_user_handover/database.json
+    --case 49 --cleanup --db-config output/sales_user_handover/database.json
 
 # 「削除完了」を確認後、次のケースを準備
 python -m cndx_corp_batch.test.prepare_sales_user_handover_cases `
-    --case 12 --reset --db-config output/sales_user_handover/database.json
+    --case 4 --reset --db-config output/sales_user_handover/database.json
 ```
 
-まず試す組み合わせはケース1・12・24・26・31・61・63・66・73です。
-**ケース63・65の1回目と2回目のバッチ実行の間には、reset・cleanupを行いません。** 初回の結果を残して二重処理しないことを確認します。
-ケース1の時計固定、ケース73の例外注入などの追加操作は、引き続き計画JSONに従って実施してください。
+まず試す組み合わせはケース1・4・15・16・20・49・50・52・59です。
+**ケース50・16の1回目と2回目のバッチ実行の間には、reset・cleanupを行いません。** 初回の結果を残して二重処理しないことを確認します。
+ケース1の時計固定、ケース59の例外注入などの追加操作は、引き続き計画JSONに従って実施してください。
 
 ### 削除範囲と失敗時の動作
 
@@ -211,7 +217,7 @@ python -m cndx_corp_batch.test.prepare_sales_user_handover_cases `
 - 必須列・値が不足する、または状態・引継種別コードが定義外。
 
 `--reset` や `--start-id` を指定しても、別ケースの未処理予定の混在は許可しません。前ケースを `--cleanup` で削除するか、ケース専用の検証DBを使用してください。
-再実行ケース63～65は、データ準備PGの再実行ではなく、同じ準備データに対する**バッチの再実行**を確認します。
+再実行ケース16・50・51は、データ準備PGの再実行ではなく、同じ準備データに対する**バッチの再実行**を確認します。
 
 ## NoSuchTableErrorが表示された場合
 
@@ -246,8 +252,8 @@ python -m pytest cndx_corp_batch/tests/test_prepare_sales_user_handover_cases.py
 ```
 
 SQLiteの一時DBに、既存エンティティから作ったテーブルと設計書準拠の引継情報テーブルを使用します。
-全80ケース（56～58の分割を含む83パターン）の投入、実際の対象抽出SQL・8種類の更新SQL、重複防止、初期化・片付け、他法人・他作成者の保護、失敗時のロールバックを検証します。
-ケース26・79・80は、実際のSQLを使ってバッチを呼び出し、元・先とも不在時の削除・後続法人の処理、先が存在する場合の担当者保持とフラグに応じた過去データ更新・完了も検証します。
+全64ケース（44～46の分割を含む67パターン）の投入、実際の対象抽出SQL・8種類の更新SQL、重複防止、初期化・片付け、他法人・他作成者の保護、失敗時のロールバックを検証します。
+ケース16・63・64は、実際のSQLを使ってバッチを呼び出し、元・先とも不在時の削除・後続法人の処理、先が存在する場合の担当者保持とフラグに応じた過去データ更新・完了も検証します。
 これは投入PGの検証であり、PostgreSQL上の担当者引継ぎバッチの単体テスト結果ではありません。
 
 参照資料：`docs/STEP4_テーブル一覧・定義書・ER図.xlsx`、担当者引継ぎバッチ設計書、

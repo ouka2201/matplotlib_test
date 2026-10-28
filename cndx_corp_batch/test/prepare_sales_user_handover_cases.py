@@ -1,4 +1,4 @@
-"""担当者引継ぎの単体テストケース1～80の初期データを準備する。"""
+"""担当者引継ぎの単体テストケース1～64の初期データを準備する。"""
 
 import argparse
 import json
@@ -85,16 +85,16 @@ def build_plan(
     catalog = load_catalog()
     case = next((c for c in catalog["cases"] if c["case_id"] == str(case_id)), None)
     if case is None:
-        raise ValueError("ケースIDは1～80を指定してください。")
-    number = case["number"]
+        raise ValueError("ケースIDは1～64を指定してください。")
+    number = case["scenario_id"]  # 再採番してもデータ生成の分岐を安定して識別する。
     if number in SPLIT_CASES:
         if variant not in ("target", "comparison"):
             raise ValueError(
-                "ケース56～58は主キーが重複するため--variant target/comparisonが必要です。"
+                "ケース44～46は主キーが重複するため--variant target/comparisonが必要です。"
             )
     elif variant is not None:
-        raise ValueError("--variantはケース56～58だけに指定できます。")
-    first = number * 1000 + 1 if start_id is None else start_id
+        raise ValueError("--variantはケース44～46だけに指定できます。")
+    first = case["number"] * 1000 + 1 if start_id is None else start_id
     if (
         not isinstance(first, int)
         or isinstance(first, bool)
@@ -124,9 +124,7 @@ def build_plan(
             "元・先・比較用のユーザーIDと組織IDはそれぞれ異なる値が必要です。"
         )
     if handover_type is None:
-        handover_type = (
-            HANDOVER_TYPE_BULK if number in (61, 62) else HANDOVER_TYPE_INDIVIDUAL
-        )
+        handover_type = HANDOVER_TYPE_BULK if number == 61 else HANDOVER_TYPE_INDIVIDUAL
     if handover_type not in (HANDOVER_TYPE_INDIVIDUAL, HANDOVER_TYPE_BULK):
         raise ValueError(
             'handover-typeは"0"（個別）または"1"（一括）を指定してください。'
@@ -141,9 +139,6 @@ def build_plan(
             )
     batch_date = {
         2: BASE_DATE - timedelta(days=1),
-        4: date(2026, 10, 31),
-        5: date(2027, 1, 1),
-        6: date(2028, 2, 29),
         53: BASE_DATE - timedelta(days=1),
     }.get(number, BASE_DATE)
     rows = {key: [] for key in TABLE_NAMES}
@@ -243,30 +238,9 @@ def build_plan(
     elif number == 2:
         staff(2)
         target(2, HANDOVER_SCHEDULE_DATE=BASE_DATE.strftime("%Y%m%d"))
-    elif number in (4, 5, 6):
-        main["INSERT_DATETIME"] = datetime.combine(
-            batch_date, datetime.min.time()
-        ).replace(minute=30)
-        main["UPDATED_AT"] = main["INSERT_DATETIME"]
-        for i, offset in enumerate((-1, 1), 2):
-            staff(i)
-            target(
-                i,
-                HANDOVER_SCHEDULE_DATE=(batch_date + timedelta(days=offset)).strftime(
-                    "%Y%m%d"
-                ),
-                INSERT_DATETIME=main["INSERT_DATETIME"],
-                UPDATED_AT=main["UPDATED_AT"],
-            )
-    elif number in (8, 9, 64):
-        main["HANDOVER_STATUS"] = (
-            HANDOVER_STATUS_DONE if number == 8 else HANDOVER_STATUS_ERROR
-        )
+    elif number == 64:
+        main["HANDOVER_STATUS"] = HANDOVER_STATUS_ERROR
         main["HANDOVERED_AT"] = datetime(2026, 10, 26, 0, 45)
-    elif number in (10, 11):
-        main["HANDOVER_SCHEDULE_DATE"] = (
-            BASE_DATE + timedelta(days=-1 if number == 10 else 1)
-        ).strftime("%Y%m%d")
     elif number == 12:
         for i, (status, offset) in enumerate(
             (
@@ -322,13 +296,18 @@ def build_plan(
         staff(user="U3")
     elif number == 24:
         staff(user="U2", org="O2")
-    elif number in (25, 26, 27, 65):
+    elif number in (26, 27):
         rows["staff"].clear()
         if number == 26:
             staff(2, user="U3")
-            target(2, HANDOVER_FROM_USER_ID=ids["U3"])
+            target(
+                2,
+                HANDOVER_FROM_USER_ID=ids["U3"],
+                INSERT_DATETIME=datetime(2026, 10, 26, 0, 40),
+            )
         if number == 27:
             staff(2)
+            staff(2, user="U2", org="O2")
     elif number == 28:
         all_history()
     elif number == 30:
@@ -360,7 +339,7 @@ def build_plan(
         main["REPORT_DATA_FLG"] = True
         history("F")
         history("F", org="O3", detail=2)["ORG_ID"] = ids["O1"]
-    elif number in (49, 50, 51, 78):
+    elif number in (49, 50, 51):
         main["REPORT_DATA_FLG"] = True
         if number != 51:
             all_history(exclude="F")
@@ -390,14 +369,13 @@ def build_plan(
             f"引継先組織{ids['O2']}・担当者{ids['U2']}をパラメータとして"
             "状態更新処理11・13を個別実行する。毎回データを復元する。"
         )
-    elif number in (61, 62):
-        for i in range(2, 301 if number == 62 else 4):
+    elif number == 61:
+        for i in range(2, 4):
             staff(i)
             target(i)
-        if number == 61:
-            for i, row in enumerate(rows["handover"], 1):
-                row["REPORT_DATA_FLG"] = i != 2
-                all_history(i)
+        for i, row in enumerate(rows["handover"], 1):
+            row["REPORT_DATA_FLG"] = i != 2
+            all_history(i)
     elif number == 66 or number in FAULTS:
         if number != 76:
             staff(2)
@@ -415,7 +393,7 @@ def build_plan(
             rows["handover"][1]["REPORT_DATA_FLG"] = True
             all_history(2)
 
-    if number in (63, 65):
+    if number in (26, 63):
         actions.append(
             "この計画は初回実行前のデータ。バッチを1回実行し結果を保存後、データを再投入せず同日で2回目を実行する。"
         )
@@ -655,12 +633,12 @@ def insert_plan(settings, plan, *, reset=False, cleanup=False):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--list", action="store_true", help="ケース一覧")
-    parser.add_argument("--case", help="Excelの項番1～80")
+    parser.add_argument("--case", help="Excelの項番1～64")
     parser.add_argument(
         "--start-id", type=int, help="識別番号の開始値（既定：ケース番号×1000+1）"
     )
     parser.add_argument(
-        "--variant", choices=("target", "comparison"), help="ケース56～58のデータ種別"
+        "--variant", choices=("target", "comparison"), help="ケース44～46のデータ種別"
     )
     parser.add_argument(
         "--handover-type",
@@ -688,7 +666,7 @@ def main(argv=None):
     args = parser.parse_args(argv)
     if args.list:
         for case in load_catalog()["cases"]:
-            extra = " [--variant必須]" if case["number"] in SPLIT_CASES else ""
+            extra = " [--variant必須]" if case["scenario_id"] in SPLIT_CASES else ""
             print(f"{case['case_id']:>2}  {case['title']}{extra}")
         return 0
     if not args.case:
@@ -703,7 +681,7 @@ def main(argv=None):
             if args.db_config
             else {}
         )
-        kind = "bulk" if args.case in ("61", "62") else "individual"
+        kind = "bulk" if args.case == "49" else "individual"
         plan = build_plan(
             args.case,
             args.start_id,
