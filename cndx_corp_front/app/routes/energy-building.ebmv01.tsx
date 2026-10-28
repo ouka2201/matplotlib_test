@@ -37,11 +37,21 @@ interface BuildingInfo {
 }
 
 type UploadRecord = {
-  filename: string;
-  startMonth: string; // yyyy/mm
-  endMonth: string; // yyyy/mm
-  fileUpdateDate: string; // yyyy/mm/dd
-  source: string;
+  startMonth: string;
+  endMonth: string;
+  fileUpdateDate: string;
+  arveCorpName: string;
+  arveOfficeCode: string;
+  arveCustomerNumber: string;
+};
+
+type UploadHistoryItem = {
+  period_from: string;
+  period_to: string;
+  file_update_date: string | null;
+  ARVE_CORP_NAME: string | null;
+  ARVE_CUSTOMER_NUMBER: string | null;
+  ARVE_OFFICE_CODE: string | null;
 };
 
 export default function CustomerMasterForm() {
@@ -139,7 +149,7 @@ export default function CustomerMasterForm() {
 
         // アップロード履歴を取得する
         if (item.corporate_number && item.building_id) {
-          fetchUploadStatus(item.corporate_number, item.building_id, item.agreementCategory);
+          fetchUploadStatus(item.corporate_number, item.building_id, item.agreementCategory, item.org_id ?? navigationState?.org_id ?? "");
         }
       } catch (err) {
         console.error(Messages.energy_building.ebmv01.session_error, err);
@@ -169,13 +179,13 @@ export default function CustomerMasterForm() {
     };
   }, [isInitialized]);
 
-  const fetchUploadStatus = async (corpNumber: string, buildingId: string, agr: string) => {
+  const fetchUploadStatus = async (corpNumber: string, buildingId: string, agr: string, orgId: string) => {
     try {
-      const url = `/api/building/per_30min_data?corp_number=${corpNumber}&building_id=${buildingId}&agreement_category=${agr}`;
+      const params = new URLSearchParams({ corp_number: corpNumber, building_id: buildingId, agreement_category: agr, org_id: orgId });
+      const url = `/api/building/per_30min_data?${params}`;
       const res = await getData(url);
-      console.log(res);
 
-      const uploadHistory = res.result?.upload_history || [];
+      const uploadHistory: UploadHistoryItem[] = res.result?.upload_history || [];
 
       const formatFileUpdateDate = (dateStr: string | number): string => {
         const str = String(dateStr);
@@ -183,9 +193,9 @@ export default function CustomerMasterForm() {
         return `${str.slice(0, 4)}/${str.slice(4, 6)}/${str.slice(6, 8)}`;
       };
 
-      const formatUpdatedAt = (dateStr: string | number): string => {
+      const formatUpdatedAt = (dateStr: string | null): string => {
+        if (!dateStr) return "--/--/-- --:--:--";
         const str = String(dateStr);
-        if (!str) return "--/--/-- --:--:--";
         const normalized = str.replace("T", " ").replace("Z", "");
         if (normalized.length < 19) return "--/--/-- --:--:--";
         return normalized.slice(0, 19).replace(/-/g, "/");
@@ -193,22 +203,20 @@ export default function CustomerMasterForm() {
 
       const uploadRecords: UploadRecord[] = uploadHistory
         .map((item) => ({
-          filename: "※登録済み情報※",
           startMonth: formatFileUpdateDate(item.period_from),
           endMonth: formatFileUpdateDate(item.period_to),
           fileUpdateDate: formatUpdatedAt(item.file_update_date),
-          source: "manual",
-        }))
-        .sort((a: UploadRecord, b: UploadRecord) => {
-          const timeA = new Date(a.startMonth).getTime();
-          const timeB = new Date(b.startMonth).getTime();
-          return timeB - timeA;
-        });
+          arveCorpName: item.ARVE_CORP_NAME ?? "",
+          arveOfficeCode: item.ARVE_OFFICE_CODE ?? "",
+          arveCustomerNumber: item.ARVE_CUSTOMER_NUMBER ?? "",
+        }));
 
       setUploadRecords(uploadRecords);
       setShowUploadTable(true);
     } catch (error) {
       console.error(Messages.VALIDATION.api.fetch_error, error);
+      setErrorMessage(Messages.VALIDATION.api.fetch_error);
+      setUploadRecords([]);
     }
   };
 
@@ -295,7 +303,7 @@ export default function CustomerMasterForm() {
       }
 
       // アップロード後に最新の状態を取得
-      await fetchUploadStatus(corpNumber, buildingId, agr);
+      await fetchUploadStatus(corpNumber, buildingId, agr, org);
 
       // setAlertState({
       //   isOpen: true,
@@ -342,6 +350,9 @@ export default function CustomerMasterForm() {
       accessorKey: "fileUpdateDate",
       header: "登録・更新日時",
     },
+    { accessorKey: "arveCorpName", header: "ARVEお客さま名" },
+    { accessorKey: "arveOfficeCode", header: "ARVE事業所コード" },
+    { accessorKey: "arveCustomerNumber", header: "ARVEお客さま番号" },
   ];
 
   return (
@@ -530,6 +541,9 @@ export default function CustomerMasterForm() {
                     </TableCell>
                     <TableCell>{record.endMonth}</TableCell>
                     <TableCell>{record.fileUpdateDate}</TableCell>
+                    <TableCell>{record.arveCorpName}</TableCell>
+                    <TableCell>{record.arveOfficeCode}</TableCell>
+                    <TableCell>{record.arveCustomerNumber}</TableCell>
                   </TableRow>
                 )}
               />
