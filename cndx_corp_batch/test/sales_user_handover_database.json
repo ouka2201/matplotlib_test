@@ -1,0 +1,10 @@
+{
+  "url_env": "REPORT_DATABASE_URL",
+  "schema": "db_corp",
+  "handover_types": {
+    "individual": "0",
+    "bulk": "1"
+  },
+  "agreement_category": "01",
+  "energy_code": "ELECTRICITY"
+}
