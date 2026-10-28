@@ -2,13 +2,11 @@ from collections import defaultdict
 from datetime import datetime, timedelta
 
 from flask import current_app
-from sqlalchemy import and_, exists, func, or_, select
+from sqlalchemy import and_, exists, func
 
 from cndx_corp_back.common.database_manager import get_scoped_session
 from cndx_corp_back.common.decorators import component
 from cndx_corp_back.entity.m_building_entity import MBuilding
-from cndx_corp_back.entity.m_staff_info_entity import MStaffInfo
-from cndx_corp_back.entity.m_user_organization_info_entity import MUserOrganizationInfo
 from cndx_corp_back.entity.t_electricity_data_30min_entity import (
     TElectricityData30min,
 )
@@ -33,7 +31,6 @@ class Per30minDataComponent:
 
         corp_number_val = request_dict.get("corp_number", "").strip()
         building_id_val = request_dict.get("building_id", "").strip()
-        # org_id_val = request_dict.get("org_id", "").strip()
         agreement_category_val = request_dict.get("agreement_category", "").strip()
         org_id = request_dict.get("org_id", "").strip()
 
@@ -59,6 +56,9 @@ class Per30minDataComponent:
                     func.max(TElectricityData30min.file_update_date).label(
                         "file_update_date"
                     ),
+                    func.max(TElectricityData30min.arve_corp_name).label("ARVE_CORP_NAME"),
+                    func.max(TElectricityData30min.arve_office_code).label("ARVE_OFFICE_CODE"),
+                    func.max(TElectricityData30min.arve_customer_number).label("ARVE_CUSTOMER_NUMBER"),
                 ).filter(
                     TElectricityData30min.corp_number == corp_number_val,
                     TElectricityData30min.agreement_category == agreement_category_val,
@@ -70,9 +70,6 @@ class Per30minDataComponent:
                         TElectricityData30min.building_id == building_id_val
                     )
 
-                # if org_id_val:  # 値がNoneや空文字でない場合
-                #     query = query.filter(TElectricityData30min.org_id == org_id_val)
-
                 conditions = [
                     MBuilding.corporate_number == TElectricityData30min.corp_number,
                     MBuilding.agreement_category
@@ -82,7 +79,7 @@ class Per30minDataComponent:
                 ]
 
                 if org_id:
-                    conditions.append(MBuilding.agreement_org == org_id)
+                    conditions.append(MBuilding.agreement_org  == org_id)
 
                 building_org_exists = (
                     exists().select_from(MBuilding).where(and_(*conditions))
@@ -231,6 +228,9 @@ class Per30minDataComponent:
                     "period_from": segment_start.strftime("%Y%m%d"),
                     "period_to": segment_end.strftime("%Y%m%d"),
                     "file_update_date": chosen_interval.get("file_update_date"),
+                    "ARVE_CORP_NAME": chosen_interval.get("ARVE_CORP_NAME"),
+                    "ARVE_CUSTOMER_NUMBER": chosen_interval.get("ARVE_CUSTOMER_NUMBER"),
+                    "ARVE_OFFICE_CODE": chosen_interval.get("ARVE_OFFICE_CODE"),
                 }
             )
 

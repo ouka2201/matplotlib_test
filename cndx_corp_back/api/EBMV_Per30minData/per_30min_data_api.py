@@ -6,7 +6,6 @@ from cndx_corp_back.common.decorators import controller, jwt_user_context_db
 from cndx_corp_back.service.EBMV_Per30minData.per_30min_data_service import (
     Per30minDataService,
 )
-from cndx_corp_back.utils.utils import get_message
 
 
 class Per30minDataApi(MethodView):
@@ -22,6 +21,8 @@ class Per30minDataApi(MethodView):
             login_org_id = user_context.get("org_id")
             user_id = user_context.get("user_id")
             role_id = user_context.get("role")
+            if org_type_code != "01" or str(role_id) not in ("0", "1"):
+                return jsonify({"message": "利用権限がありません。"}), 403
             res = Per30minDataService().get_per_30min_data_list(
                 dict_request_data, org_type_code, login_org_id, user_id, role_id
             )
@@ -29,7 +30,7 @@ class Per30minDataApi(MethodView):
         except Exception as e:
             logger.error(f"30分値データ取得エラー: {str(e)}")
             return (
-                jsonify({"message": get_message("NOT_EXIST", field="30分値データ")}),
+                jsonify({"message": "システムエラーが発生しました。"}),
                 500,
             )
 
