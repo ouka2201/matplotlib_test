@@ -1,4 +1,4 @@
-"""担当者引継ぎの単体テストケース1～64の初期データを準備する。"""
+"""担当者引継ぎの単体テストケース1～58の初期データを準備する。"""
 
 import argparse
 import json
@@ -39,22 +39,17 @@ TABLE_NAMES = {
 HISTORY = "ABCDEFGH"
 RANGE_CASES = {22: "A", 24: "B", 26: "C", 28: "D", 30: "E", 32: "F", 33: "G", 35: "H"}
 MISSING_CASES = {23: "A", 25: "B", 27: "C", 29: "D", 31: "E", 34: "G", 36: "H"}
-SPLIT_CASES = {
-    44: ("HANDOVER_TO_ORG_ID", "O3"),
-    45: ("HANDOVER_STATUS", HANDOVER_STATUS_DONE),
-    46: ("HANDOVER_SCHEDULE_DATE", "20261027"),
-}
 FAULTS = {
-    53: "実行日取得：get_current_timeに例外を注入（ジョブ生成前）。",
-    54: "対象取得：select_sales_user_handover_targets.sqlの実行に例外を注入。",
-    55: "担当者存在確認：select_handover_source_staff.sqlの実行に例外を注入。",
-    56: "担当者更新：update_handover_staff.sqlの実行に例外を注入。",
-    57: "引継情報削除：delete_invalid_sales_user_handover.sqlの実行に例外を注入。",
-    58: "過去データ存在確認：check_handover_data.sqlの実行に例外を注入。",
-    59: "過去データ更新：update_handover_cn_application.sqlの実行に例外を注入。",
-    60: "完了更新：update_sales_user_handover_status.sqlの状態0更新に例外を注入。",
-    61: "エラー更新：同SQLの状態3更新に例外を注入。再試行側も含むかを記録する。",
-    62: "COMMIT：先頭法人のトランザクション確定に例外を注入。現在の実装は法人単位で確定する。",
+    47: "実行日取得：get_current_timeに例外を注入（ジョブ生成前）。",
+    48: "対象取得：select_sales_user_handover_targets.sqlの実行に例外を注入。",
+    49: "担当者存在確認：select_handover_source_staff.sqlの実行に例外を注入。",
+    50: "担当者更新：update_handover_staff.sqlの実行に例外を注入。",
+    51: "引継情報削除：delete_invalid_sales_user_handover.sqlの実行に例外を注入。",
+    52: "過去データ存在確認：check_handover_data.sqlの実行に例外を注入。",
+    53: "過去データ更新：update_handover_cn_application.sqlの実行に例外を注入。",
+    54: "完了更新：update_sales_user_handover_status.sqlの状態0更新に例外を注入。",
+    55: "エラー更新：同SQLの状態3更新に例外を注入。再試行側も含むかを記録する。",
+    56: "COMMIT：先頭法人のトランザクション確定に例外を注入。現在の実装は法人単位で確定する。",
 }
 
 
@@ -75,7 +70,6 @@ def build_plan(
     case_id,
     start_id=None,
     *,
-    variant=None,
     handover_type=None,
     identifiers=None,
     agreement_category="01",
@@ -85,15 +79,8 @@ def build_plan(
     catalog = load_catalog()
     case = next((c for c in catalog["cases"] if c["case_id"] == str(case_id)), None)
     if case is None:
-        raise ValueError("ケースIDは1～64を指定してください。")
+        raise ValueError("ケースIDは1～58を指定してください。")
     number = case["number"]
-    if number in SPLIT_CASES:
-        if variant not in ("target", "comparison"):
-            raise ValueError(
-                "ケース44～46は主キーが重複するため--variant target/comparisonが必要です。"
-            )
-    elif variant is not None:
-        raise ValueError("--variantはケース44～46だけに指定できます。")
     first = case["number"] * 1000 + 1 if start_id is None else start_id
     if (
         not isinstance(first, int)
@@ -124,7 +111,7 @@ def build_plan(
             "元・先・比較用のユーザーIDと組織IDはそれぞれ異なる値が必要です。"
         )
     if handover_type is None:
-        handover_type = HANDOVER_TYPE_BULK if number == 49 else HANDOVER_TYPE_INDIVIDUAL
+        handover_type = HANDOVER_TYPE_BULK if number == 43 else HANDOVER_TYPE_INDIVIDUAL
     if handover_type not in (HANDOVER_TYPE_INDIVIDUAL, HANDOVER_TYPE_BULK):
         raise ValueError(
             'handover-typeは"0"（個別）または"1"（一括）を指定してください。'
@@ -238,7 +225,7 @@ def build_plan(
     elif number == 2:
         staff(2)
         target(2, HANDOVER_SCHEDULE_DATE=BASE_DATE.strftime("%Y%m%d"))
-    elif number == 51:
+    elif number == 45:
         main["HANDOVER_STATUS"] = HANDOVER_STATUS_ERROR
         main["HANDOVERED_AT"] = datetime(2026, 10, 26, 0, 45)
     elif number == 4:
@@ -286,9 +273,9 @@ def build_plan(
         notes.append(
             "現在の対象取得SQLには登録締切条件がない。Q01の期待結果を確認する。"
         )
-    elif number in (12, 48):
+    elif number in (12, 42):
         staff(2)
-        if number == 48:
+        if number == 42:
             all_history(1)
             all_history(2)
     elif number == 13:
@@ -344,54 +331,35 @@ def build_plan(
             all_history(exclude="F")
         if number == 39:
             history("F", org="O3")
-    elif number in (63, 64):
+    elif number in (57, 58):
         rows["staff"].clear()
         staff(user="U2", org="O2")
-        main["REPORT_DATA_FLG"] = number == 64
+        main["REPORT_DATA_FLG"] = number == 58
         all_history()
-    elif 42 <= number <= 47:
-        if number == 42:
-            target(2)
-        elif number == 43:
-            target(HANDOVER_FROM_ORG_ID=ids["O3"])
-        elif number in SPLIT_CASES:
-            if variant == "comparison":
-                field, value = SPLIT_CASES[number]
-                main[field] = ids.get(value, value)
-            notes.append(
-                "主キー(CORPORATE_NUMBER, HANDOVER_FROM_ORG_ID, HANDOVER_FROM_USER_ID)が同じになるため2行同時投入は不可。target/comparisonを別々に初期化して実施する。"
-            )
-        else:
-            target(HANDOVER_FROM_USER_ID=ids["U3"], HANDOVER_TO_USER_ID=ids["U1"])
-        actions.append(
-            f"バッチ全体ではなく、法人番号{corp()}、引継元組織{ids['O1']}・担当者{ids['U1']}、"
-            f"引継先組織{ids['O2']}・担当者{ids['U2']}をパラメータとして"
-            "状態更新処理11・13を個別実行する。毎回データを復元する。"
-        )
-    elif number == 49:
+    elif number == 43:
         for i in range(2, 4):
             staff(i)
             target(i)
         for i, row in enumerate(rows["handover"], 1):
             row["REPORT_DATA_FLG"] = i != 2
             all_history(i)
-    elif number == 52 or number in FAULTS:
-        if number != 62:
+    elif number == 46 or number in FAULTS:
+        if number != 56:
             staff(2)
             target(2, INSERT_DATETIME=datetime(2026, 10, 26, 0, 40))
-        if number == 57:
+        if number == 51:
             rows["staff"] = [
                 r for r in rows["staff"] if r["CORPORATE_NUMBER"] != corp()
             ]
             rows["staff"][0]["USER_ID"] = ids["U3"]
             rows["handover"][1]["HANDOVER_FROM_USER_ID"] = ids["U3"]
-        if number in (52, 58, 59, 61, 62):
+        if number in (46, 52, 53, 55, 56):
             main["REPORT_DATA_FLG"] = True
-            all_history(exclude="F" if number in (52, 61) else "")
-        if number == 52:
+            all_history(exclude="F" if number in (46, 55) else "")
+        if number == 46:
             rows["handover"][1]["REPORT_DATA_FLG"] = True
             all_history(2)
-    if number in (16, 50):
+    if number in (16, 44):
         actions.append(
             "この計画は初回実行前のデータ。バッチを1回実行し結果を保存後、データを再投入せず同日で2回目を実行する。"
         )
@@ -400,7 +368,7 @@ def build_plan(
         actions.append(
             "投入PGは障害注入を実行しない。スタブ／デバッガ設定後にバッチを実行する。"
         )
-    if number in (1, 53):
+    if number in (1, 47):
         actions.append("日付引数を付けず、テスト用時計の当日を2026-10-26に固定する。")
     for corporate in corporations.values():
         rows["corporate"].append(
@@ -415,13 +383,12 @@ def build_plan(
         "利用者・組織・エネルギーの参照マスタは自動生成しない。FK制約がある環境では設定identifiers・agreement_category・energy_codeを既存テストマスタと対応させる。"
     )
     command = "python -m cndx_corp_batch.entrypoints.sales_user_handover_batch"
-    if number not in (1, 53):
+    if number not in (1, 47):
         command += f" --batch-date {batch_date.isoformat()}"
     return {
         "source": catalog["source"],
         "sheet": catalog["sheet"],
         **case,
-        "variant": variant,
         "start_id": first,
         "batch_date": batch_date.isoformat(),
         "clock_date": BASE_DATE.isoformat(),
@@ -431,7 +398,7 @@ def build_plan(
         else "individual",
         "batch_command": command,
         "batch_environment": {"TZ": "Asia/Tokyo", "BATCH_NAME": "BLMMGMGHANDOVER"},
-        "execution_scope": "status_update_only" if 42 <= number <= 47 else "batch",
+        "execution_scope": "batch",
         "fault_injection": FAULTS.get(number),
         "manual_actions": actions,
         "notes": notes,
@@ -631,12 +598,9 @@ def insert_plan(settings, plan, *, reset=False, cleanup=False):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--list", action="store_true", help="ケース一覧")
-    parser.add_argument("--case", help="Excelの項番1～64")
+    parser.add_argument("--case", help="Excelの項番1～58")
     parser.add_argument(
         "--start-id", type=int, help="識別番号の開始値（既定：ケース番号×1000+1）"
-    )
-    parser.add_argument(
-        "--variant", choices=("target", "comparison"), help="ケース44～46のデータ種別"
     )
     parser.add_argument(
         "--handover-type",
@@ -664,8 +628,7 @@ def main(argv=None):
     args = parser.parse_args(argv)
     if args.list:
         for case in load_catalog()["cases"]:
-            extra = " [--variant必須]" if case["number"] in SPLIT_CASES else ""
-            print(f"{case['case_id']:>2}  {case['title']}{extra}")
+            print(f"{case['case_id']:>2}  {case['title']}")
         return 0
     if not args.case:
         parser.error("--caseまたは--listを指定してください。")
@@ -679,11 +642,10 @@ def main(argv=None):
             if args.db_config
             else {}
         )
-        kind = "bulk" if args.case == "49" else "individual"
+        kind = "bulk" if args.case == "43" else "individual"
         plan = build_plan(
             args.case,
             args.start_id,
-            variant=args.variant,
             handover_type=(
                 args.handover_type
                 if args.handover_type is not None
