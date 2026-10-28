@@ -296,6 +296,36 @@ def test_missing_source_behavior_with_real_sql(
         assert read_rows(database, key) == expected
 
 
+@pytest.mark.parametrize("number", [21, 22, 23])
+def test_staff_update_preserves_org_and_other_columns(database, number):
+    prepared = plan(number)
+    seed.insert_plan(database[0], prepared)
+    before = read_rows(database, "staff")
+    ids = prepared["identifiers"]
+    sql = (QUERY / "update_handover_staff.sql").read_text(encoding="utf-8")
+    with database[1].begin() as connection:
+        result = connection.execute(
+            text(sql.replace("db_corp.", "main.")),
+            {
+                "corporate_number": ids["C1"],
+                "handover_from_user_id": ids["U1"],
+                "handover_to_user_id": ids["U2"],
+                "handover_to_org_id": ids["O2"],
+            },
+        )
+        assert result.rowcount == 1
+    expected = [
+        dict(row, user_id=ids["U2"])
+        if row["corporate_number"] == ids["C1"] and row["user_id"] == ids["U1"]
+        else dict(row)
+        for row in before
+    ]
+    order = lambda row: (row["corporate_number"], row["user_id"])
+    assert sorted(read_rows(database, "staff"), key=order) == sorted(
+        expected, key=order
+    )
+
+
 def test_staff_control_rows_and_nullable_flag():
     for number, expected in [
         (21, ("C2", "U1")),
