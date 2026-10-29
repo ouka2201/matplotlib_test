@@ -46,6 +46,8 @@ interface LayoutProps {
   draftButtonDisabled?: boolean;
   confirmButtonDisabled?: boolean;
   cancelConfirmButtonDisabled?: boolean;
+  registerConfirmDescription?: string;
+  registerConfirmClassName?: string;
 }
 
 export default function MasterLayout({
@@ -80,6 +82,8 @@ export default function MasterLayout({
   footerType = "default", //default(登録・下書き・キャンセル),confirmation(修正・登録)
   internalModals, //internalModals= {true} モーダル表示不必要
   useFullHeightLayout, //拠点エネルギー情報画面用フラグ
+  registerConfirmDescription,
+  registerConfirmClassName,
 }: LayoutProps) {
   const navigate = useNavigate();
 
@@ -301,7 +305,8 @@ export default function MasterLayout({
             onConfirm={() => handleConfirm()}
             loading={false}
             title="入力内容の確認"
-            description="この入力内容で登録します。よろしいですか？"
+            description={registerConfirmDescription ?? "この入力内容で登録します。よろしいですか？"}
+            className={registerConfirmClassName}
             cancelText="いいえ"
             continueText="はい"
           />

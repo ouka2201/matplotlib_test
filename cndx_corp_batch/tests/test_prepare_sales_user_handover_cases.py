@@ -4,7 +4,6 @@ import importlib.util
 import json
 import re
 from contextlib import contextmanager
-from copy import deepcopy
 from datetime import date, datetime
 from pathlib import Path
 
@@ -27,15 +26,8 @@ from cndx_corp_batch.test import prepare_sales_user_handover_cases as seed
 ROOT = Path(__file__).resolve().parents[2]
 QUERY = ROOT / "cndx_corp_batch" / "query"
 ENTITY = ROOT / "cndx_corp_back" / "entity"
-VARIANTS = [
-    (n, v)
-    for n in range(1, 65)
-    for v in (("target", "comparison") if n in seed.SPLIT_CASES else (None,))
-]
-
-
-def plan(number, variant=None, **kwargs):
-    return seed.build_plan(str(number), variant=variant, **kwargs)
+def plan(number, **kwargs):
+    return seed.build_plan(str(number), **kwargs)
 
 
 @pytest.fixture
@@ -90,9 +82,12 @@ def read_rows(database, key):
 
 def test_catalog_matches_case_numbers():
     cases = seed.load_catalog()["cases"]
-    assert [c["number"] for c in cases] == list(range(1, 65))
-    assert [c["source_row"] for c in cases] == list(range(7, 71))
-    assert cases[43]["title"] == "引継先組織ID不一致を除外"
+    assert [c["number"] for c in cases] == list(range(1, 49))
+    assert [c["source_row"] for c in cases] == list(range(7, 55))
+    assert all(c["category"] != "状態更新条件" for c in cases)
+    assert all(c["category"] != "例外・トランザクション" for c in cases)
+    assert cases[41]["title"] == "個別引継ぎ1法人"
+    assert cases[45]["title"] == "業務エラー後の次法人"
 
 
 def test_case22_prepares_monthly_building_rows_and_required_building_master():
@@ -125,10 +120,7 @@ def test_case22_prepares_monthly_building_rows_and_required_building_master():
 
 def test_renumbered_case_text_uses_the_generated_identifiers():
     for case in seed.load_catalog()["cases"]:
-        prepared = seed.build_plan(
-            case["case_id"],
-            variant="target" if case["number"] in seed.SPLIT_CASES else None,
-        )
+        prepared = seed.build_plan(case["case_id"])
         assert prepared["start_id"] == case["number"] * 1000 + 1
         ids = set(prepared["identifiers"].values())
         description = "\n".join(case[k] for k in ("data", "procedure", "expected"))
@@ -136,13 +128,11 @@ def test_renumbered_case_text_uses_the_generated_identifiers():
         assert referenced <= ids, (case["number"], referenced - ids)
 
 
-@pytest.mark.parametrize("number,variant", VARIANTS)
-def test_every_case_inserts_against_existing_entity_definitions(
-    database, number, variant
-):
-    prepared = plan(number, variant)
+@pytest.mark.parametrize("number", range(1, 49))
+def test_every_case_inserts_against_existing_entity_definitions(database, number):
+    prepared = plan(number)
     assert all(
-        row["HANDOVER_TYPE"] == ("1" if number == 49 else "0")
+        row["HANDOVER_TYPE"] == ("1" if number == 43 else "0")
         for row in prepared["rows"]["handover"]
     )
     counts = seed.insert_plan(database[0], prepared)
@@ -155,8 +145,8 @@ def test_every_case_inserts_against_existing_entity_definitions(
         (3, 0),
         (2, 1),
         (4, 1),
-        (49, 3),
-        (51, 0),
+        (43, 3),
+        (45, 0),
     ],
 )
 def test_actual_target_sql_selects_intended_rows(database, number, expected):
@@ -245,7 +235,7 @@ def test_history_range_fixtures_allow_real_update_without_key_collision(
 
 
 def test_missing_rows_and_other_corporation_presence():
-    for n in (16, 57):
+    for n in (16,):
         p = plan(n)
         assert all(r["USER_ID"] != p["identifiers"]["U1"] for r in p["rows"]["staff"])
     p = plan(17)
@@ -257,7 +247,7 @@ def test_missing_rows_and_other_corporation_presence():
         assert {k: len(plan(n)["rows"][k]) for k in seed.HISTORY} == {
             k: int(k != key) for k in seed.HISTORY
         }
-    for n in (38, 40, 52, 61):
+    for n in (38, 40, 46):
         p = plan(n)
         assert not any(
             r["CORPORATE_NUMBER"] == p["identifiers"]["C1"] for r in p["rows"]["F"]
@@ -268,7 +258,7 @@ def test_missing_rows_and_other_corporation_presence():
 
 @pytest.mark.parametrize(
     "number,destination_other_corp",
-    [(16, False), (17, False), (63, False), (64, False), (63, True)],
+    [(16, False), (17, False), (47, False), (48, False), (47, True)],
 )
 def test_missing_source_behavior_with_real_sql(
     database, monkeypatch, number, destination_other_corp
@@ -322,7 +312,7 @@ def test_missing_source_behavior_with_real_sql(
         assert read_rows(database, "staff") == before["staff"]
     for key in seed.HISTORY:
         expected = [dict(row) for row in before[key]]
-        if number == 64:
+        if number == 48:
             for row in expected:
                 row["agreement_org" if key == "F" else "org_id"] = prepared[
                     "identifiers"
@@ -381,7 +371,7 @@ def test_staff_control_rows_and_nullable_flag():
             p["identifiers"][v] for v in expected
         )
     assert plan(21)["rows"]["handover"][0]["REPORT_DATA_FLG"] is None
-    assert [r["REPORT_DATA_FLG"] for r in plan(49)["rows"]["handover"]] == [
+    assert [r["REPORT_DATA_FLG"] for r in plan(43)["rows"]["handover"]] == [
         True,
         False,
         True,
@@ -398,36 +388,11 @@ def test_cutoff_timestamps(number, time):
     ] == datetime.fromisoformat(f"2026-10-26T{time}")
 
 
-@pytest.mark.parametrize(
-    "number,field,expected",
-    [
-        (44, "HANDOVER_TO_ORG_ID", "O3"),
-        (45, "HANDOVER_STATUS", "0"),
-        (46, "HANDOVER_SCHEDULE_DATE", "20261027"),
-    ],
-)
-def test_split_cases_keep_exact_key_and_change_only_comparison_field(
-    number, field, expected
-):
-    with pytest.raises(ValueError, match="variant"):
-        plan(number)
-    target = plan(number, "target")
-    comparison = plan(number, "comparison")
-    original = deepcopy(target["rows"]["handover"][0])
-    original[field] = target["identifiers"].get(expected, expected)
-    assert comparison["rows"]["handover"] == [original]
-    assert comparison["execution_scope"] == "status_update_only"
-
-
-def test_rerun_and_fault_requirements_are_explicit():
-    for n in (16, 50):
+def test_rerun_requirements_are_explicit():
+    for n in (16, 44):
         p = plan(n)
         assert p["rows"]["handover"][0]["HANDOVER_STATUS"] == "1"
         assert any("2回目" in action for action in p["manual_actions"])
-    for n in range(53, 63):
-        p = plan(n)
-        assert p["fault_injection"]
-        assert any("障害注入を実行しない" in action for action in p["manual_actions"])
 
 
 def test_repeat_insert_and_unrelated_pending_are_rejected(database):
@@ -462,7 +427,7 @@ def test_failed_last_insert_rolls_back_all_tables(database):
     assert all(not read_rows(database, k) for k in seed.TABLE_NAMES)
 
 
-@pytest.mark.parametrize("number", [15, 16, 49, 52])
+@pytest.mark.parametrize("number", [15, 16, 43, 46])
 def test_reset_restores_processed_rows_and_can_be_repeated(database, number):
     prepared = plan(number)
     seed.insert_plan(database[0], prepared, reset=True)
@@ -486,10 +451,10 @@ def test_reset_restores_processed_rows_and_can_be_repeated(database, number):
 
 
 def test_cleanup_allows_switching_cases_and_keeps_other_corporations(database):
-    other = plan(51)
+    other = plan(45)
     seed.insert_plan(database[0], other)
     before = {key: read_rows(database, key) for key in seed.TABLE_NAMES}
-    prepared = plan(49)
+    prepared = plan(43)
     seed.insert_plan(database[0], prepared)
     counts = seed.insert_plan(database[0], prepared, cleanup=True)
     assert counts == {key: len(rows) for key, rows in prepared["rows"].items()}
@@ -513,7 +478,7 @@ def test_reset_and_cleanup_refuse_unowned_rows(database, operation, creator):
 
 
 def test_reset_reinsertion_failure_restores_deleted_data(database):
-    prepared = plan(49)
+    prepared = plan(43)
     seed.insert_plan(database[0], prepared)
     with database[1].begin() as conn:
         conn.execute(
@@ -532,9 +497,9 @@ def test_reset_reinsertion_failure_restores_deleted_data(database):
 
 
 def test_reset_does_not_bypass_other_pending_check(database):
-    prepared = plan(51)
+    prepared = plan(45)
     seed.insert_plan(database[0], prepared)
-    seed.insert_plan(database[0], plan(49))
+    seed.insert_plan(database[0], plan(43))
     before = {key: read_rows(database, key) for key in seed.TABLE_NAMES}
     with pytest.raises(ValueError, match="未処理予定"):
         seed.insert_plan(database[0], prepared, reset=True)
@@ -553,7 +518,7 @@ def test_cli_repeat_dry_run_is_offline_and_shows_scope(
         seed.main(
             [
                 "--case",
-                str(49),
+                str(43),
                 f"--{operation}",
                 "--dry-run",
                 "--output",
@@ -565,9 +530,9 @@ def test_cli_repeat_dry_run_is_offline_and_shows_scope(
     saved = json.loads(output.read_text(encoding="utf-8"))
     assert saved["operation"] == operation
     assert saved["cleanup_scope"]["corporate_numbers"] == [
-        "9900000049001",
-        "9900000049002",
-        "9900000049003",
+        "9900000043001",
+        "9900000043002",
+        "9900000043003",
     ]
     assert saved["cleanup_scope"]["required_created_by"] == seed.SEED_CREATOR
     assert '"mode": "dry-run"' in capsys.readouterr().out
@@ -575,7 +540,7 @@ def test_cli_repeat_dry_run_is_offline_and_shows_scope(
 
 def test_cli_reset_and_cleanup_are_mutually_exclusive():
     with pytest.raises(SystemExit) as error:
-        seed.main(["--case", str(49), "--reset", "--cleanup", "--dry-run"])
+        seed.main(["--case", str(43), "--reset", "--cleanup", "--dry-run"])
     assert error.value.code == 2
 
 
@@ -690,7 +655,7 @@ def test_cancelled_handover_is_not_selected_or_status_updated(database):
     "kwargs",
     [
         {"case_id": "0"},
-        {"case_id": "65"},
+        {"case_id": "49"},
         {"case_id": "1", "start_id": 0},
         {"case_id": "1", "start_id": 999701},
         {"case_id": "1", "handover_type": "XX"},
@@ -698,7 +663,6 @@ def test_cancelled_handover_is_not_selected_or_status_updated(database):
         {"case_id": "1", "handover_type": ""},
         {"case_id": "1", "handover_type": 0},
         {"case_id": "1", "identifiers": {"U1": "x" * 9}},
-        {"case_id": "1", "variant": "target"},
     ],
 )
 def test_invalid_arguments(kwargs):
@@ -723,7 +687,7 @@ def test_cli_dry_run_does_not_connect_and_saves_full_plan(
         seed, "create_engine", lambda *a, **k: pytest.fail("DB接続は不要")
     )
     output = tmp_path / "plan.json"
-    assert seed.main(["--case", str(49), "--dry-run", "--output", str(output)]) == 0
+    assert seed.main(["--case", str(43), "--dry-run", "--output", str(output)]) == 0
     assert '"mode": "dry-run"' in capsys.readouterr().out
     saved = json.loads(output.read_text(encoding="utf-8"))
     assert len(saved["rows"]["handover"]) == 3
@@ -732,7 +696,7 @@ def test_cli_dry_run_does_not_connect_and_saves_full_plan(
 
 
 def test_individual_and_explicit_type():
-    assert plan(48)["rows"]["handover"][0]["HANDOVER_TYPE"] == "0"
+    assert plan(42)["rows"]["handover"][0]["HANDOVER_TYPE"] == "0"
     prepared = plan(19, handover_type="1")
     assert prepared["rows"]["handover"][0]["HANDOVER_TYPE"] == "1"
     assert prepared["handover_kind"] == "bulk"

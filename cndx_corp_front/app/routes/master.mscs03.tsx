@@ -301,6 +301,8 @@ export default function CustomerDetailForm() {
       showRegisterButton={isEditing}
       showCancelButton={isEditing}
       processClick={handleConfirmSubmit}
+      registerConfirmDescription={"この入力内容で登録します。よろしいですか？\n・供給地点特定番号を入力した場合、内容が正しいか確認してください。\n・供給地点特定番号が異なる場合、別のお客さまの電力30分値が紐づく可能性があります。"}
+      registerConfirmClassName="w-[600px] h-auto max-w-[calc(100vw-2rem)] whitespace-pre-line"
       onCancelClick={() => {
         setIsEditing(false);
         if (initialFormData) {
