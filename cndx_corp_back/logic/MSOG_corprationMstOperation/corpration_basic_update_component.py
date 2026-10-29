@@ -15,6 +15,9 @@ from cndx_corp_back.entity.m_corporate_basic_entity import MCorporateBasic
 from cndx_corp_back.entity.m_corporate_details_info_entity import (
     MCorporateDetailsInfo,
 )
+from cndx_corp_back.logic.MSOG_corprationMstOperation.corporation_30min_sync import (
+    Corporation30minSync,
+)
 from cndx_corp_back.utils.utils import get_message
 
 
@@ -78,6 +81,7 @@ class CorprationBasicUpdateComponent:
                 .filter_by(corporate_number=df_corpInfos_firdst_row["corporate_number"])
                 .all()
             )
+            buildings_before = Corporation30minSync.snapshot(building_id_info)
 
             df_building_id_info = pd.DataFrame()
 
@@ -284,6 +288,13 @@ class CorprationBasicUpdateComponent:
                 for building in building_id_info:
                     building.delete_flg = True
 
+            # 既存処理で実際に変更された建物に合わせ、同じトランザクションで同期する。
+            Corporation30minSync().execute(
+                session,
+                buildings_before,
+                df_corpInfos_firdst_row["corporate_number"],
+                df_corpInfos_firdst_row["user_id"],
+            )
             session.commit()
 
     def check_t_building_info(self, session, df):
