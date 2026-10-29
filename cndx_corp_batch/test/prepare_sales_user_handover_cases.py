@@ -1,4 +1,4 @@
-"""担当者引継ぎの単体テストケース1～58の初期データを準備する。"""
+"""担当者引継ぎの単体テストケース1～48の初期データを準備する。"""
 
 import argparse
 import json
@@ -39,20 +39,6 @@ TABLE_NAMES = {
 HISTORY = "ABCDEFGH"
 RANGE_CASES = {22: "A", 24: "B", 26: "C", 28: "D", 30: "E", 32: "F", 33: "G", 35: "H"}
 MISSING_CASES = {23: "A", 25: "B", 27: "C", 29: "D", 31: "E", 34: "G", 36: "H"}
-FAULTS = {
-    47: "実行日取得：get_current_timeに例外を注入（ジョブ生成前）。",
-    48: "対象取得：select_sales_user_handover_targets.sqlの実行に例外を注入。",
-    49: "担当者存在確認：select_handover_source_staff.sqlの実行に例外を注入。",
-    50: "担当者更新：update_handover_staff.sqlの実行に例外を注入。",
-    51: "引継情報削除：delete_invalid_sales_user_handover.sqlの実行に例外を注入。",
-    52: "過去データ存在確認：check_handover_data.sqlの実行に例外を注入。",
-    53: "過去データ更新：update_handover_cn_application.sqlの実行に例外を注入。",
-    54: "完了更新：update_sales_user_handover_status.sqlの状態0更新に例外を注入。",
-    55: "エラー更新：同SQLの状態3更新に例外を注入。再試行側も含むかを記録する。",
-    56: "COMMIT：先頭法人のトランザクション確定に例外を注入。現在の実装は法人単位で確定する。",
-}
-
-
 def load_catalog():
     return json.loads(CATALOG.read_text(encoding="utf-8"))
 
@@ -79,7 +65,7 @@ def build_plan(
     catalog = load_catalog()
     case = next((c for c in catalog["cases"] if c["case_id"] == str(case_id)), None)
     if case is None:
-        raise ValueError("ケースIDは1～58を指定してください。")
+        raise ValueError("ケースIDは1～48を指定してください。")
     number = case["number"]
     first = case["number"] * 1000 + 1 if start_id is None else start_id
     if (
@@ -331,10 +317,10 @@ def build_plan(
             all_history(exclude="F")
         if number == 39:
             history("F", org="O3")
-    elif number in (57, 58):
+    elif number in (47, 48):
         rows["staff"].clear()
         staff(user="U2", org="O2")
-        main["REPORT_DATA_FLG"] = number == 58
+        main["REPORT_DATA_FLG"] = number == 48
         all_history()
     elif number == 43:
         for i in range(2, 4):
@@ -343,32 +329,18 @@ def build_plan(
         for i, row in enumerate(rows["handover"], 1):
             row["REPORT_DATA_FLG"] = i != 2
             all_history(i)
-    elif number == 46 or number in FAULTS:
-        if number != 56:
-            staff(2)
-            target(2, INSERT_DATETIME=datetime(2026, 10, 26, 0, 40))
-        if number == 51:
-            rows["staff"] = [
-                r for r in rows["staff"] if r["CORPORATE_NUMBER"] != corp()
-            ]
-            rows["staff"][0]["USER_ID"] = ids["U3"]
-            rows["handover"][1]["HANDOVER_FROM_USER_ID"] = ids["U3"]
-        if number in (46, 52, 53, 55, 56):
-            main["REPORT_DATA_FLG"] = True
-            all_history(exclude="F" if number in (46, 55) else "")
-        if number == 46:
-            rows["handover"][1]["REPORT_DATA_FLG"] = True
-            all_history(2)
+    elif number == 46:
+        staff(2)
+        target(2, INSERT_DATETIME=datetime(2026, 10, 26, 0, 40))
+        main["REPORT_DATA_FLG"] = True
+        all_history(exclude="F")
+        rows["handover"][1]["REPORT_DATA_FLG"] = True
+        all_history(2)
     if number in (16, 44):
         actions.append(
             "この計画は初回実行前のデータ。バッチを1回実行し結果を保存後、データを再投入せず同日で2回目を実行する。"
         )
-    if number in FAULTS:
-        actions.append(FAULTS[number])
-        actions.append(
-            "投入PGは障害注入を実行しない。スタブ／デバッガ設定後にバッチを実行する。"
-        )
-    if number in (1, 47):
+    if number == 1:
         actions.append("日付引数を付けず、テスト用時計の当日を2026-10-26に固定する。")
     for corporate in corporations.values():
         rows["corporate"].append(
@@ -383,7 +355,7 @@ def build_plan(
         "利用者・組織・エネルギーの参照マスタは自動生成しない。FK制約がある環境では設定identifiers・agreement_category・energy_codeを既存テストマスタと対応させる。"
     )
     command = "python -m cndx_corp_batch.entrypoints.sales_user_handover_batch"
-    if number not in (1, 47):
+    if number != 1:
         command += f" --batch-date {batch_date.isoformat()}"
     return {
         "source": catalog["source"],
@@ -399,7 +371,6 @@ def build_plan(
         "batch_command": command,
         "batch_environment": {"TZ": "Asia/Tokyo", "BATCH_NAME": "BLMMGMGHANDOVER"},
         "execution_scope": "batch",
-        "fault_injection": FAULTS.get(number),
         "manual_actions": actions,
         "notes": notes,
         "rows": rows,
@@ -598,7 +569,7 @@ def insert_plan(settings, plan, *, reset=False, cleanup=False):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--list", action="store_true", help="ケース一覧")
-    parser.add_argument("--case", help="Excelの項番1～58")
+    parser.add_argument("--case", help="Excelの項番1～48")
     parser.add_argument(
         "--start-id", type=int, help="識別番号の開始値（既定：ケース番号×1000+1）"
     )
