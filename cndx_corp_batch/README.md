@@ -49,7 +49,7 @@ python -m pip install -r test/requirements.txt
 python -m pytest .\tests\generate_all_power_report -q
 ```
 
-`test` や `tests` はPythonモジュールとして直接起動せず、必ず `pytest` を介して実行します。
+自動テストは `pytest` を介して実行します。以下のテストデータ投入PGは `python -m` で起動します。
 
 分岐カバレッジを計測する場合は、次を実行します。対象は
 `cndx_corp_batch.domains.generate_all_power_report` で、未カバー行を端末に表示し、
@@ -68,6 +68,48 @@ python -m pytest .\tests\generate_all_power_report -q --cov --cov-report=term-mi
 本体の依存ライブラリもテスト用requirementsからインストールされます。テストでChromiumは起動しません。
 `test/test_generate_all_power_report.py` のDB接続用スクリプトは、
 対象を `tests` に限定しているため自動収集されません。
+
+## レポート作成用のテストデータ
+
+`test/insert_test_data.py` は、レポートSQLが読む取込管理・ARVEお客さま情報・
+EP契約電力・EP30分値の4テーブルへ整合した架空データを投入します。
+対象月を含む直近12か月が既定で、`--months` または `--days` で期間を短縮できます。
+
+```powershell
+Set-Location C:\STEP4\electricity_report
+$env:REPORT_DATABASE_URL = 'postgresql+psycopg2://ユーザー:パスワード@ホスト/検証用DB名'
+python -m cndx_corp_batch.test.insert_test_data `
+    --db-config cndx_corp_batch/test/database.json `
+    --report-month 2026-06 --count 3 --months 12
+```
+
+`--report-month` は `2026-06` と `202606` の両方を受け付けます。
+取込管理は指定月を状態3（完了）で登録します。レポート管理はバッチ本体が登録します。
+`--max-kw` は生成する30分平均電力の最大値、`--contract-kw` は正の整数の契約電力です。
+EP30分値にはkWhを格納し、欠測・不正値件数を文字列の0、作成者・作成日時を自動設定します。
+現行バッチは入力をkWhとして扱うため、`value_unit` にkW・Whは指定できません。
+
+省エネサポート加入・未加入は既定で交互に生成します。`--syousapo joined` または
+`--syousapo not-joined` で統一できます。現行SQLの加入判定に合わせ、加入側の
+RecordTypeIdは `省エネサポートサービス` とします。設定JSONの `seed_record_type_ids` を
+指定する場合もこの条件を満たす必要があります。
+
+`--dry-run` は既存テーブルへ接続して検証・予定件数の表示のみ行います。
+同じキーがあれば既定で中止します。`--on-existing skip` は既存行を変更せず不足分だけを追加します。
+ARVEの既存判定は、現在の主キーである供給地点のみで行います。
+途中で失敗した場合は4テーブルのINSERTをまとめてロールバックします。
+
+SQLiteで投入処理を確認する場合は、設定JSONを次のように作成し、`--init-sqlite` を指定します。
+DBファイルの親フォルダーは事前に作成してください。
+
+```json
+{"url": "sqlite:///output/report_seed.db", "schema": null}
+```
+
+`--init-sqlite` は現行の列名・型・必須監査列を持つ最小4テーブルを作成します。
+既存テーブルの定義は変更しません。旧PGで作成したSQLiteは新しいDBファイルに切り替えてください。
+`--dry-run` と `--init-sqlite` は同時に指定できません。
+このPGは建物・企業マスタや連携先の生データを準備しないため、顧客情報と30分値の連携には次のPGを使います。
 
 ## 顧客情報と30分値データ連携用のテストデータ
 
