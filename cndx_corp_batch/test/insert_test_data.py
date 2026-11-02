@@ -1,8 +1,10 @@
+"""現行レポートSQLが参照する取込管理・ARVE・契約電力・EP30分値を準備する。"""
+
 import argparse
 import json
 import math
+import os
 import re
-import sys
 from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
@@ -19,6 +21,7 @@ from sqlalchemy import (
     MetaData,
     String,
     Table,
+    create_engine,
     select,
 )
 
@@ -31,15 +34,12 @@ from ..domains.generate_all_power_report.services.database_source_service import
     DATE,
     POINT,
     SLOTS,
-    DatabaseSource,
 )
 from ..domains.generate_all_power_report.services.report_job_source import (
     CUSTOMER_COLUMNS,
     CUSTOMER_POINT,
     customer_column_mapping,
 )
-
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 TABLE_NAMES = {
     "import_management": "t_30min_import_mng",
@@ -56,6 +56,21 @@ SEED_CUSTOMER_COLUMNS = {
     "company_id": "cmn_kigyoid_fk__c",
     "record_type_id": "recordtypeid",
 }
+QUALITY_COLUMNS = ("T01_KSKJ_KSU", "T01_FSIJ_KSU")
+JOINED_RECORD_TYPE = "省エネサポートサービス"
+
+
+def _column(table, name):
+    for column in table.c:
+        if column.name.upper() == name.upper():
+            return column
+    raise ValueError(f"{table.name}に必須列がありません: {name}")
+
+
+def _quality_columns(settings):
+    return tuple(dict.fromkeys(
+        name.upper() for name in (*QUALITY_COLUMNS, *settings.get("quality_columns", []))
+    ))
 
 
 @dataclass(frozen=True)
@@ -63,7 +78,7 @@ class SeedOptions:
     """テストデータの件数・期間・値と、再実行時の扱い。
 
     Attributes:
-        report_month (str): 最終対象月。YYYY-MM。
+        report_month (str): 最終対象月。YYYY-MMまたはYYYYMM。
         count (int): 作成する供給地点の数。
         months (int): 対象月を含む実績月数。1〜12。
         days (int | None): 指定時は月数の代わりに月末までの日数を使う。
@@ -86,7 +101,7 @@ class SeedOptions:
     start_id: int = 1
     point_prefix: str = "999900"
     max_kw: float = 1200
-    contract_kw: float = 1600
+    contract_kw: int = 1600
     seed: int = 42
     syousapo: str = "alternate"
     on_existing: str = "error"
@@ -103,6 +118,10 @@ class SeedOptions:
         Raises:
             ValueError: 件数・年月・期間・識別番号・電力等が不正な場合。
         """
+        if not isinstance(self.report_month, str) or not re.fullmatch(
+            r"[0-9]{4}-?[0-9]{2}", self.report_month
+        ):
+            raise ValueError("report_monthはYYYY-MMまたはYYYYMMで指定してください")
         year_start, end, _ = bounds(self.report_month)
         for name in ("count", "months", "start_id", "chunk_size"):
             value = getattr(self, name)
@@ -126,6 +145,8 @@ class SeedOptions:
             raise ValueError("max_kw・contract_kwは正の有限数で指定してください")
         if self.max_kw < 0.001:
             raise ValueError("max_kwは0.001以上で指定してください")
+        if self.contract_kw != int(self.contract_kw) or self.contract_kw > 2147483647:
+            raise ValueError("contract_kwはINTEGER型に収まる正の整数で指定してください")
         if self.syousapo not in ("alternate", "joined", "not-joined"):
             raise ValueError("syousapoの指定が不正です")
         if self.on_existing not in ("error", "skip"):
@@ -148,7 +169,7 @@ def init_sqlite_tables(engine, settings):
     """SQLiteに、テストデータ投入用の最小4テーブルを作る。
 
     既存テーブルは変更・削除しない。本番DBのDDLを再現するものではない。
-    ARVEの名義列が未指定なら、検証用の仮列名を使用する。
+    ARVEの名義・主キー、契約電力・品質件数・監査列は現在の物理定義に合わせる。
 
     Args:
         engine (sqlalchemy.Engine): SQLiteの接続先。
@@ -177,15 +198,15 @@ def init_sqlite_tables(engine, settings):
     mapping = {
         **CUSTOMER_COLUMNS,
         **SEED_CUSTOMER_COLUMNS,
-        "customer_name": "CMN_DemandLocationFullName_Test__c",
+        "customer_name": "CMN_DemandLocationFullName_Ref__c",
         **settings.get("customer_columns", {}),
     }
     point = settings.get("customer_point_column", CUSTOMER_POINT)
     names = {
         point: String(22),
         "CMN_BusinessType__c": String(4),
-        mapping["customer_name"]: String(130),
-        mapping["address"]: String(130),
+        mapping["customer_name"]: String(1300),
+        mapping["address"]: String(1300),
         mapping["customer_number"]: String(16),
         mapping["company_id"]: String(1300),
         mapping["record_type_id"]: String(20),
@@ -205,9 +226,9 @@ def init_sqlite_tables(engine, settings):
             Column(
                 name,
                 typ,
-                primary_key=name in (point, "CMN_BusinessType__c"),
+                primary_key=name == point,
                 nullable=name
-                not in (point, "CMN_BusinessType__c", "CREATED_BY", "CREATED_AT"),
+                not in (point, "CREATED_BY", "CREATED_AT"),
             )
             for name, typ in names.items()
         ],
@@ -216,18 +237,26 @@ def init_sqlite_tables(engine, settings):
         settings.get("contract_table", TABLE_NAMES["contract"]),
         metadata,
         Column(CONTRACT_POINT, String(22), primary_key=True),
-        Column(CONTRACT_POWER, String(10), nullable=False),
+        Column(CONTRACT_POWER, Integer, nullable=False),
+        Column("CREATED_BY", String(50), nullable=False),
+        Column("CREATED_AT", DateTime, nullable=False),
+        Column("UPDATED_BY", String(50)),
+        Column("UPDATED_AT", DateTime),
     )
     Table(
         settings.get("daily_table", TABLE_NAMES["daily"]),
         metadata,
         Column(POINT, String(22), primary_key=True),
         Column(DATE, String(8), primary_key=True),
-        *[Column(name, String(12), nullable=False) for name in SLOTS],
+        *[Column(name, String(9), nullable=False) for name in SLOTS],
         *[
-            Column(name, Integer, nullable=False)
-            for name in settings.get("quality_columns", [])
+            Column(name, String(2), nullable=False)
+            for name in _quality_columns(settings)
         ],
+        Column("CREATED_BY", String(50), nullable=False),
+        Column("CREATED_AT", DateTime, nullable=False),
+        Column("UPDATED_BY", String(50)),
+        Column("UPDATED_AT", DateTime),
     )
     metadata.create_all(engine)
 
@@ -247,7 +276,7 @@ def prepare_row(table, values):
     """
     row = {}
     for name, value in values.items():
-        column = DatabaseSource._column(table, name)
+        column = _column(table, name)
         try:
             typ = column.type.python_type
         except (NotImplementedError, AttributeError):
@@ -300,7 +329,7 @@ def make_daily_rows(point, serial, start, end, options, settings):
         start (pandas.Timestamp): 実績開始日。
         end (pandas.Timestamp): 実績終了日の翌日。
         options (SeedOptions): 最大平均電力、乱数シード。
-        settings (dict): 保存値の単位と品質列。
+        settings (dict): 保存値の単位（kWh）と追加の品質列。
 
     Yields:
         dict: 日付・48枠・品質件数0を持つ日別データ。
@@ -309,9 +338,8 @@ def make_daily_rows(point, serial, start, end, options, settings):
         ValueError: 保存単位の指定が不正な場合。
     """
     unit = settings.get("value_unit", "kWh")
-    factors = {"kWh": Decimal("0.5"), "kW": Decimal("1"), "Wh": Decimal("500")}
-    if unit not in factors:
-        raise ValueError("value_unitはkWh・kW・Whのいずれかです")
+    if unit != "kWh":
+        raise ValueError("現行レポートSQLの入力単位に合わせ、value_unitはkWhを指定してください")
     dates = pd.date_range(start, end, freq="D", inclusive="left")
     hours = np.arange(48) / 2
     rng = np.random.default_rng(options.seed + serial)
@@ -331,8 +359,8 @@ def make_daily_rows(point, serial, start, end, options, settings):
             kw[34] = options.max_kw  # 17:00の1枠を設定した最大値にする。
         row = {POINT: point, DATE: date.strftime("%Y%m%d")}
         for slot, value in zip(SLOTS, kw):
-            row[slot] = format(Decimal(str(value)) * factors[unit], "f")
-        row.update({name: 0 for name in settings.get("quality_columns", [])})
+            row[slot] = format(Decimal(str(value)) * Decimal("0.5"), "f")
+        row.update({name: "0" for name in _quality_columns(settings)})
         yield row
 
 
@@ -366,9 +394,12 @@ def seed_database(settings, options):
         raise ValueError(
             "seed_defaultsはimport_management・customer・contract・dailyの辞書で指定してください"
         )
-    # 省エネサポートサービスの実際のレコードタイプIDは環境ごとに指定する。
-    # 不明なIDを生成して全件未加入と誤判定させないよう、接続前に検証する。
-    record_types = settings.get("seed_record_type_ids")
+    if settings.get("value_unit", "kWh") != "kWh":
+        raise ValueError("現行レポートSQLの入力単位に合わせ、value_unitはkWhを指定してください")
+    # 現行の対象登録SQLはこの文字列との一致で加入フラグを判定する。
+    record_types = settings.get("seed_record_type_ids", {
+        "joined": JOINED_RECORD_TYPE, "not_joined": "未加入",
+    })
     if options.syousapo == "alternate":
         required_types = ("joined", "not_joined")
     elif options.syousapo == "joined":
@@ -380,7 +411,7 @@ def seed_database(settings, options):
         for kind in required_types
     ):
         raise ValueError(
-            "seed_record_type_idsにjoined・not_joinedの実際のIDを指定してください"
+            "seed_record_type_idsにjoined・not_joinedの空でない文字列を指定してください"
         )
     if (
         options.syousapo == "alternate"
@@ -389,6 +420,12 @@ def seed_database(settings, options):
         raise ValueError(
             "joined・not_joinedのレコードタイプIDは別の値を指定してください"
         )
+    if (
+        "joined" in required_types and record_types["joined"] != JOINED_RECORD_TYPE
+    ) or (
+        "not_joined" in required_types and record_types["not_joined"] == JOINED_RECORD_TYPE
+    ):
+        raise ValueError("seed_record_type_idsが現行SQLの省エネサポートサービス加入判定と一致しません")
     import_name = settings.get(
         "import_management_table", TABLE_NAMES["import_management"]
     )
@@ -399,10 +436,13 @@ def seed_database(settings, options):
         raise ValueError(
             "import_management_tableとmanagement_tableは別のテーブルを指定してください"
         )
-    source = DatabaseSource(settings)
+    url = settings.get("url") or os.getenv(settings.get("url_env", "DATABASE_URL"))
+    if not url:
+        raise ValueError("DB接続先がありません。設定JSONのurlまたはurl_envを指定してください")
+    engine = create_engine(url)
     try:
         if options.init_sqlite:
-            init_sqlite_tables(source.engine, settings)
+            init_sqlite_tables(engine, settings)
         result = {
             "dry_run": options.dry_run,
             "count": options.count,
@@ -411,7 +451,7 @@ def seed_database(settings, options):
             "tables": {kind: {"inserted": 0, "skipped": 0} for kind in TABLE_NAMES},
         }
         # 1つの接続・トランザクションで4テーブルを登録し、部分登録を残さない。
-        with source.engine.begin() as connection:
+        with engine.begin() as connection:
             metadata = MetaData()
             tables = {
                 kind: Table(
@@ -468,8 +508,8 @@ def seed_database(settings, options):
                         select(next(iter(table.c)))
                         .where(
                             *[
-                                DatabaseSource._column(table, key)
-                                == row[DatabaseSource._column(table, key).name]
+                                _column(table, key)
+                                == row[_column(table, key).name]
                                 for key in keys
                             ]
                         )
@@ -513,25 +553,20 @@ def seed_database(settings, options):
                     c.name.upper() == "CMN_POWERCONTRACT__C"
                     for c in tables["customer"].c
                 ):
-                    customer_core["CMN_PowerContract__c"] = str(options.contract_kw)
+                    customer_core["CMN_PowerContract__c"] = str(int(options.contract_kw))
                 customer_core.update(filters)
-                customer_keys = {customer_point: point, **filters}
-                if "CMN_BusinessType__c" in customer_core:
-                    customer_keys.setdefault(
-                        "CMN_BusinessType__c", customer_core["CMN_BusinessType__c"]
-                    )
-                insert_one("customer", customer_core, customer_keys)
+                insert_one("customer", customer_core, {customer_point: point})
                 insert_one(
                     "contract",
-                    {CONTRACT_POINT: point, CONTRACT_POWER: str(options.contract_kw)},
+                    {CONTRACT_POINT: point, CONTRACT_POWER: int(options.contract_kw)},
                     {CONTRACT_POINT: point},
                 )
                 daily = tables["daily"]
-                date_col = DatabaseSource._column(daily, DATE)
+                date_col = _column(daily, DATE)
                 existing = set(
                     connection.execute(
                         select(date_col).where(
-                            DatabaseSource._column(daily, POINT) == point,
+                            _column(daily, POINT) == point,
                             date_col >= start.strftime("%Y%m%d"),
                             date_col < end.strftime("%Y%m%d"),
                         )
@@ -563,7 +598,7 @@ def seed_database(settings, options):
                     "import_management",
                     {
                         IMPORT_POINT: point,
-                        IMPORT_MONTH: options.report_month.replace("-", ""),
+                        IMPORT_MONTH: (end - pd.Timedelta(days=1)).strftime("%Y%m"),
                         IMPORT_STATUS: "3",
                         "ERROR_MESSAGE": None,
                         "LINKED_ERROR_MESSAGE": None,
@@ -571,15 +606,15 @@ def seed_database(settings, options):
                     },
                     {
                         IMPORT_POINT: point,
-                        IMPORT_MONTH: options.report_month.replace("-", ""),
+                        IMPORT_MONTH: (end - pd.Timedelta(days=1)).strftime("%Y%m"),
                     },
                 )
         return result
     finally:
-        source.close()
+        engine.dispose()
 
 
-def main():
+def main(argv=None):
     """CLIの件数・期間等を受け取り、テストデータを登録して件数を表示する。"""
     parser = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter
@@ -587,7 +622,7 @@ def main():
     parser.add_argument(
         "--db-config", type=Path, required=True, help="DB設定JSONのパス"
     )
-    parser.add_argument("--report-month", required=True, help="対象の最終月（YYYY-MM）")
+    parser.add_argument("--report-month", required=True, help="対象の最終月（YYYY-MMまたはYYYYMM）")
     parser.add_argument("--count", type=int, default=10, help="登録する供給地点数")
     period = parser.add_mutually_exclusive_group()
     period.add_argument(
@@ -604,7 +639,7 @@ def main():
         "--max-kw", type=float, default=1200, help="30分平均電力の最大値（kW）"
     )
     parser.add_argument(
-        "--contract-kw", type=float, default=1600, help="契約電力（kW）"
+        "--contract-kw", type=int, default=1600, help="契約電力（整数kW）"
     )
     parser.add_argument("--seed", type=int, default=42, help="実績生成の乱数シード")
     parser.add_argument(
@@ -628,8 +663,8 @@ def main():
     parser.add_argument(
         "--init-sqlite", action="store_true", help="SQLite用の最小4テーブルを作成する"
     )
-    args = vars(parser.parse_args())
-    settings = json.loads(args.pop("db_config").read_text(encoding="utf-8"))
+    args = vars(parser.parse_args(argv))
+    settings = json.loads(args.pop("db_config").read_text(encoding="utf-8-sig"))
     result = seed_database(settings, SeedOptions(**args))
     print(json.dumps(result, ensure_ascii=False, indent=2))
 
