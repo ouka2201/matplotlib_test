@@ -503,23 +503,32 @@ def seed_database(settings, options):
             def insert_one(kind, core, keys):
                 table = tables[kind]
                 row = prepare(kind, core)
-                exists = (
+                key_columns = [_column(table, key) for key in keys]
+                key_values = {column.name: row[column.name] for column in key_columns}
+                existing_row = (
                     connection.execute(
-                        select(next(iter(table.c)))
+                        select(*key_columns)
                         .where(
                             *[
-                                _column(table, key)
-                                == row[_column(table, key).name]
-                                for key in keys
+                                column == key_values[column.name]
+                                for column in key_columns
                             ]
                         )
                         .limit(1)
-                    ).first()
-                    is not None
+                    ).mappings().first()
                 )
-                if exists:
+                if existing_row is not None:
                     if options.on_existing == "error":
-                        raise ValueError(f"{table.name}に既存キーがあります: {keys}")
+                        prior_inserts = 0 if options.dry_run else result["tables"][kind]["inserted"]
+                        raise ValueError(
+                            f"{table.name}に既存キーがあります: {key_values}\n"
+                            f"INSERT前のSELECT結果: {dict(existing_row)}\n"
+                            f"参照テーブル: {table.fullname}\n"
+                            f"接続先: host={engine.url.host}, port={engine.url.port}, "
+                            f"database={engine.url.database}\n"
+                            f"この実行で同テーブルへ先行INSERTした件数: {prior_inserts}\n"
+                            f"実行ファイル: {Path(__file__).resolve()}"
+                        )
                     result["tables"][kind]["skipped"] += 1
                 else:
                     if not options.dry_run:

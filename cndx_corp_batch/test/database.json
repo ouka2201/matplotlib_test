@@ -12,6 +12,7 @@
     ],
     "batch_user": "electricity_report_batch",
     "customer_columns": {
+        "customer_name": "cmn_demandlocationfullname_ref__c",
         "customer_number": "cmn_oldcustomernum__c",
         "address": "cmn_demandlocationaddress__c",
         "company_id": "cmn_kigyoid_fk__c",
