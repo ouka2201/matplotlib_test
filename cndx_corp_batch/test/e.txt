@@ -1,0 +1,38 @@
+(.venv) PS C:\STEP4> python -m cndx_corp_batch.test.insert_test_data --db-config cndx_corp_batch/test/database.json --report-month 2026-08 --count 1 --months 12 --max-kw 1200 --contract-kw 1600 --point-prefix 89999                    
+{
+  "dry_run": false,
+  "count": 1,
+  "start": "2025-09-01",
+  "end": "2026-08-31",
+  "tables": {
+    "import_management": {
+      "inserted": 1,
+      "skipped": 0
+    },
+    "customer": {
+      "inserted": 1,
+      "skipped": 0
+    },
+    "contract": {
+      "inserted": 1,
+      "skipped": 0
+    },
+    "daily": {
+      "inserted": 365,
+      "skipped": 0
+    }
+  }
+}
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\STEP4\cndx_corp_batch\test\insert_test_data.py", line 1382, in <module>
+    main()
+  File "C:\STEP4\cndx_corp_batch\test\insert_test_data.py", line 1377, in main
+    result = seed_database(settings, SeedOptions(**args))
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\STEP4\cndx_corp_batch\test\insert_test_data.py", line 1265, in seed_database
+    insert_one("customer", customer_core, {customer_point: point})
+  File "C:\STEP4\cndx_corp_batch\test\insert_test_data.py", line 1227, in insert_one
+    raise ValueError(f"{table.name}に既存キーがあります: {keys}")
+ValueError: t_arve_customer_infoに既存キーがあります: {'cmn_supplypointspecificnum__c': '8999900000000000000001'}
