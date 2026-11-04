@@ -6,7 +6,7 @@ import SearchForm from "~/components/common/search-form";
 import SectionTitle from "~/components/common/section-title";
 import MasterLayout from "~/components/layout/master-layout";
 import { useSession } from "~/components/layout/session-provider";
-import { Button } from "~/components/ui/button";
+import { buttonVariants } from "~/components/ui/button";
 import { canRegisterHandover } from "~/lib/validations/mgmg03";
 import { customerColumns } from "~/components/screen/master/msmg01/customer-columns";
 import { Command, CommandList } from "~/components/ui/command";
@@ -137,9 +137,12 @@ export default function CustomerMaster() {
     <MasterLayout breadcrumbItems={breadcrumbItems} isEditing={false}>
       {canRegisterHandover(session?.authorityInfo) && (
         <div className="mb-4 flex justify-end">
-          <Button asChild variant="primary">
-            <Link to="/management/mgmg03">担当引継</Link>
-          </Button>
+          <Link
+            to="/management/mgmg03"
+            className={buttonVariants({ variant: "primary" })}
+          >
+            担当引継
+          </Link>
         </div>
       )}
       {errorMessage && (
