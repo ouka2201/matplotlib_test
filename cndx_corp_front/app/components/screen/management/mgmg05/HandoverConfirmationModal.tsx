@@ -63,7 +63,7 @@ function HandoverConfirmationContent({
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>{HANDOVER_MESSAGES.CONFIRM_TITLE}</AlertDialogTitle>
-          <AlertDialogDescription>
+          <AlertDialogDescription className="whitespace-pre-line text-left">
             {parsedInput.success && parsedInput.data.handover_type === HANDOVER_TYPE_BULK
               ? HANDOVER_MESSAGES.CONFIRM_BULK
               : HANDOVER_MESSAGES.CONFIRM_INDIVIDUAL}
