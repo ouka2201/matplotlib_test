@@ -60,10 +60,10 @@ function HandoverConfirmationContent({
         if (!isOpen && !isSaving) onClose();
       }}
     >
-      <AlertDialogContent>
-        <AlertDialogHeader>
+      <AlertDialogContent className="w-max max-w-[calc(100vw-2rem)]">
+        <AlertDialogHeader className="min-w-0">
           <AlertDialogTitle>{HANDOVER_MESSAGES.CONFIRM_TITLE}</AlertDialogTitle>
-          <AlertDialogDescription className="whitespace-pre-line text-left">
+          <AlertDialogDescription className="max-w-full overflow-x-auto whitespace-pre text-left">
             {parsedInput.success && parsedInput.data.handover_type === HANDOVER_TYPE_BULK
               ? HANDOVER_MESSAGES.CONFIRM_BULK
               : HANDOVER_MESSAGES.CONFIRM_INDIVIDUAL}
