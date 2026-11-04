@@ -1,10 +1,12 @@
-"""担当者検索から引継確認モーダルまでの操作用データを準備する。"""
+"""担当者検索・画面登録・引継バッチ実行のテストデータを準備する。"""
 
 import argparse
 import os
 import re
 import secrets
+import sys
 from datetime import date, datetime, timedelta
+from pathlib import Path
 
 from sqlalchemy import (
     Connection,
@@ -35,12 +37,30 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--from-user-id", default="99009001")
     parser.add_argument("--to-user-id", default="99009002")
     parser.add_argument("--database-url-env", default="TEST_DATABASE_URL")
+    parser.add_argument(
+        "--with-business-data", action="store_true", help="企業2社と過去データ8表も作成"
+    )
+    parser.add_argument("--start-id", type=int, default=900001)
+    parser.add_argument("--agreement-category", default="01")
+    parser.add_argument("--energy-code", default="ELECTRICITY")
+    parser.add_argument(
+        "--schedule-date",
+        type=date.fromisoformat,
+        default=date.today() + timedelta(days=7),
+    )
     action = parser.add_mutually_exclusive_group()
     action.add_argument("--apply", action="store_true", help="データを投入する")
     action.add_argument(
         "--cleanup", action="store_true", help="作成したテストデータを削除"
     )
+    action.add_argument(
+        "--verify-stage",
+        choices=("registered", "completed"),
+        help="登録後・バッチ後を確認（参照のみ）",
+    )
     args = parser.parse_args(argv)
+    if args.verify_stage and not args.with_business_data:
+        parser.error("--verify-stageには--with-business-dataが必要です。")
     for name in ("login_user_id", "from_user_id", "to_user_id"):
         if not re.fullmatch(r"[0-9A-Z]{1,8}", getattr(args, name)):
             parser.error(f"{name}は半角大文字英数字1～8文字で指定してください。")
@@ -220,7 +240,11 @@ def run(args: argparse.Namespace, engine: Engine) -> str:
         )
         pending_orgs = _validate_organizations(connection, users, orgs, args)
         existing_ids = _check_existing(connection, users, rows)
+        if args.verify_stage:
+            return _business_data(connection, args)
         if args.cleanup:
+            if args.with_business_data:
+                _business_data(connection, args)
             ids = [row["user_id"] for row in rows]
             _check_unused(connection, metadata, ids)
             connection.execute(
@@ -246,12 +270,25 @@ def run(args: argparse.Namespace, engine: Engine) -> str:
                             user_password=secrets.token_hex(32),
                         )
                     )
+        business_summary = (
+            _business_data(connection, args) if args.with_business_data else ""
+        )
     mode = (
         "投入完了（既存の同一データは保持）" if args.apply else "確認のみ（DB変更なし）"
     )
     emails = "\n".join(row["email_address"] for row in rows)
-    schedule = (date.today() + timedelta(days=7)).strftime("%Y/%m/%d")
-    return f"{mode}\n引継元／先の検索メール:\n{emails}\n実施日の例: {schedule}"
+    schedule = args.schedule_date.strftime("%Y/%m/%d")
+    return f"{mode}\n引継元／先の検索メール:\n{emails}\n実施日: {schedule}\n{business_summary}"
+
+
+def _business_data(connection: Connection, args: argparse.Namespace) -> str:
+    # ファイル直接実行でもFlaskを起動せず既存バッチ用PGを再利用する。
+    root = str(Path(__file__).resolve().parents[2])
+    if root not in sys.path:
+        sys.path.insert(0, root)
+    from cndx_corp_batch.test.handover_screen_business_data import prepare_business
+
+    return prepare_business(connection, args)
 
 
 def main(argv: list[str] | None = None) -> None:

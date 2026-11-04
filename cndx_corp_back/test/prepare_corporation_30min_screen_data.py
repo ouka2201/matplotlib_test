@@ -5,7 +5,7 @@ import os
 from datetime import date, datetime
 from zoneinfo import ZoneInfo
 
-from sqlalchemy import MetaData, Table, create_engine, select
+from sqlalchemy import MetaData, Table, create_engine, func, select
 
 
 MARKER = "UT_API04_30MIN"
@@ -27,6 +27,7 @@ def parse_args(argv=None):
     action = parser.add_mutually_exclusive_group()
     action.add_argument("--apply", action="store_true", help="検証DBに投入する")
     action.add_argument("--cleanup", action="store_true", help="このPG用の企業と関連行を削除する")
+    action.add_argument("--verify", action="store_true", help="投入・画面保存後の登録条件を確認する（読取専用）")
     args = parser.parse_args(argv)
     for key, length in (("corp_number", 13), ("supply_point", 22),
                         ("ep_office_code", 3), ("ep_customer_number", 13)):
@@ -211,9 +212,60 @@ def _cleanup(connection, tables, args):
     return "試験用企業と関連行を削除しました"
 
 
+def _verify(connection, tables, args):
+    basic = tables["m_corporate_basic"]
+    building = tables["m_building"]
+    ep = tables["t_ep_electricity_data_30min"]
+    arve = tables["t_arve_customer_info"]
+    raw = tables["t_electricity_data_30min"]
+    corp = _one(connection, basic, corporate_number=args.corp_number)
+    office = _one(connection, building, corporate_number=args.corp_number,
+                  building_id=args.corp_number + "000001")
+    ep_count = connection.execute(select(func.count()).select_from(ep).where(
+        ep.c.t01_kyo_ctn_tok_no == args.supply_point
+    )).scalar_one()
+    arve_count = connection.execute(select(func.count()).select_from(arve).where(
+        arve.c.cmn_supplypointspecificnum__c == args.supply_point
+    )).scalar_one()
+    joined = building.join(basic, basic.c.corporate_number == building.c.corporate_number)
+    joined = joined.join(ep, ep.c.t01_kyo_ctn_tok_no == building.c.supply_point_number)
+    joined = joined.join(arve, arve.c.cmn_supplypointspecificnum__c == building.c.supply_point_number)
+    match_count = connection.execute(select(func.count()).select_from(joined).where(
+        building.c.corporate_number == args.corp_number,
+        building.c.building_id == args.corp_number + "000001",
+        building.c.agreement_category == "01", building.c.org_id == "TEP",
+        building.c.delete_flg.is_(False),
+    )).scalar_one()
+    raw_count = connection.execute(select(func.count()).select_from(raw).where(
+        raw.c.corp_number == args.corp_number,
+        raw.c.building_id == args.corp_number + "000001",
+        raw.c.supply_point_number == args.supply_point,
+    )).scalar_one()
+    if corp is None:
+        status = "企業が見つかりません。PGを投入したDBを確認してください。"
+    elif office is None:
+        status = "拠点がありません。--new-officeを使った場合は画面から拠点を追加してください。"
+    elif office["supply_point_number"] != args.supply_point:
+        status = "拠点の供給地点特定番号が未設定または不一致です。画面で保存した値を確認してください。"
+    elif raw_count:
+        status = "30分値が登録されています。"
+    elif match_count == 0:
+        status = "APIの登録SQLで結合できる行がありません。拠点の有効状態とEP・ARVEの元データを確認してください。"
+    else:
+        status = ("登録条件はそろっています。画面の保存応答と、稼働中バックエンドのAPI-04実装・"
+                  "接続先DBを確認してください。同じ供給地点番号を再保存しても同期は再実行されません。")
+    return (f"企業基本={'あり' if corp else 'なし'}、"
+            f"拠点の供給地点={office['supply_point_number'] if office else '拠点なし'}、"
+            f"EP={ep_count}行、ARVE={arve_count}行、"
+            f"登録対象の結合結果={match_count}行、30分値={raw_count}行\n判定: {status}")
+
+
 def run(args, engine):
     with engine.begin() as connection:
         tables = _tables(connection)
+        if args.verify:
+            return (f"接続先: {engine.url.host or 'local'}/{engine.url.database or ''}\n"
+                    + _verify(connection, tables, args))
         if args.cleanup:
             return _cleanup(connection, tables, args)
         new_consent, new_tep = _check_available(connection, tables, args)
@@ -222,7 +274,8 @@ def run(args, engine):
         if not args.apply:
             return "確認のみ（DB変更なし）: " + summary
         _prepare(connection, tables, args, new_consent, new_tep)
-        return "準備完了: " + summary
+        return ("準備完了（30分値は未登録）: " + summary
+                + "。画面で拠点を保存した後、--verifyで結果を確認してください")
 
 
 def main(argv=None):
