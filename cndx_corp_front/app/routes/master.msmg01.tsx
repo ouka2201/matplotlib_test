@@ -1,9 +1,13 @@
 import React, { useEffect, useState } from "react";
+import { Link } from "@remix-run/react";
 // import { useNavigate } from "react-router-dom";
 import ErrorHint from "~/components/common/error-hint";
 import SearchForm from "~/components/common/search-form";
 import SectionTitle from "~/components/common/section-title";
 import MasterLayout from "~/components/layout/master-layout";
+import { useSession } from "~/components/layout/session-provider";
+import { Button } from "~/components/ui/button";
+import { canRegisterHandover } from "~/lib/validations/mgmg03";
 import { customerColumns } from "~/components/screen/master/msmg01/customer-columns";
 import { Command, CommandList } from "~/components/ui/command";
 import { PageableTable } from "~/components/ui/pageable-table";
@@ -30,6 +34,7 @@ const searchFields = [
 ];
 
 export default function CustomerMaster() {
+  const { session } = useSession();
   // const navigate = useNavigate();
   // const { session } = useSession();
   // const { isAdmin, isBank } = useAuthority(session);
@@ -130,6 +135,13 @@ export default function CustomerMaster() {
 
   return (
     <MasterLayout breadcrumbItems={breadcrumbItems} isEditing={false}>
+      {canRegisterHandover(session?.authorityInfo) && (
+        <div className="mb-4 flex justify-end">
+          <Button asChild variant="primary">
+            <Link to="/management/mgmg03">担当引継</Link>
+          </Button>
+        </div>
+      )}
       {errorMessage && (
         <div className="w-4/5">
           <ErrorHint

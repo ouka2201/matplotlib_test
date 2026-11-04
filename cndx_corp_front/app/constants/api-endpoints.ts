@@ -61,8 +61,11 @@ export const API_ENDPOINTS = {
     API_FILE_STATIC_FILE: `${API_BASE}//api/file/static_file`,//静的ファイルアップロードAPI
   },
   CONTACT_PERSON: {
+    API_CONTACT_PERSON_SEARCH: `${API_BASE}/api/contact-person/search`,
     API_CONTACT_PERSON_DETAIL: `${API_BASE}/api/contact-person/detail`, // 担当者情報取得API
     API_CONTACT_PERSON_ADD_USER_INQUIRY: `${API_BASE}/api/contact-person/addUser/inquiry`, // 担当者のユーザーIDによるユーザー情報取得API
     API_CONTACT_PERSON_UPDATE: `${API_BASE}/api/contact-person/update`, // 担当者情報登録API
+    API_INDIVIDUAL_HANDOVER: `${API_BASE}/api/contact-person/individual_handover`,
+    API_INCLUSIVE_HANDOVER: `${API_BASE}/api/contact-person/inclusive_handover`,
   }
 } as const;
