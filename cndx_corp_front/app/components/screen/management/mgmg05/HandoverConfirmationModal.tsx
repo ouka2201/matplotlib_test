@@ -1,15 +1,15 @@
+import { Action, Cancel } from "@radix-ui/react-alert-dialog";
 import type { MouseEvent } from "react";
 import ErrorHint from "~/components/common/error-hint";
 import {
   AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
 } from "~/components/ui/alert-dialog";
+import { Button } from "~/components/ui/button";
 import { useToast } from "~/components/ui/use-toast";
 import { HANDOVER_TYPE_BULK } from "~/constants/handover";
 import { HANDOVER_MESSAGES } from "~/constants/messages/handover";
@@ -72,10 +72,15 @@ function HandoverConfirmationContent({
         {!parsedInput.success && <ErrorHint message={HANDOVER_MESSAGES.MISSING_INPUT} />}
         {errorMessage && <ErrorHint message={errorMessage} />}
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isSaving}>いいえ</AlertDialogCancel>
-          <AlertDialogAction onClick={handleSubmit} disabled={isSaving || !parsedInput.success}>
-            {isSaving ? "登録中..." : "はい"}
-          </AlertDialogAction>
+          <Cancel asChild>
+            <Button variant="third" size="third" disabled={isSaving}>いいえ</Button>
+          </Cancel>
+          <Action asChild>
+            <Button variant="second" size="second" onClick={handleSubmit}
+              disabled={isSaving || !parsedInput.success}>
+              {isSaving ? "登録中..." : "はい"}
+            </Button>
+          </Action>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
