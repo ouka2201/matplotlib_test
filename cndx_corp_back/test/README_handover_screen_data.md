@@ -1,6 +1,7 @@
 # 引継確認画面までのテストデータ
 
-`prepare_handover_screen_data.py` は既存の検証用組織に検索専用の担当者2名を作成します。
+`prepare_handover_screen_data.py` は検索専用の担当者2名を作成します。
+`--create-organizations` を指定すると引継元・先の組織も作成します。省略時は既存組織を使います。
 既存の組織、管理者、権限設定は変更しません。アプリの起動処理を読み込まず、SQLAlchemyで接続します。
 
 ## 実行
@@ -33,6 +34,29 @@ python cndx_corp_back/test/prepare_handover_screen_data.py @seedArgs --apply
 既存データは上書きしません。同じ条件で再実行すると作成済みデータは保持します。
 このPGが作成した行でも、内容が変更されていれば停止します。
 
+## 組織も作成する場合
+
+ログイン管理者とその所属組織は既存のものを使い、元・先には未使用の組織IDを指定します。
+以下は銀行コード0001の本店管理者を使う例です。IDは環境に合わせて変更してください。
+
+```powershell
+$seedArgs = @(
+  '--login-user-id', '00000001',
+  '--from-org-id', 'BNK0001901',
+  '--to-org-id', 'BNK0001902',
+  '--create-organizations'
+)
+python cndx_corp_back/test/prepare_handover_screen_data.py @seedArgs
+python cndx_corp_back/test/prepare_handover_screen_data.py @seedArgs --apply
+```
+
+新規組織の種別は既定で03（支店）、親組織はログイン管理者の所属組織です。
+EP管理者で別種別の組織を作る場合は `--org-type-code`（01～06）を指定できます。
+02・03の場合、組織IDは `BNK`＋銀行コード4桁＋支店識別子にします。
+組織名は `引継画面テスト組織`＋組織IDです。元・先に同じIDを指定すると1組織を作成します。
+既存組織とIDが衝突した場合は上書きせず停止します。
+組織と担当者は同一トランザクションで作成するため、途中で失敗した場合は全件を取り消します。
+
 ## 画面操作
 
 1. 指定した既存管理者でログインし、「営業担当登録・管理」→「担当引継」を開く。
@@ -61,3 +85,7 @@ python cndx_corp_back/test/prepare_handover_screen_data.py @seedArgs --cleanup
 対象IDかつ作成者マーカーが一致する2名だけを削除します。
 担当者設定や引継予定に使用されている場合は削除せず停止します。
 既存管理者と組織は残します。
+組織も作成した場合は、削除時にも `--create-organizations` と同じ種別・IDを指定してください。
+このPGが作成した組織のみ、担当者の削除後に削除します。DB内の組織ID列（`org_id`、
+`*_org_id`）に参照が残っている場合は、担当者の削除も含めて取り消します。
+オプションを省略して削除した場合は担当者のみ削除し、組織は残します。
