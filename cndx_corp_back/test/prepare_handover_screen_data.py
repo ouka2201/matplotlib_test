@@ -62,8 +62,8 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     if args.verify_stage and not args.with_business_data:
         parser.error("--verify-stageには--with-business-dataが必要です。")
     for name in ("login_user_id", "from_user_id", "to_user_id"):
-        if not re.fullmatch(r"[0-9A-Z]{1,8}", getattr(args, name)):
-            parser.error(f"{name}は半角大文字英数字1～8文字で指定してください。")
+        if not re.fullmatch(r"[0-9A-Za-z]{1,8}", getattr(args, name)):
+            parser.error(f"{name}は半角英数字1～8文字で指定してください。")
     for value in (args.from_org_id, args.to_org_id):
         if not re.fullmatch(r"[0-9A-Z]{1,20}", value):
             parser.error("組織IDは半角大文字英数字1～20文字で指定してください。")

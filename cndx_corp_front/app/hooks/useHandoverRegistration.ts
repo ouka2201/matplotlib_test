@@ -4,7 +4,7 @@ import { API_ENDPOINTS } from "~/constants/api-endpoints";
 import { HANDOVER_TYPE_INDIVIDUAL } from "~/constants/handover";
 import { HANDOVER_MESSAGES } from "~/constants/messages/handover";
 import { postData } from "~/lib/fetch";
-import type { HandoverState } from "~/types/screen/management/mgmg05";
+import type { HandoverState } from "~/types/screen/master/mgmg05";
 
 export function useHandoverRegistration() {
   const { session } = useSession();

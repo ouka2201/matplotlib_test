@@ -36,6 +36,27 @@ def test_handover_validation_rejects_wrong_role_and_spoofed_registrant() -> None
         validate_handover({**DATA, "user_id": "00000099"}, CONTEXT, "0")
 
 
+@pytest.mark.parametrize("handover_type", ["0", "1"])
+def test_handover_validation_accepts_lowercase_user_ids(handover_type: str) -> None:
+    context = {**CONTEXT, "user_id": "user01"}
+    data = {
+        **DATA,
+        "user_id": "user01",
+        "handover_from_user_id": "sales01",
+        "handover_to_user_id": "Sales02",
+        "handover_type": handover_type,
+    }
+    validate_handover(data, context, handover_type)
+    with pytest.raises(PermissionError):
+        validate_handover({**data, "user_id": "USER01"}, context, handover_type)
+
+
+@pytest.mark.parametrize("user_id", ["", "123456789", "user 01", "ユーザー", None, 1])
+def test_handover_validation_rejects_invalid_user_ids(user_id: object) -> None:
+    with pytest.raises(ValueError, match="user_idが不正"):
+        validate_handover({**DATA, "user_id": user_id}, CONTEXT, "0")
+
+
 def test_handover_validation_checks_date_and_company_number() -> None:
     with pytest.raises(ValueError):
         validate_handover({**DATA, "handover_schedule_date": "20260230"}, CONTEXT, "0")

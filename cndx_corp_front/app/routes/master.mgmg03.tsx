@@ -4,8 +4,8 @@ import ErrorHint from "~/components/common/error-hint";
 import MasterLayout from "~/components/layout/master-layout";
 import { useSession } from "~/components/layout/session-provider";
 import { AlertModal } from "~/components/modal/alert-modal";
-import { HandoverManagerSelector } from "~/components/screen/management/mgmg03/HandoverManagerSelector";
-import { HandoverConfirmationModal } from "~/components/screen/management/mgmg05/HandoverConfirmationModal";
+import { HandoverManagerSelector } from "~/components/screen/master/mgmg03/HandoverManagerSelector";
+import { HandoverConfirmationModal } from "~/components/screen/master/mgmg05/HandoverConfirmationModal";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Checkbox } from "~/components/ui/checkbox";
@@ -14,7 +14,7 @@ import { Label } from "~/components/ui/label";
 import { HANDOVER_TYPE_BULK } from "~/constants/handover";
 import { canRegisterHandover, canTransferReportData, isFutureHandoverDate } from "~/lib/validations/mgmg03";
 import type { HandoverManager } from "~/lib/validations/mgmg03";
-import type { HandoverState } from "~/types/screen/management/mgmg05";
+import type { HandoverState } from "~/types/screen/master/mgmg05";
 
 // shortcut: 仮画面は一括引継のみ。個別引継は企業選択画面の実装時に追加する。
 export default function SalesHandover() {

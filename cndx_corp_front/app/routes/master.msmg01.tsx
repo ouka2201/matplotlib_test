@@ -138,7 +138,7 @@ export default function CustomerMaster() {
       {canRegisterHandover(session?.authorityInfo) && (
         <div className="mb-4 flex justify-end">
           <Link
-            to="/management/mgmg03"
+            to="/master/mgmg03"
             className={buttonVariants({ variant: "primary" })}
           >
             担当引継
