@@ -1,3 +1,5 @@
+"""営業担当者引継バッチの対象取得と法人ごとの引継処理を行う。"""
+
 from __future__ import annotations
 
 from collections.abc import Mapping
@@ -20,13 +22,19 @@ from cndx_corp_batch.jobs.base import BaseJob
 
 
 class SalesUserHandoverJob(BaseJob):
-    """担当者引継ぎ実行バッチ（BLMMGMGHANDOVER）。
+    """営業担当者引継バッチ（BLMMGMGHANDOVER）を実行する。
 
-    対象法人を順次処理し、引継元担当者の確認、担当者情報の更新、
-    過去データの組織ID更新、引継情報の完了更新を行う。
+    予定日が実行日と一致する引継情報を法人ごとに処理し、担当者情報、
+    必要に応じて過去データと引継実施ステータスを更新する。
     """
 
     def __init__(self, context: BatchContext, batch_date: date | None = None) -> None:
+        """実行日を決め、引継処理で使う SQL を読み込む。
+
+        Args:
+            context: バッチの設定やロガーを保持する実行コンテキスト。
+            batch_date: 処理対象の日付。省略時は現在の日付を使う。
+        """
         super().__init__(context)
         self.batch_date = batch_date or get_current_time().date()
         self.batch_date_text = self.batch_date.strftime("%Y%m%d")
@@ -56,7 +64,11 @@ class SalesUserHandoverJob(BaseJob):
         }
 
     def execute(self) -> int:
-        """対象を取得し、法人番号単位で設計書の処理を順番に実行する。"""
+        """実行日が予定日となっている引継情報を法人ごとに処理する。
+
+        Returns:
+            処理した引継情報の件数。
+        """
         targets = self._get_targets()
         self.logger.info("担当者引継ぎ対象取得完了。件数=%s", len(targets))
 
@@ -69,6 +81,11 @@ class SalesUserHandoverJob(BaseJob):
         return processed
 
     def _get_targets(self) -> list[Mapping[str, object]]:
+        """実行日が予定日で、ステータスが「予定」の引継情報を取得する。
+
+        Returns:
+            処理対象の引継情報。
+        """
         with get_session() as session:
             return list(
                 session.execute(
@@ -83,6 +100,17 @@ class SalesUserHandoverJob(BaseJob):
             )
 
     def _process_target(self, target: Mapping[str, object]) -> None:
+        """一件の引継情報について担当者と必要な過去データを更新する。
+
+        元・先の担当者がともに不在なら引継情報を削除する。処理中に例外が
+        発生した場合は変更を巻き戻し、別トランザクションで登録エラーを記録する。
+
+        Args:
+            target: 処理対象の引継情報。
+
+        Raises:
+            Exception: 引継処理中に発生した例外を、エラー記録後に再送出する。
+        """
         params = self._target_params(target)
         try:
             with get_session() as session:
@@ -142,11 +170,29 @@ class SalesUserHandoverJob(BaseJob):
     def _source_staff_exists(
         self, session: Session, params: Mapping[str, object]
     ) -> bool:
+        """対象法人に引継元担当者が登録されているか確認する。
+
+        Args:
+            session: 引継処理に使うデータベースセッション。
+            params: 法人番号と引継元・引継先の識別子。
+
+        Returns:
+            引継元担当者が登録されている場合は ``True``。
+        """
         return session.execute(self.select_source_staff, params).first() is not None
 
     def _destination_staff_exists(
         self, session: Session, params: Mapping[str, object]
     ) -> bool:
+        """対象法人に引継先担当者が登録されているか確認する。
+
+        Args:
+            session: 引継処理に使うデータベースセッション。
+            params: 法人番号と引継元・引継先の識別子。
+
+        Returns:
+            引継先担当者が登録されている場合は ``True``。
+        """
         return (
             session.execute(self.select_destination_staff, params).first() is not None
         )
@@ -154,12 +200,28 @@ class SalesUserHandoverJob(BaseJob):
     def _check_data_exists(
         self, session: Session, params: Mapping[str, object]
     ) -> Mapping[str, object]:
+        """引継元の過去データが各テーブルにあるか確認する。
+
+        Args:
+            session: 引継処理に使うデータベースセッション。
+            params: 法人番号と引継元・引継先の識別子。
+
+        Returns:
+            テーブルごとの存在判定。該当行がなければ空の辞書。
+        """
         row = session.execute(self.check_data, params).mappings().first()
         return row or {}
 
     def _update_status(
         self, session: Session, params: Mapping[str, object], status: str
     ) -> None:
+        """引継情報のステータスと実施日時を更新する。
+
+        Args:
+            session: 更新に使うデータベースセッション。
+            params: 更新対象を特定する法人番号と引継元・引継先の識別子。
+            status: 設定する引継実施ステータス。
+        """
         session.execute(
             self.update_status,
             {
@@ -170,6 +232,13 @@ class SalesUserHandoverJob(BaseJob):
         )
 
     def _record_error_status(self, params: Mapping[str, object]) -> None:
+        """別トランザクションで登録エラーを記録する。
+
+        記録にも失敗した場合は例外をログに残す。
+
+        Args:
+            params: 更新対象を特定する法人番号と引継元・引継先の識別子。
+        """
         try:
             with get_session() as session:
                 self._update_status(session, params, HANDOVER_STATUS_ERROR)
@@ -183,6 +252,14 @@ class SalesUserHandoverJob(BaseJob):
             )
 
     def _target_params(self, target: Mapping[str, object]) -> dict[str, object]:
+        """引継情報から各 SQL に共通するパラメータを組み立てる。
+
+        Args:
+            target: 処理対象の引継情報。
+
+        Returns:
+            法人番号、引継元・引継先の識別子、実行日を含む辞書。
+        """
         return {
             "corporate_number": target["corporate_number"],
             "handover_from_org_id": target["handover_from_org_id"],
