@@ -17,7 +17,15 @@ from cndx_corp_back.service.contact_person.handover_register_service import (
 
 
 def _masked_source_key(data: dict) -> str:
-    """認証情報や入力全文を含めず、調査用の引継元キーを記録する。"""
+    """ログに出力する引継元の識別情報をマスクする。
+
+    Args:
+        data: 引継元の組織IDとユーザーIDを含む入力情報。
+
+    Returns:
+        各IDの末尾4文字だけを残した文字列。4文字以下のIDは全体を隠す。
+        文字列でない値や英数字以外を含む値は出力しない。
+    """
     return ", ".join(
         f"{key}=***{value[-4:] if len(value) > 4 else ''}"
         for key in ("handover_from_org_id", "handover_from_user_id")
@@ -26,6 +34,8 @@ def _masked_source_key(data: dict) -> str:
 
 
 class HandoverApi(MethodView):
+    """営業担当の個別引継登録を受け付けるAPI。"""
+
     handover_type = HANDOVER_TYPE_INDIVIDUAL
 
     @jwt_user_context_db(refresh=False)
@@ -36,6 +46,17 @@ class HandoverApi(MethodView):
         user_context: dict | None = None,
         logger: CorpLogger | None = None,
     ) -> tuple[Response, int]:
+        """引継予定を登録し、処理結果を返す。
+
+        Args:
+            dict_request_data: リクエストから取得した引継の登録内容。
+            user_context: 認証処理で取得したユーザー情報。
+            logger: リクエスト用のロガー。省略時はアプリのロガーを使用する。
+
+        Returns:
+            JSONレスポンスとHTTPステータスの組。成功は200、入力・登録状態の
+            エラーは400、権限エラーは403、想定外のエラーは500を返す。
+        """
         logger = logger if logger is not None else current_app.logger
         try:
             register_handover(dict_request_data, user_context or {}, self.handover_type)
@@ -58,6 +79,8 @@ class HandoverApi(MethodView):
 
 
 class InclusiveHandoverApi(HandoverApi):
+    """共通の登録処理を使って営業担当の一括引継を受け付けるAPI。"""
+
     handover_type = HANDOVER_TYPE_BULK
 
 

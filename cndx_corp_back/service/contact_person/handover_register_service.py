@@ -22,6 +22,20 @@ from cndx_corp_back.query.handover_query import (
 
 
 def register_handover(data: dict, user_context: dict, handover_type: str) -> None:
+    """対象企業の引継予定を同一トランザクションで登録する。
+
+    一括引継では引継元の担当企業をすべて対象にする。個別引継では、
+    選択から外れた企業の未実施の引継予定を削除する。
+
+    Args:
+        data: 引継元・引継先、実施予定日、登録者などの入力情報。
+        user_context: 認証済みユーザーのID、所属組織、権限情報。
+        handover_type: 引継区分。個別は「0」、一括は「1」。
+
+    Raises:
+        PermissionError: 利用権限がない、または登録者情報が一致しない場合。
+        ValueError: 入力が不正、対象企業が担当外、または引継が実施済みの場合。
+    """
     numbers = validate_handover(data, user_context, handover_type)
     params = {
         "from_org": data["handover_from_org_id"],

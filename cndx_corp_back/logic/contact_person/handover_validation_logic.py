@@ -14,6 +14,14 @@ from cndx_corp_back.constant.handover_constants import (
 
 
 def _validate_schedule(schedule: object) -> None:
+    """実施予定日が8桁の文字列で、実在する日付かを確認する。
+
+    Args:
+        schedule: YYYYMMDD形式の実施予定日。
+
+    Raises:
+        ValueError: 形式が不正、または存在しない日付の場合。
+    """
     if not isinstance(schedule, str) or not re.fullmatch(r"[0-9]{8}", schedule):
         raise ValueError("handover_schedule_dateが不正です。")
     try:
@@ -23,6 +31,17 @@ def _validate_schedule(schedule: object) -> None:
 
 
 def _validate_company_numbers(numbers: object) -> list[str]:
+    """法人番号の形式を検証し、入力順を保って重複を除く。
+
+    Args:
+        numbers: 13桁の半角数字で表した法人番号のリスト。
+
+    Returns:
+        重複を除いた法人番号のリスト。空のリストはそのまま返す。
+
+    Raises:
+        ValueError: リスト以外が渡された、または法人番号の形式が不正な場合。
+    """
     if not isinstance(numbers, list) or any(
         not isinstance(number, str) or not re.fullmatch(r"[0-9]{13}", number)
         for number in numbers
@@ -32,7 +51,21 @@ def _validate_company_numbers(numbers: object) -> list[str]:
 
 
 def validate_handover(data: dict, user_context: dict, handover_type: str) -> list[str]:
-    """入力を検証し、個別引継の重複を除いた法人番号を返す。"""
+    """引継登録の入力と利用権限を検証する。
+
+    Args:
+        data: 引継元・引継先、実施予定日、登録者などの入力情報。
+        user_context: 認証済みユーザーのID、所属組織、権限情報。
+        handover_type: 呼び出されたAPIの引継区分。個別は「0」、一括は「1」。
+
+    Returns:
+        個別引継の場合は重複を除いた法人番号のリスト。一括引継の場合は
+        空のリストを返し、対象企業の取得は登録処理で行う。
+
+    Raises:
+        PermissionError: 利用権限がない、または登録者情報が一致しない場合。
+        ValueError: ID、引継区分、日付などの入力値が不正な場合。
+    """
     if not isinstance(data, dict):
         raise ValueError(HANDOVER_INVALID_INPUT)
     if (

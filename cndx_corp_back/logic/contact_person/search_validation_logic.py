@@ -10,6 +10,22 @@ from cndx_corp_back.constant.handover_constants import (
 
 
 def validate_manager_search(data: dict, user_context: dict) -> dict:
+    """検索条件と権限を検証し、SQLに渡す検索パラメータを作る。
+
+    検索範囲は認証済みの所属・権限から決定する。検索文字列に含まれる
+    LIKEのワイルドカードは、通常の文字として検索できるように処理する。
+
+    Args:
+        data: 検索文字列、検索対象、検索者の所属・権限情報。
+        user_context: 認証済みユーザーの所属組織と権限情報。
+
+    Returns:
+        検索パターン、検索対象、組織の検索範囲を指定する辞書。
+
+    Raises:
+        PermissionError: 利用権限や所属が不正、または検索者情報が一致しない場合。
+        ValueError: 検索タイプや検索文字列が不正な場合。
+    """
     org_type = user_context.get("org_type_code")
     role = str(user_context.get("role"))
     if (org_type, role) not in HANDOVER_ALLOWED_ROLES:
