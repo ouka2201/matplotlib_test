@@ -1,3 +1,5 @@
+"""営業担当者引継バッチをコマンドラインから起動する。"""
+
 import argparse
 import sys
 from collections.abc import Sequence
@@ -13,7 +15,14 @@ from cndx_corp_batch.domains.sales_user_handover.jobs.sales_user_handover_job im
 
 
 def main(argv: Sequence[str] | None = None) -> int:
-    """担当者引継ぎ実行バッチのエントリーポイント。"""
+    """引数と実行環境を設定し、営業担当者引継バッチを実行する。
+
+    Args:
+        argv: コマンドライン引数。省略時は実行時の引数を使う。
+
+    Returns:
+        正常終了時は ``0``、バッチ実行中に例外が発生した場合は ``1``。
+    """
     parser = argparse.ArgumentParser(description="担当者引継ぎ実行")
     parser.add_argument(
         "--batch-date",
