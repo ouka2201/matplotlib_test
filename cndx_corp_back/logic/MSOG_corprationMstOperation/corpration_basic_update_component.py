@@ -26,6 +26,16 @@ class CorprationBasicUpdateComponent:
 
     @component
     def execute(self, request_dict: dict, logger=None):
+        """企業・建物情報を登録または更新し、変更された建物の 30 分値を同期する。
+
+        新規企業の登録時は企業基本情報のみを保存する。既存企業の更新時は
+        建物の変更前の情報を保持し、建物の更新後に同じトランザクションで
+        30 分値データを同期する。
+
+        Args:
+            request_dict: 企業情報と事業所情報を含む登録内容。
+            logger: 処理ログの出力先。省略時はアプリのロガーを使う。
+        """
 
         # 建物情報取得
         df_corpInfos = pd.DataFrame(request_dict)

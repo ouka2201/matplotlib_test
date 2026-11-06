@@ -1,3 +1,5 @@
+"""企業基本情報登録時に建物の変更を 30 分値データへ反映する。"""
+
 from datetime import datetime
 
 from sqlalchemy import text
@@ -8,10 +10,18 @@ from cndx_corp_back.query.corporation_30min_query import INSERT_CORPORATION_30MI
 
 
 class Corporation30minSync:
-    """企業基本情報登録APIで変更された建物の30分値だけを同期する。"""
+    """変更された建物に対応する 30 分値データを同期する。"""
 
     @staticmethod
     def _key(building):
+        """建物から 30 分値データの検索に使う識別子を取り出す。
+
+        Args:
+            building: 対象の建物。
+
+        Returns:
+            法人番号、契約区分、組織 ID、建物 ID を含む辞書。
+        """
         return {
             "corporate_number": building.corporate_number,
             "agreement_category": building.agreement_category,
@@ -21,6 +31,14 @@ class Corporation30minSync:
 
     @classmethod
     def snapshot(cls, buildings):
+        """更新前の建物 ID と供給地点番号、削除状態を保存する。
+
+        Args:
+            buildings: 更新前の建物の一覧。
+
+        Returns:
+            各建物と、更新前の識別子・供給地点番号・削除状態の辞書。
+        """
         # 既存処理が主キーを変更する場合も、変更前のキーで生データを削除できるようにする。
         return [
             (
@@ -33,6 +51,17 @@ class Corporation30minSync:
         ]
 
     def execute(self, session, buildings_before, corporate_number, user_id):
+        """建物の変更に合わせて 30 分値データを削除・登録する。
+
+        削除された建物のデータは削除する。供給地点番号や識別子が変わった
+        建物のデータは登録し直し、新しく登録された建物のデータも作成する。
+
+        Args:
+            session: 建物の更新と同じトランザクションで使うセッション。
+            buildings_before: 更新前の建物情報を保存した一覧。
+            corporate_number: 対象企業の法人番号。
+            user_id: 登録者のユーザー ID。
+        """
         to_insert = []
         for building, old_key, old_point, was_deleted in buildings_before:
             new_key = self._key(building)
@@ -63,6 +92,13 @@ class Corporation30minSync:
 
     @staticmethod
     def _delete(session, key, supply_points):
+        """指定した建物と供給地点番号に対応する 30 分値データを削除する。
+
+        Args:
+            session: 削除に使うデータベースセッション。
+            key: 建物を特定する法人番号、契約区分、組織 ID、建物 ID。
+            supply_points: 削除対象の供給地点番号。空の値は除外する。
+        """
         points = {point for point in supply_points if point}
         if points:
             session.query(TElectricityData30min).filter(
@@ -74,6 +110,16 @@ class Corporation30minSync:
             ).delete(synchronize_session=False)
 
     def _insert(self, session, building, user_id, is_new):
+        """EP・ARVE データを結合し、建物の 30 分値データを登録する。
+
+        新規建物は直近 5 年分、既存建物の変更時は期間を限定せず登録する。
+
+        Args:
+            session: 登録に使うデータベースセッション。
+            building: 登録対象の建物。
+            user_id: 登録者のユーザー ID。
+            is_new: 新規建物なら ``True``。
+        """
         # 更新仕様No.7は直近5年、No.11（供給地点変更）は期間制限なし。
         history_filter = ""
         if is_new:

@@ -1,4 +1,4 @@
-"""LMMBCS-API-04 更新仕様No.7・11。物理列名は30分値紐付けバッチと共通。"""
+"""企業基本情報登録 API で使う 30 分値データの登録 SQL を定義する。"""
 
 _energy_columns = ",\n    ".join(f"v30min_used_energy_{i}" for i in range(1, 49))
 _energy_values = ",\n    ".join(
