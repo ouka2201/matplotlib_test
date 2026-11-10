@@ -17,7 +17,13 @@ python cndx_corp_back/test/prepare_corporation_30min_screen_data.py @args30
 python cndx_corp_back/test/prepare_corporation_30min_screen_data.py @args30 --apply
 ```
 
-最初のコマンドはDBを変更せず、投入前の重複とマスタの存在を確認します。`--apply` は1回だけ実行してください。同じ法人番号や供給地点特定番号が登録済みなら、既存データを守るため処理を中止します。都道府県コード`13`は共通マスタに登録されている必要があります。別のコードを使う場合は`--prefecture-code`で指定します。
+最初のコマンドはDBを変更せず、投入前の重複とマスタの存在を確認します。通常の`--apply`で同じ法人番号や供給地点特定番号が登録済みなら、既存データを守るため処理を中止します。都道府県コード`13`は共通マスタに登録されている必要があります。別のコードを使う場合は`--prefecture-code`で指定します。
+
+同じケースをやり直す場合は、初回と同じ引数に`--reset`を付けます。作成者と関連行を検証してから削除し、同じ初期データを1トランザクションで再投入します。画面保存後の拠点番号と30分値も初期化します。
+
+```powershell
+python cndx_corp_back/test/prepare_corporation_30min_screen_data.py @args30 --reset
+```
 
 ## 登録されないときの確認
 

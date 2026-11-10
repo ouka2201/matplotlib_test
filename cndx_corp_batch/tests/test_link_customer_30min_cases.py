@@ -212,6 +212,36 @@ def test_duplicate_seed_never_overwrites(settings):
     assert read_rows(settings, "t_electricity_data_30min") == before
 
 
+def test_reset_restores_case_after_batch_and_cleanup_removes_it(settings, monkeypatch):
+    plan = cases.build_plan("67")
+    cases.insert_plan(settings, plan, init_sqlite=True)
+    original = read_rows(settings, "t_electricity_data_30min")[0]
+    assert run_batch(settings, plan, monkeypatch) == 1
+    assert read_rows(settings, "t_electricity_data_30min")[0]["V30MIN_USED_ENERGY_1"] != original["V30MIN_USED_ENERGY_1"]
+    cases.insert_plan(settings, plan, reset=True)
+    assert read_rows(settings, "t_electricity_data_30min")[0]["V30MIN_USED_ENERGY_1"] == original["V30MIN_USED_ENERGY_1"]
+    assert read_rows(settings, "t_30min_import_mng")[0]["LINKED_DATE"] is None
+    cases.insert_plan(settings, plan, cleanup=True)
+    for table in ("t_electricity_data_30min", "t_30min_import_mng", "m_building",
+                  "m_corporate_basic", "t_arve_customer_info", "t_ep_electricity_data_30min"):
+        assert read_rows(settings, table) == []
+    cases.insert_plan(settings, plan, cleanup=True)
+
+
+def test_reset_refuses_foreign_row_without_deleting_other_tables(settings):
+    plan = cases.build_plan("10")
+    cases.insert_plan(settings, plan, init_sqlite=True)
+    engine = create_engine(settings["url"])
+    try:
+        with engine.begin() as connection:
+            connection.execute(text("UPDATE m_corporate_basic SET CREATED_BY = 'someone_else'"))
+    finally:
+        engine.dispose()
+    with pytest.raises(ValueError, match="このPG以外"):
+        cases.insert_plan(settings, plan, reset=True)
+    assert len(read_rows(settings, "t_ep_electricity_data_30min")) == 1
+
+
 def test_insert_failure_rolls_back_all_tables(settings):
     engine = create_engine(settings["url"])
     try:

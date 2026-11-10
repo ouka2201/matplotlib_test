@@ -23,9 +23,11 @@ def parse_args(argv=None):
     parser.add_argument("--ep-office-code", default="123", help="EP事業所コード（3桁）")
     parser.add_argument("--ep-customer-number", default="0000000000123", help="EPお客さま番号（13桁）")
     parser.add_argument("--new-office", action="store_true", help="拠点を作らず、画面から新規追加する")
+    parser.add_argument("--count", type=int, choices=(1, 2), default=1, help="対象企業数")
     parser.add_argument("--database-url-env", default="TEST_DATABASE_URL")
     action = parser.add_mutually_exclusive_group()
     action.add_argument("--apply", action="store_true", help="検証DBに投入する")
+    action.add_argument("--reset", action="store_true", help="このPGの行を削除して同じ初期データを再投入する")
     action.add_argument("--cleanup", action="store_true", help="このPG用の企業と関連行を削除する")
     action.add_argument("--verify", action="store_true", help="投入・画面保存後の登録条件を確認する（読取専用）")
     args = parser.parse_args(argv)
@@ -48,6 +50,9 @@ def parse_args(argv=None):
         parser.error("--acquisition-date は直近5年以内の実在する日付にしてください")
     if len(args.prefecture_code) != 2 or not args.prefecture_code.isdigit():
         parser.error("--prefecture-code は2桁の数字にしてください")
+    if args.count == 2 and (int(args.corp_number) == 9999999999999
+                             or int(args.supply_point) == 9999999999999999999999):
+        parser.error("--count 2には次の法人番号・供給地点番号を使用できる値が必要です")
     return args
 
 
@@ -154,7 +159,7 @@ def _prepare(connection, tables, args, new_consent, new_tep):
             }))
 
 
-def _cleanup(connection, tables, args):
+def _cleanup(connection, tables, args, *, remove_orgs=True):
     basic = _one(connection, tables["m_corporate_basic"], corporate_number=args.corp_number)
     if basic is None:
         return "対象の試験用企業はありません"
@@ -206,10 +211,33 @@ def _cleanup(connection, tables, args):
     connection.execute(arve.delete().where(arve.c.cmn_supplypointspecificnum__c == args.supply_point))
     connection.execute(tables["m_corporate_basic"].delete().where(
         tables["m_corporate_basic"].c.corporate_number == args.corp_number))
-    org = tables["m_user_organization_info"]
-    for org_id in (args.consent_org_id, "TEP"):
-        connection.execute(org.delete().where(org.c.org_id == org_id, org.c.created_by == MARKER))
+    if remove_orgs:
+        _delete_created_orgs(connection, tables, args)
     return "試験用企業と関連行を削除しました"
+
+
+def _delete_created_orgs(connection, tables, args):
+    org = tables["m_user_organization_info"]
+    details = tables["m_corporate_details_info"]
+    building = tables["m_building"]
+    for org_id in (args.consent_org_id, "TEP"):
+        if connection.execute(select(details).where(details.c.org_id == org_id)).first():
+            continue
+        if connection.execute(select(building).where(
+            (building.c.org_id == org_id) | (building.c.agreement_org == org_id)
+        )).first():
+            continue
+        connection.execute(org.delete().where(org.c.org_id == org_id, org.c.created_by == MARKER))
+
+
+def _targets(args):
+    targets = [args]
+    if getattr(args, "count", 1) == 2:
+        second = argparse.Namespace(**vars(args))
+        second.corp_number = f"{int(args.corp_number) + 1:013d}"
+        second.supply_point = f"{int(args.supply_point) + 1:022d}"
+        targets.append(second)
+    return targets
 
 
 def _verify(connection, tables, args):
@@ -261,19 +289,33 @@ def _verify(connection, tables, args):
 
 
 def run(args, engine):
+    targets = _targets(args)
     with engine.begin() as connection:
         tables = _tables(connection)
         if args.verify:
             return (f"接続先: {engine.url.host or 'local'}/{engine.url.database or ''}\n"
-                    + _verify(connection, tables, args))
+                    + "\n".join(_verify(connection, tables, target) for target in targets))
         if args.cleanup:
-            return _cleanup(connection, tables, args)
-        new_consent, new_tep = _check_available(connection, tables, args)
-        summary = (f"法人番号={args.corp_number}、供給地点特定番号={args.supply_point}、"
+            results = [_cleanup(connection, tables, target, remove_orgs=len(targets) == 1)
+                       for target in reversed(targets)]
+            if len(targets) > 1:
+                _delete_created_orgs(connection, tables, args)
+            return "\n".join(results)
+        if args.reset:
+            for target in reversed(targets):
+                _cleanup(connection, tables, target, remove_orgs=len(targets) == 1)
+            if len(targets) > 1:
+                _delete_created_orgs(connection, tables, args)
+        availability = [_check_available(connection, tables, target) for target in targets]
+        summary = (f"法人番号={','.join(target.corp_number for target in targets)}、"
+                   f"供給地点特定番号={','.join(target.supply_point for target in targets)}、"
                    f"取得日={args.acquisition_date}、画面操作={'拠点を新規追加' if args.new_office else '既存拠点の供給地点を入力'}")
-        if not args.apply:
+        if not args.apply and not args.reset:
             return "確認のみ（DB変更なし）: " + summary
-        _prepare(connection, tables, args, new_consent, new_tep)
+        for target, (new_consent, new_tep) in zip(targets, availability):
+            if target is not targets[0]:
+                new_consent, new_tep = _check_available(connection, tables, target)
+            _prepare(connection, tables, target, new_consent, new_tep)
         return ("準備完了（30分値は未登録）: " + summary
                 + "。画面で拠点を保存した後、--verifyで結果を確認してください")
 

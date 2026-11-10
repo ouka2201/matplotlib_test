@@ -148,6 +148,12 @@ python cndx_corp_back/test/prepare_handover_screen_data.py @seedArgs --verify-st
 
 投入時と同じ引数（IDを変更した場合はそのIDも）で実行します。
 
+登録・バッチ実行後に同じ初期データへ戻す場合は `--reset` を使います。対象ユーザー・業務データ・引継予定を所有者とキーで確認し、削除と再投入を1トランザクションで行います。`--with-business-data`、`--start-id`、`--schedule-date`、`--create-organizations` などは投入時と同じ値を指定してください。
+
+```powershell
+python cndx_corp_back/test/prepare_handover_screen_data.py @seedArgs --reset
+```
+
 ```powershell
 python cndx_corp_back/test/prepare_handover_screen_data.py @seedArgs --cleanup
 ```

@@ -43,6 +43,8 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--start-id", type=int, default=900001)
     parser.add_argument("--agreement-category", default="01")
     parser.add_argument("--energy-code", default="ELECTRICITY")
+    parser.add_argument("--existing-handover", action="store_true", help="更新ケース用の引継予定を作成")
+    parser.add_argument("--handover-type", choices=("0", "1"), default="1")
     parser.add_argument(
         "--schedule-date",
         type=date.fromisoformat,
@@ -50,6 +52,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     )
     action = parser.add_mutually_exclusive_group()
     action.add_argument("--apply", action="store_true", help="データを投入する")
+    action.add_argument("--reset", action="store_true", help="このPGの行を削除して再投入する")
     action.add_argument(
         "--cleanup", action="store_true", help="作成したテストデータを削除"
     )
@@ -61,6 +64,8 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     args = parser.parse_args(argv)
     if args.verify_stage and not args.with_business_data:
         parser.error("--verify-stageには--with-business-dataが必要です。")
+    if args.existing_handover and not args.with_business_data:
+        parser.error("--existing-handoverには--with-business-dataが必要です。")
     for name in ("login_user_id", "from_user_id", "to_user_id"):
         if not re.fullmatch(r"[0-9A-Za-z]{1,8}", getattr(args, name)):
             parser.error(f"{name}は半角英数字1～8文字で指定してください。")
@@ -242,9 +247,11 @@ def run(args: argparse.Namespace, engine: Engine) -> str:
         existing_ids = _check_existing(connection, users, rows)
         if args.verify_stage:
             return _business_data(connection, args)
-        if args.cleanup:
+        if args.cleanup or args.reset:
+            cleanup_args = argparse.Namespace(**vars(args))
+            cleanup_args.cleanup = True
             if args.with_business_data:
-                _business_data(connection, args)
+                _business_data(connection, cleanup_args)
             ids = [row["user_id"] for row in rows]
             _check_unused(connection, metadata, ids)
             connection.execute(
@@ -254,8 +261,11 @@ def run(args: argparse.Namespace, engine: Engine) -> str:
             )
             if args.create_organizations:
                 _delete_organizations(connection, orgs, args)
-            return "作成したテストデータを削除しました。"
-        if args.apply:
+            if args.cleanup:
+                return "作成したテストデータを削除しました。"
+            pending_orgs = _validate_organizations(connection, users, orgs, args)
+            existing_ids = _check_existing(connection, users, rows)
+        if args.apply or args.reset:
             for row in pending_orgs:
                 connection.execute(
                     orgs.insert().values(**row, created_at=datetime.now())
@@ -270,10 +280,15 @@ def run(args: argparse.Namespace, engine: Engine) -> str:
                             user_password=secrets.token_hex(32),
                         )
                     )
+        business_args = argparse.Namespace(**vars(args))
+        business_args.apply = args.apply or args.reset
         business_summary = (
-            _business_data(connection, args) if args.with_business_data else ""
+            _business_data(connection, business_args) if args.with_business_data else ""
         )
+        if args.existing_handover and (args.apply or args.reset):
+            _insert_existing_handover(connection, args)
     mode = (
+        "初期化・再投入完了" if args.reset else
         "投入完了（既存の同一データは保持）" if args.apply else "確認のみ（DB変更なし）"
     )
     emails = "\n".join(row["email_address"] for row in rows)
@@ -289,6 +304,35 @@ def _business_data(connection: Connection, args: argparse.Namespace) -> str:
     from cndx_corp_batch.test.handover_screen_business_data import prepare_business
 
     return prepare_business(connection, args)
+
+
+def _insert_existing_handover(connection: Connection, args: argparse.Namespace) -> None:
+    from cndx_corp_batch.test.handover_screen_business_data import build_business_rows
+
+    table = Table("t_sales_user_handover_info", MetaData(), schema="db_corp", autoload_with=connection)
+    numbers = [row["CORPORATE_NUMBER"] for row in build_business_rows(args)["corporate"]]
+    now = datetime.now()
+    for number in numbers[:1 if args.handover_type == "0" else 2]:
+        values = {
+            "corporate_number": number,
+            "handover_from_org_id": args.from_org_id,
+            "handover_from_user_id": args.from_user_id,
+            "handover_to_org_id": args.to_org_id,
+            "handover_to_user_id": args.to_user_id,
+            "handover_schedule_date": args.schedule_date.strftime("%Y%m%d"),
+            "report_data_flg": False,
+            "handover_status": "1",
+            "handover_type": args.handover_type,
+            "creator_id": args.login_user_id,
+            "creator_org_id": args.from_org_id,
+            "insert_datetime": now,
+            "created_by": MARKER,
+            "created_at": now,
+        }
+        missing = set(values) - set(table.c.keys())
+        if missing:
+            raise ValueError(f"{table.name}に必要な列がありません: {sorted(missing)}")
+        connection.execute(table.insert().values(**values))
 
 
 def main(argv: list[str] | None = None) -> None:

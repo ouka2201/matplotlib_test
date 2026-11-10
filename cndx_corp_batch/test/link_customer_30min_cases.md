@@ -29,7 +29,7 @@ python -m cndx_corp_batch.test.prepare_link_customer_30min_cases `
 
 テスト用PostgreSQLへ投入する例です。接続設定は既存の `test/database.json` と共通です。
 ケースごとに初期化済みの検証DBを使ってください。バッチは他ケースの未処理行も取得するため、
-複数ケースを混在させると件数や異常系の結果が変わります。PGは既存データを削除しません。
+複数ケースを混在させると件数や異常系の結果が変わります。
 
 ```powershell
 $env:REPORT_DATABASE_URL = 'postgresql+psycopg2://ユーザー:パスワード@ホスト/検証用DB名'
@@ -51,9 +51,24 @@ python -m cndx_corp_batch.entrypoints.link_customer_30min `
 バッチ本体は環境設定で対象月を決めます。新版仕様書の15日／16日の境界を検証する際は、
 `batch_environment` に出力した上記3変数を設定してください。PGは親シェルの環境変数を変更しません。
 
-既存キーがあればエラー終了し、上書き・スキップはしません。投入途中で失敗した場合も全INSERTをロールバックします。
+通常投入で既存キーがあればエラー終了し、上書き・スキップはしません。投入途中で失敗した場合も全INSERTをロールバックします。
 別番号で用意する場合は `--start-id 90001` のように指定できますが、既存の未処理行との混在には注意してください。
 同じ開始番号を指定すると他ケースでも同じキーになるので、通常はケースごとの既定値を使います。
+
+同じケースをもう一度試す場合は `--reset` を付けます。取込管理を初期状態へ戻し、
+バッチ後の連携先行を含めてケースのデータを削除し、同じ入力データを再投入します。
+終了後に消す場合は `--cleanup` を付けます。いずれもケースのキーと作成者を確認し、
+他のPGが作成した行があれば削除せずにエラー終了します。処理全体は1トランザクションです。
+`--start-id` を使って投入した場合は、再設定・削除時にも同じ番号を指定してください。
+
+```powershell
+python -m cndx_corp_batch.test.prepare_link_customer_30min_cases `
+    --case 72 --db-config cndx_corp_batch/test/database.json --reset
+python -m cndx_corp_batch.test.prepare_link_customer_30min_cases `
+    --case 72 --db-config cndx_corp_batch/test/database.json --cleanup
+```
+
+0件ケース（2・19）は作成データがないため、他の未処理行がない検証DBで実行してください。
 
 ## 生成内容とケース対応
 

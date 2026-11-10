@@ -148,8 +148,59 @@ def build_plan(case_id: str, start_id: int | None = None):
     }
 
 
-def insert_plan(settings, plan, *, init_sqlite=False):
-    """事前検証後、全投入を1トランザクションで行う。既存行は変更しない。"""
+def _cleanup_plan(connection, tables, plan):
+    """作成者を確認してから、このケースのキーだけを削除する。"""
+    owned = False
+    for key, input_rows in plan["rows"].items():
+        if key == "linked":
+            continue
+        table = tables[key]
+        columns = seed._column_map(table)
+        for values in input_rows:
+            seed._require_columns(table, (*KEYS[key], "CREATED_BY"))
+            keys = seed._row(table, {name: values[name] for name in KEYS[key]})
+            row = connection.execute(select(table).where(
+                *(table.c[name] == value for name, value in keys.items())
+            )).mappings().first()
+            if row is None:
+                continue
+            if row[columns["CREATED_BY"]] != values["CREATED_BY"]:
+                raise ValueError(f"{table.name}にこのPG以外の行があります: {keys}")
+            owned = True
+    linked = tables["linked"]
+    linked_columns = seed._column_map(linked)
+    linked_rows = connection.execute(select(linked).where(
+        linked.c[linked_columns["SUPPLY_POINT_NUMBER"]].in_(plan["points"])
+    )).mappings().all() if plan["points"] else []
+    if linked_rows and not owned:
+        raise ValueError("連携先行だけが存在します。所有元を確認できないため削除しません。")
+    expected = {
+        (row["CORPORATE_NUMBER"], row["AGREEMENT_CATEGORY"], row["ORG_ID"], row["BUILDING_ID"])
+        for row in plan["rows"]["building"]
+    }
+    for row in linked_rows:
+        identity = tuple(row[linked_columns[name]] for name in
+                         ("CORP_NUMBER", "AGREEMENT_CATEGORY", "ORG_ID", "BUILDING_ID"))
+        if identity not in expected:
+            raise ValueError("同じ供給地点に別ケースの連携先行があります。削除しません。")
+    for row in linked_rows:
+        keys = {name: row[linked_columns[name]] for name in KEYS["linked"]}
+        connection.execute(linked.delete().where(
+            *(linked.c[linked_columns[name]] == value for name, value in keys.items())
+        ))
+    for key in ("daily", "customer", "management", "building", "corporate"):
+        table = tables[key]
+        for values in plan["rows"][key]:
+            keys = seed._row(table, {name: values[name] for name in KEYS[key]})
+            connection.execute(table.delete().where(
+                *(table.c[name] == value for name, value in keys.items())
+            ))
+
+
+def insert_plan(settings, plan, *, init_sqlite=False, reset=False, cleanup=False):
+    """ケース単位で投入・再投入・削除し、全操作を1トランザクションにする。"""
+    if reset and cleanup:
+        raise ValueError("resetとcleanupは同時に指定できません。")
     url = settings.get("url") or os.getenv(settings.get("url_env", "DATABASE_URL"))
     if not url:
         raise ValueError("DB接続先がありません。設定JSONのurlまたはurl_envを指定してください。")
@@ -161,6 +212,10 @@ def insert_plan(settings, plan, *, init_sqlite=False):
             seed.init_sqlite_tables(engine, settings)
         with engine.begin() as connection:
             tables = seed._reflect_tables(connection, settings)
+            if reset or cleanup:
+                _cleanup_plan(connection, tables, plan)
+            if cleanup:
+                return {key: 0 for key in plan["rows"]}
             prepared = []
             for key, input_rows in plan["rows"].items():
                 table = tables[key]
@@ -203,6 +258,9 @@ def main(argv=None):
     parser.add_argument("--dry-run", action="store_true", help="DB接続せず投入計画を確認")
     parser.add_argument("--output", type=Path, help="投入データ全件を含む計画JSONの保存先")
     parser.add_argument("--init-sqlite", action="store_true", help="SQLite用の最小検証テーブルを作成")
+    action = parser.add_mutually_exclusive_group()
+    action.add_argument("--reset", action="store_true", help="指定ケースを削除して初期データを再投入")
+    action.add_argument("--cleanup", action="store_true", help="指定ケースの作成データを削除")
     args = parser.parse_args(argv)
     if args.list:
         for case in load_catalog()["cases"]:
@@ -219,12 +277,14 @@ def main(argv=None):
             args.output.write_text(json.dumps(plan, ensure_ascii=False, indent=2, default=str) + "\n", encoding="utf-8")
         summary = {key: value for key, value in plan.items() if key != "rows"}
         summary["planned_counts"] = {key: len(rows) for key, rows in plan["rows"].items()}
-        summary["mode"] = "dry-run" if args.dry_run else "insert"
+        summary["mode"] = "dry-run" if args.dry_run else "reset" if args.reset else "cleanup" if args.cleanup else "insert"
         print(json.dumps(summary, ensure_ascii=False, indent=2))
         if not args.dry_run:
             settings = json.loads(args.db_config.read_text(encoding="utf-8-sig"))
-            counts = insert_plan(settings, plan, init_sqlite=args.init_sqlite)
-            print("投入完了: " + json.dumps(counts, ensure_ascii=False))
+            counts = insert_plan(settings, plan, init_sqlite=args.init_sqlite,
+                                 reset=args.reset, cleanup=args.cleanup)
+            print(("削除完了" if args.cleanup else "初期化・再投入完了" if args.reset else "投入完了")
+                  + ": " + json.dumps(counts, ensure_ascii=False))
     except (ValueError, OSError) as exc:
         parser.exit(1, f"準備失敗: {exc}\n")
     return 0

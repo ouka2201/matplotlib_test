@@ -1,0 +1,730 @@
+{
+  "api04": {
+    "source": "docs/テストケース/単体テストケース・結果一覧表_API_LMMBCS-API-04_企業基本情報登録API.xlsx",
+    "cases": [
+      {
+        "number": 1,
+        "category": "起動",
+        "condition": "正常リクエスト",
+        "procedure": "設計書で定義された正常なリクエストを設定してAPIを実行する。",
+        "expected": "APIが正常終了し、設計書で定義されたレスポンスが返却される。",
+        "source_row": 8
+      },
+      {
+        "number": 2,
+        "category": "認証・権限",
+        "condition": "実行権限あり",
+        "procedure": "実行可能な権限を持つユーザーでAPIを実行する。",
+        "expected": "権限チェックを通過し、後続処理が実行される。",
+        "source_row": 9
+      },
+      {
+        "number": 3,
+        "category": "認証・権限",
+        "condition": "実行権限なし",
+        "procedure": "実行権限を持たないユーザーでAPIを実行する。",
+        "expected": "403エラーが返却され、業務処理およびDB更新が行われない。",
+        "source_row": 10
+      },
+      {
+        "number": 4,
+        "category": "入力チェック",
+        "condition": "必須・型・桁数・文字種",
+        "procedure": "入力項目チェック仕様に従い、必須未設定、型不正、桁数超過、許可文字種外の値で実行する。",
+        "expected": "該当する入力エラーが返却され、後続処理が実行されない。",
+        "source_row": 11
+      },
+      {
+        "number": 5,
+        "category": "登録・更新処理",
+        "condition": "新規登録",
+        "procedure": "登録対象が未登録の正常データでAPIを実行する。",
+        "expected": "設計書で定義された項目が登録され、正常レスポンスが返却される。",
+        "source_row": 12
+      },
+      {
+        "number": 6,
+        "category": "登録・更新処理",
+        "condition": "既存データ更新",
+        "procedure": "更新対象となる既存データを準備してAPIを実行する。",
+        "expected": "対象データのみが設計書どおり更新される。",
+        "source_row": 13
+      },
+      {
+        "number": 7,
+        "category": "登録・更新処理",
+        "condition": "複数件処理",
+        "procedure": "複数件の登録・更新対象を設定してAPIを実行する。",
+        "expected": "全対象が重複・欠落なく処理され、処理件数が一致する。",
+        "source_row": 14
+      },
+      {
+        "number": 8,
+        "category": "トランザクション",
+        "condition": "正常終了",
+        "procedure": "正常データでAPIを実行する。",
+        "expected": "全DB更新がコミットされ、レスポンス内容とDB内容が整合する。",
+        "source_row": 15
+      },
+      {
+        "number": 9,
+        "category": "例外処理",
+        "condition": "想定外エラー",
+        "procedure": "処理中に想定外Exceptionが発生する状態でAPIを実行する。",
+        "expected": "設計書で定義されたエラーが返却され、必要なログが出力される。DB更新はロールバックされる。",
+        "source_row": 16
+      },
+      {
+        "number": 10,
+        "category": "ログ出力",
+        "condition": "正常・異常ログ",
+        "procedure": "正常ケースと異常ケースをそれぞれ実行する。",
+        "expected": "開始、終了、エラー等のログが設計書どおり出力され、機密情報が不要に出力されない。",
+        "source_row": 17
+      }
+    ]
+  },
+  "api05": {
+    "source": "docs/テストケース/単体テストケース・結果一覧表_API_LMMGMG-API-05_営業担当個別引継登録.xlsx",
+    "cases": [
+      {
+        "number": 1,
+        "category": "起動",
+        "condition": "正常リクエスト",
+        "procedure": "設計書で定義された正常なリクエストを設定してAPIを実行する。",
+        "expected": "APIが正常終了し、設計書で定義されたレスポンスが返却される。",
+        "source_row": 8
+      },
+      {
+        "number": 2,
+        "category": "認証・権限",
+        "condition": "実行権限あり",
+        "procedure": "実行可能な権限を持つユーザーでAPIを実行する。",
+        "expected": "権限チェックを通過し、後続処理が実行される。",
+        "source_row": 9
+      },
+      {
+        "number": 3,
+        "category": "認証・権限",
+        "condition": "実行権限なし",
+        "procedure": "実行権限を持たないユーザーでAPIを実行する。",
+        "expected": "403エラーが返却され、業務処理およびDB更新が行われない。",
+        "source_row": 10
+      },
+      {
+        "number": 4,
+        "category": "入力チェック",
+        "condition": "必須・型・桁数・文字種",
+        "procedure": "入力項目チェック仕様に従い、必須未設定、型不正、桁数超過、許可文字種外の値で実行する。",
+        "expected": "該当する入力エラーが返却され、後続処理が実行されない。",
+        "source_row": 11
+      },
+      {
+        "number": 5,
+        "category": "登録・更新処理",
+        "condition": "新規登録",
+        "procedure": "登録対象が未登録の正常データでAPIを実行する。",
+        "expected": "設計書で定義された項目が登録され、正常レスポンスが返却される。",
+        "source_row": 12
+      },
+      {
+        "number": 6,
+        "category": "登録・更新処理",
+        "condition": "既存データ更新",
+        "procedure": "更新対象となる既存データを準備してAPIを実行する。",
+        "expected": "対象データのみが設計書どおり更新される。",
+        "source_row": 13
+      },
+      {
+        "number": 7,
+        "category": "登録・更新処理",
+        "condition": "複数件処理",
+        "procedure": "複数件の登録・更新対象を設定してAPIを実行する。",
+        "expected": "全対象が重複・欠落なく処理され、処理件数が一致する。",
+        "source_row": 14
+      },
+      {
+        "number": 8,
+        "category": "トランザクション",
+        "condition": "正常終了",
+        "procedure": "正常データでAPIを実行する。",
+        "expected": "全DB更新がコミットされ、レスポンス内容とDB内容が整合する。",
+        "source_row": 15
+      },
+      {
+        "number": 9,
+        "category": "例外処理",
+        "condition": "想定外エラー",
+        "procedure": "処理中に想定外Exceptionが発生する状態でAPIを実行する。",
+        "expected": "設計書で定義されたエラーが返却され、必要なログが出力される。DB更新はロールバックされる。",
+        "source_row": 16
+      },
+      {
+        "number": 10,
+        "category": "ログ出力",
+        "condition": "正常・異常ログ",
+        "procedure": "正常ケースと異常ケースをそれぞれ実行する。",
+        "expected": "開始、終了、エラー等のログが設計書どおり出力され、機密情報が不要に出力されない。",
+        "source_row": 17
+      }
+    ]
+  },
+  "api06": {
+    "source": "docs/テストケース/単体テストケース・結果一覧表_API_LMMGMG-API-06_営業担当一括引継登録.xlsx",
+    "cases": [
+      {
+        "number": 1,
+        "category": "起動",
+        "condition": "正常リクエスト",
+        "procedure": "設計書で定義された正常なリクエストを設定してAPIを実行する。",
+        "expected": "APIが正常終了し、設計書で定義されたレスポンスが返却される。",
+        "source_row": 8
+      },
+      {
+        "number": 2,
+        "category": "認証・権限",
+        "condition": "実行権限あり",
+        "procedure": "実行可能な権限を持つユーザーでAPIを実行する。",
+        "expected": "権限チェックを通過し、後続処理が実行される。",
+        "source_row": 9
+      },
+      {
+        "number": 3,
+        "category": "認証・権限",
+        "condition": "実行権限なし",
+        "procedure": "実行権限を持たないユーザーでAPIを実行する。",
+        "expected": "403エラーが返却され、業務処理およびDB更新が行われない。",
+        "source_row": 10
+      },
+      {
+        "number": 4,
+        "category": "入力チェック",
+        "condition": "必須・型・桁数・文字種",
+        "procedure": "入力項目チェック仕様に従い、必須未設定、型不正、桁数超過、許可文字種外の値で実行する。",
+        "expected": "該当する入力エラーが返却され、後続処理が実行されない。",
+        "source_row": 11
+      },
+      {
+        "number": 5,
+        "category": "登録・更新処理",
+        "condition": "新規登録",
+        "procedure": "登録対象が未登録の正常データでAPIを実行する。",
+        "expected": "設計書で定義された項目が登録され、正常レスポンスが返却される。",
+        "source_row": 12
+      },
+      {
+        "number": 6,
+        "category": "登録・更新処理",
+        "condition": "既存データ更新",
+        "procedure": "更新対象となる既存データを準備してAPIを実行する。",
+        "expected": "対象データのみが設計書どおり更新される。",
+        "source_row": 13
+      },
+      {
+        "number": 7,
+        "category": "登録・更新処理",
+        "condition": "複数件処理",
+        "procedure": "複数件の登録・更新対象を設定してAPIを実行する。",
+        "expected": "全対象が重複・欠落なく処理され、処理件数が一致する。",
+        "source_row": 14
+      },
+      {
+        "number": 8,
+        "category": "トランザクション",
+        "condition": "正常終了",
+        "procedure": "正常データでAPIを実行する。",
+        "expected": "全DB更新がコミットされ、レスポンス内容とDB内容が整合する。",
+        "source_row": 15
+      },
+      {
+        "number": 9,
+        "category": "例外処理",
+        "condition": "想定外エラー",
+        "procedure": "処理中に想定外Exceptionが発生する状態でAPIを実行する。",
+        "expected": "設計書で定義されたエラーが返却され、必要なログが出力される。DB更新はロールバックされる。",
+        "source_row": 16
+      },
+      {
+        "number": 10,
+        "category": "ログ出力",
+        "condition": "正常・異常ログ",
+        "procedure": "正常ケースと異常ケースをそれぞれ実行する。",
+        "expected": "開始、終了、エラー等のログが設計書どおり出力され、機密情報が不要に出力されない。",
+        "source_row": 17
+      }
+    ]
+  },
+  "api02": {
+    "source": "docs/テストケース/単体テストケース・結果一覧表_API_LMMVMV-API-02_30分値一覧取得API.xlsx",
+    "cases": [
+      {
+        "number": 1,
+        "category": "起動",
+        "condition": "正常リクエスト",
+        "procedure": "設計書で定義された正常なリクエストを設定してAPIを実行する。",
+        "expected": "APIが正常終了し、設計書で定義されたレスポンスが返却される。",
+        "source_row": 8
+      },
+      {
+        "number": 2,
+        "category": "認証・権限",
+        "condition": "実行権限あり",
+        "procedure": "実行可能な権限を持つユーザーでAPIを実行する。",
+        "expected": "権限チェックを通過し、後続処理が実行される。",
+        "source_row": 9
+      },
+      {
+        "number": 3,
+        "category": "認証・権限",
+        "condition": "実行権限なし",
+        "procedure": "実行権限を持たないユーザーでAPIを実行する。",
+        "expected": "403エラーが返却され、業務処理およびDB更新が行われない。",
+        "source_row": 10
+      },
+      {
+        "number": 4,
+        "category": "入力チェック",
+        "condition": "必須・型・桁数・文字種",
+        "procedure": "入力項目チェック仕様に従い、必須未設定、型不正、桁数超過、許可文字種外の値で実行する。",
+        "expected": "該当する入力エラーが返却され、後続処理が実行されない。",
+        "source_row": 11
+      },
+      {
+        "number": 5,
+        "category": "検索処理",
+        "condition": "条件一致・複数件",
+        "procedure": "検索条件に一致するデータを複数件準備してAPIを実行する。",
+        "expected": "条件に一致するデータのみが設計書どおりの項目で返却される。",
+        "source_row": 12
+      },
+      {
+        "number": 6,
+        "category": "検索処理",
+        "condition": "条件一致・0件",
+        "procedure": "検索条件に一致するデータが0件となる状態でAPIを実行する。",
+        "expected": "0件の検索結果が正常応答として返却される。",
+        "source_row": 13
+      },
+      {
+        "number": 7,
+        "category": "検索処理",
+        "condition": "部分一致・複合条件",
+        "procedure": "設計書に定義された部分一致および複合条件を設定してAPIを実行する。",
+        "expected": "各検索条件が正しく適用され、対象データが返却される。",
+        "source_row": 14
+      },
+      {
+        "number": 8,
+        "category": "検索結果",
+        "condition": "並び順・返却項目",
+        "procedure": "並び順を確認できる複数データを準備してAPIを実行する。",
+        "expected": "返却項目、件数および並び順が設計書どおりである。",
+        "source_row": 15
+      },
+      {
+        "number": 9,
+        "category": "例外処理",
+        "condition": "想定外エラー",
+        "procedure": "処理中に想定外Exceptionが発生する状態でAPIを実行する。",
+        "expected": "設計書で定義されたエラーが返却され、必要なログが出力される。DB更新はロールバックされる。",
+        "source_row": 16
+      },
+      {
+        "number": 10,
+        "category": "ログ出力",
+        "condition": "正常・異常ログ",
+        "procedure": "正常ケースと異常ケースをそれぞれ実行する。",
+        "expected": "開始、終了、エラー等のログが設計書どおり出力され、機密情報が不要に出力されない。",
+        "source_row": 17
+      }
+    ]
+  },
+  "staff_screen": {
+    "source": "docs/テストケース/単体テストケース・結果一覧表_画面_(改修)担当者設定情報管理画面.xlsx",
+    "cases": [
+      {
+        "number": 1,
+        "category": "初期表示",
+        "condition": "画面表示",
+        "procedure": "①対象画面へ遷移\n②初期表示内容を確認",
+        "expected": "・画面定義書どおりに項目が表示される\n・初期値、活性・非活性、表示・非表示が設計どおりである",
+        "source_row": 8
+      },
+      {
+        "number": 2,
+        "category": "初期表示",
+        "condition": "初期データ取得",
+        "procedure": "①初期表示用データを準備\n②対象画面へ遷移\n③表示内容を確認",
+        "expected": "・取得データが対応する項目へ表示される\n・0件の場合も画面が正常表示される",
+        "source_row": 9
+      },
+      {
+        "number": 3,
+        "category": "単項目チェック",
+        "condition": "入力項目",
+        "procedure": "①画面定義書と入力チェック仕様に従い境界値・不正値を入力\n②対象ボタンを押下",
+        "expected": "・許容値は入力・処理できる\n・不正値では対応するエラーが表示され、処理されない",
+        "source_row": 10
+      },
+      {
+        "number": 4,
+        "category": "検索機能",
+        "condition": "条件指定検索",
+        "procedure": "①検索対象データを準備\n②検索条件を設定\n③検索ボタンを押下",
+        "expected": "・検索条件が処理へ渡される\n・条件に一致するデータが一覧表示される",
+        "source_row": 11
+      },
+      {
+        "number": 5,
+        "category": "検索機能",
+        "condition": "検索結果0件",
+        "procedure": "①0件となる検索条件を設定\n②検索ボタンを押下",
+        "expected": "・検索結果が0件として表示される\n・不要なエラーが発生しない",
+        "source_row": 12
+      },
+      {
+        "number": 6,
+        "category": "検索機能",
+        "condition": "複数件・表示順",
+        "procedure": "①複数件の対象データを準備\n②検索を実行\n③一覧の項目と順序を確認",
+        "expected": "・取得内容が対応する列に表示される\n・件数および表示順が設計どおりである",
+        "source_row": 13
+      },
+      {
+        "number": 7,
+        "category": "リセット機能",
+        "condition": "リセットボタン",
+        "procedure": "①検索条件を設定して検索\n②リセットボタンを押下",
+        "expected": "・検索条件が初期値に戻る\n・一覧および選択状態が設計どおり再表示される",
+        "source_row": 14
+      },
+      {
+        "number": 8,
+        "category": "登録・更新機能",
+        "condition": "確認画面・ダイアログ",
+        "procedure": "①有効な値を入力\n②登録・更新ボタンを押下",
+        "expected": "・確認メッセージが表示される\n・はい／いいえ等の操作が設計どおり行える",
+        "source_row": 15
+      },
+      {
+        "number": 9,
+        "category": "登録・更新機能",
+        "condition": "正常登録・更新",
+        "procedure": "①有効な値を入力\n②確認後、登録・更新を実行",
+        "expected": "・完了メッセージが表示される\n・入力内容が登録・更新結果へ反映される",
+        "source_row": 16
+      },
+      {
+        "number": 10,
+        "category": "画面遷移",
+        "condition": "戻る・キャンセル",
+        "procedure": "①入力または選択を行う\n②戻る・キャンセルを押下\n③遷移先と保持状態を確認",
+        "expected": "・確認表示および遷移先が設計どおりである\n・入力・選択状態の保持または破棄が設計どおりである",
+        "source_row": 17
+      },
+      {
+        "number": 11,
+        "category": "例外処理",
+        "condition": "処理エラー",
+        "procedure": "①処理エラーが返却される状態を準備\n②対象操作を実行",
+        "expected": "・設計されたエラーメッセージが表示される\n・画面が操作不能にならず、不正な更新が行われない",
+        "source_row": 18
+      }
+    ]
+  },
+  "data30_screen": {
+    "source": "docs/テストケース/単体テストケース・結果一覧表_画面_30分値データ登録画面.xlsx",
+    "cases": [
+      {
+        "number": 1,
+        "category": "初期表示",
+        "condition": "画面表示",
+        "procedure": "①対象画面へ遷移\n②初期表示内容を確認",
+        "expected": "・画面定義書どおりに項目が表示される\n・初期値、活性・非活性、表示・非表示が設計どおりである",
+        "source_row": 8
+      },
+      {
+        "number": 2,
+        "category": "初期表示",
+        "condition": "初期データ取得",
+        "procedure": "①初期表示用データを準備\n②対象画面へ遷移\n③表示内容を確認",
+        "expected": "・取得データが対応する項目へ表示される\n・0件の場合も画面が正常表示される",
+        "source_row": 9
+      },
+      {
+        "number": 3,
+        "category": "単項目チェック",
+        "condition": "入力項目",
+        "procedure": "①画面定義書と入力チェック仕様に従い境界値・不正値を入力\n②対象ボタンを押下",
+        "expected": "・許容値は入力・処理できる\n・不正値では対応するエラーが表示され、処理されない",
+        "source_row": 10
+      },
+      {
+        "number": 4,
+        "category": "検索機能",
+        "condition": "条件指定検索",
+        "procedure": "①検索対象データを準備\n②検索条件を設定\n③検索ボタンを押下",
+        "expected": "・検索条件が処理へ渡される\n・条件に一致するデータが一覧表示される",
+        "source_row": 11
+      },
+      {
+        "number": 5,
+        "category": "検索機能",
+        "condition": "検索結果0件",
+        "procedure": "①0件となる検索条件を設定\n②検索ボタンを押下",
+        "expected": "・検索結果が0件として表示される\n・不要なエラーが発生しない",
+        "source_row": 12
+      },
+      {
+        "number": 6,
+        "category": "検索機能",
+        "condition": "複数件・表示順",
+        "procedure": "①複数件の対象データを準備\n②検索を実行\n③一覧の項目と順序を確認",
+        "expected": "・取得内容が対応する列に表示される\n・件数および表示順が設計どおりである",
+        "source_row": 13
+      },
+      {
+        "number": 7,
+        "category": "リセット機能",
+        "condition": "リセットボタン",
+        "procedure": "①検索条件を設定して検索\n②リセットボタンを押下",
+        "expected": "・検索条件が初期値に戻る\n・一覧および選択状態が設計どおり再表示される",
+        "source_row": 14
+      },
+      {
+        "number": 8,
+        "category": "登録・更新機能",
+        "condition": "確認画面・ダイアログ",
+        "procedure": "①有効な値を入力\n②登録・更新ボタンを押下",
+        "expected": "・確認メッセージが表示される\n・はい／いいえ等の操作が設計どおり行える",
+        "source_row": 15
+      },
+      {
+        "number": 9,
+        "category": "登録・更新機能",
+        "condition": "正常登録・更新",
+        "procedure": "①有効な値を入力\n②確認後、登録・更新を実行",
+        "expected": "・完了メッセージが表示される\n・入力内容が登録・更新結果へ反映される",
+        "source_row": 16
+      },
+      {
+        "number": 10,
+        "category": "画面遷移",
+        "condition": "戻る・キャンセル",
+        "procedure": "①入力または選択を行う\n②戻る・キャンセルを押下\n③遷移先と保持状態を確認",
+        "expected": "・確認表示および遷移先が設計どおりである\n・入力・選択状態の保持または破棄が設計どおりである",
+        "source_row": 17
+      },
+      {
+        "number": 11,
+        "category": "例外処理",
+        "condition": "処理エラー",
+        "procedure": "①処理エラーが返却される状態を準備\n②対象操作を実行",
+        "expected": "・設計されたエラーメッセージが表示される\n・画面が操作不能にならず、不正な更新が行われない",
+        "source_row": 18
+      }
+    ]
+  },
+  "corp_screen": {
+    "source": "docs/テストケース/単体テストケース・結果一覧表_画面_お客さま企業マスタ照会・編集画面.xlsx",
+    "cases": [
+      {
+        "number": 1,
+        "category": "初期表示",
+        "condition": "画面表示",
+        "procedure": "①対象画面へ遷移\n②初期表示内容を確認",
+        "expected": "・画面定義書どおりに項目が表示される\n・初期値、活性・非活性、表示・非表示が設計どおりである",
+        "source_row": 8
+      },
+      {
+        "number": 2,
+        "category": "初期表示",
+        "condition": "初期データ取得",
+        "procedure": "①初期表示用データを準備\n②対象画面へ遷移\n③表示内容を確認",
+        "expected": "・取得データが対応する項目へ表示される\n・0件の場合も画面が正常表示される",
+        "source_row": 9
+      },
+      {
+        "number": 3,
+        "category": "単項目チェック",
+        "condition": "入力項目",
+        "procedure": "①画面定義書と入力チェック仕様に従い境界値・不正値を入力\n②対象ボタンを押下",
+        "expected": "・許容値は入力・処理できる\n・不正値では対応するエラーが表示され、処理されない",
+        "source_row": 10
+      },
+      {
+        "number": 4,
+        "category": "検索機能",
+        "condition": "条件指定検索",
+        "procedure": "①検索対象データを準備\n②検索条件を設定\n③検索ボタンを押下",
+        "expected": "・検索条件が処理へ渡される\n・条件に一致するデータが一覧表示される",
+        "source_row": 11
+      },
+      {
+        "number": 5,
+        "category": "検索機能",
+        "condition": "検索結果0件",
+        "procedure": "①0件となる検索条件を設定\n②検索ボタンを押下",
+        "expected": "・検索結果が0件として表示される\n・不要なエラーが発生しない",
+        "source_row": 12
+      },
+      {
+        "number": 6,
+        "category": "検索機能",
+        "condition": "複数件・表示順",
+        "procedure": "①複数件の対象データを準備\n②検索を実行\n③一覧の項目と順序を確認",
+        "expected": "・取得内容が対応する列に表示される\n・件数および表示順が設計どおりである",
+        "source_row": 13
+      },
+      {
+        "number": 7,
+        "category": "リセット機能",
+        "condition": "リセットボタン",
+        "procedure": "①検索条件を設定して検索\n②リセットボタンを押下",
+        "expected": "・検索条件が初期値に戻る\n・一覧および選択状態が設計どおり再表示される",
+        "source_row": 14
+      },
+      {
+        "number": 8,
+        "category": "登録・更新機能",
+        "condition": "確認画面・ダイアログ",
+        "procedure": "①有効な値を入力\n②登録・更新ボタンを押下",
+        "expected": "・確認メッセージが表示される\n・はい／いいえ等の操作が設計どおり行える",
+        "source_row": 15
+      },
+      {
+        "number": 9,
+        "category": "登録・更新機能",
+        "condition": "正常登録・更新",
+        "procedure": "①有効な値を入力\n②確認後、登録・更新を実行",
+        "expected": "・完了メッセージが表示される\n・入力内容が登録・更新結果へ反映される",
+        "source_row": 16
+      },
+      {
+        "number": 10,
+        "category": "画面遷移",
+        "condition": "戻る・キャンセル",
+        "procedure": "①入力または選択を行う\n②戻る・キャンセルを押下\n③遷移先と保持状態を確認",
+        "expected": "・確認表示および遷移先が設計どおりである\n・入力・選択状態の保持または破棄が設計どおりである",
+        "source_row": 17
+      },
+      {
+        "number": 11,
+        "category": "例外処理",
+        "condition": "処理エラー",
+        "procedure": "①処理エラーが返却される状態を準備\n②対象操作を実行",
+        "expected": "・設計されたエラーメッセージが表示される\n・画面が操作不能にならず、不正な更新が行われない",
+        "source_row": 18
+      }
+    ]
+  },
+  "handover_screen": {
+    "source": "docs/テストケース/単体テストケース・結果一覧表_画面_引継確認画面.xlsx",
+    "cases": [
+      {
+        "number": 1,
+        "category": "初期表示",
+        "condition": "画面表示",
+        "procedure": "①対象画面へ遷移\n②初期表示内容を確認",
+        "expected": "・画面定義書どおりに項目が表示される\n・初期値、活性・非活性、表示・非表示が設計どおりである",
+        "source_row": 8
+      },
+      {
+        "number": 2,
+        "category": "初期表示",
+        "condition": "初期データ取得",
+        "procedure": "①初期表示用データを準備\n②対象画面へ遷移\n③表示内容を確認",
+        "expected": "・取得データが対応する項目へ表示される\n・0件の場合も画面が正常表示される",
+        "source_row": 9
+      },
+      {
+        "number": 3,
+        "category": "単項目チェック",
+        "condition": "入力項目",
+        "procedure": "①画面定義書と入力チェック仕様に従い境界値・不正値を入力\n②対象ボタンを押下",
+        "expected": "・許容値は入力・処理できる\n・不正値では対応するエラーが表示され、処理されない",
+        "source_row": 10
+      },
+      {
+        "number": 4,
+        "category": "検索機能",
+        "condition": "条件指定検索",
+        "procedure": "①検索対象データを準備\n②検索条件を設定\n③検索ボタンを押下",
+        "expected": "・検索条件が処理へ渡される\n・条件に一致するデータが一覧表示される",
+        "source_row": 11
+      },
+      {
+        "number": 5,
+        "category": "検索機能",
+        "condition": "検索結果0件",
+        "procedure": "①0件となる検索条件を設定\n②検索ボタンを押下",
+        "expected": "・検索結果が0件として表示される\n・不要なエラーが発生しない",
+        "source_row": 12
+      },
+      {
+        "number": 6,
+        "category": "検索機能",
+        "condition": "複数件・表示順",
+        "procedure": "①複数件の対象データを準備\n②検索を実行\n③一覧の項目と順序を確認",
+        "expected": "・取得内容が対応する列に表示される\n・件数および表示順が設計どおりである",
+        "source_row": 13
+      },
+      {
+        "number": 7,
+        "category": "リセット機能",
+        "condition": "リセットボタン",
+        "procedure": "①検索条件を設定して検索\n②リセットボタンを押下",
+        "expected": "・検索条件が初期値に戻る\n・一覧および選択状態が設計どおり再表示される",
+        "source_row": 14
+      },
+      {
+        "number": 8,
+        "category": "登録・更新機能",
+        "condition": "確認画面・ダイアログ",
+        "procedure": "①有効な値を入力\n②登録・更新ボタンを押下",
+        "expected": "・確認メッセージが表示される\n・はい／いいえ等の操作が設計どおり行える",
+        "source_row": 15
+      },
+      {
+        "number": 9,
+        "category": "登録・更新機能",
+        "condition": "正常登録・更新",
+        "procedure": "①有効な値を入力\n②確認後、登録・更新を実行",
+        "expected": "・完了メッセージが表示される\n・入力内容が登録・更新結果へ反映される",
+        "source_row": 16
+      },
+      {
+        "number": 10,
+        "category": "選択機能",
+        "condition": "個別・一括選択",
+        "procedure": "①個別選択を実施\n②一括選択・解除を実施\n③ボタン活性を確認",
+        "expected": "・対象のみ選択・解除される\n・選択件数に応じて実行ボタンが活性・非活性になる",
+        "source_row": 17
+      },
+      {
+        "number": 11,
+        "category": "画面遷移",
+        "condition": "引継実施",
+        "procedure": "①引継条件と対象を選択\n②引継実施ボタンを押下",
+        "expected": "・設計された確認画面へ遷移する\n・選択対象と引継条件が正しく引き渡される",
+        "source_row": 18
+      },
+      {
+        "number": 12,
+        "category": "画面遷移",
+        "condition": "戻る・キャンセル",
+        "procedure": "①入力または選択を行う\n②戻る・キャンセルを押下\n③遷移先と保持状態を確認",
+        "expected": "・確認表示および遷移先が設計どおりである\n・入力・選択状態の保持または破棄が設計どおりである",
+        "source_row": 19
+      },
+      {
+        "number": 13,
+        "category": "例外処理",
+        "condition": "処理エラー",
+        "procedure": "①処理エラーが返却される状態を準備\n②対象操作を実行",
+        "expected": "・設計されたエラーメッセージが表示される\n・画面が操作不能にならず、不正な更新が行われない",
+        "source_row": 20
+      }
+    ]
+  }
+}

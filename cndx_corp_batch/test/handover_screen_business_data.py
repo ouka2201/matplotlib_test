@@ -69,6 +69,12 @@ def _existing(connection: Connection, tables: dict, numbers: list[str]) -> dict:
 
 
 def _validate_handover(row: dict, args: argparse.Namespace) -> None:
+    if row["created_by"] == MARKER:
+        if (row["handover_from_org_id"], row["handover_from_user_id"]) == (
+            args.from_org_id, args.from_user_id
+        ):
+            return
+        raise ValueError("試験用引継予定の引継元が異なります。")
     expected = {
         "handover_from_org_id": args.from_org_id,
         "handover_from_user_id": args.from_user_id,
@@ -76,7 +82,7 @@ def _validate_handover(row: dict, args: argparse.Namespace) -> None:
         "handover_to_user_id": args.to_user_id,
         "creator_id": args.login_user_id,
         "handover_schedule_date": args.schedule_date.strftime("%Y%m%d"),
-        "handover_type": "1",
+        "handover_type": getattr(args, "handover_type", "1"),
     }
     if any(row[key] != value for key, value in expected.items()):
         raise ValueError("対象法人に今回の画面操作以外の引継予定があります。")
