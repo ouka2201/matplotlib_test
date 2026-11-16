@@ -83,14 +83,13 @@ def draw_no7(page: Any, s: Any, context: Any):
     ax.xaxis.tick_top()
     ax.tick_params(axis="x", pad=2)
     for x, color, label in (
-        (188, LOAD_ORANGE, "8-12時 / 13-18時"),
-        (228, TOP_BLUE, "その他"),
-        (251, TOP_RED, "1位"),
+        (170, LOAD_ORANGE, "8-12時 / 13-18時"),
+        (201, TOP_BLUE, "その他"),
     ):
         page.canvas.add_patch(
-            Rectangle((x, 116.9), 2.8, 2.8, facecolor=color, edgecolor="none")
+            Rectangle((x, 116.3), 1.5, 1.5, facecolor=color, edgecolor="none")
         )
-        text(x + 4, 117, label, size=5.5)
+        text(x + 2.5, 116.3, label, size=4.2)
     # 帳票No.7 項番7：電力量は日別48枠の合計、
     # 最大電力は最大枠の電力量×2。ここでは換算済み。
     rows = [

@@ -104,30 +104,38 @@ def draw_no6(page: Any, s: Any, context: Any) -> Any:
         for r in context["top_rows"]
     ]
     widths = [0.13, 0.43, 0.17, 0.27]
-    table(
-        1.05,
-        74.8,
-        34.5,
-        27,
-        ["順位", "年月日", "時分", "電力(kW)"],
-        top_rows,
-        widths,
-        4.2,
-    )
-    r = context["rank50_row"]
-    if r is not None:
+    rank_tables = [
         table(
             1.05,
-            101.8,
+            74.8,
             34.5,
-            2.5,
-            None,
-            [[r["rank"], r["date"], r["time"], format_number(r["kw"])]],
+            27,
+            ["順位", "年月日", "時分", "電力(kW)"],
+            top_rows,
             widths,
             4.2,
         )
+    ]
+    r = context["rank50_row"]
+    if r is not None:
+        rank_tables.append(
+            table(
+                1.05,
+                101.8,
+                34.5,
+                2.5,
+                None,
+                [[r["rank"], r["date"], r["time"], format_number(r["kw"])]],
+                widths,
+                4.2,
+            )
+        )
     else:
         text(1.05, 102, f"50位の実績なし（全{context['count']}コマ）", size=5.5)
+    for rank_table in rank_tables:
+        for (_, column), cell in rank_table.get_celld().items():
+            if column == 0:
+                cell.get_text().set_ha("center")
     peak = s["top"].iloc[0].timestamp
     note(
         40.0,
@@ -170,8 +178,8 @@ def draw_no6(page: Any, s: Any, context: Any) -> Any:
     text(190.5, 14.7, top_label, size=9.6, color="#e03531", bold=True, ha="right")
     specs = [
         ("month_count", "月別", 116.8, 31.0, 42.0),
-        ("weekday_count", "曜日別", 165.9, 30.7, 27.4),
-        ("hour_count", "時間帯別", 197.3, 30.7, 83.0),
+        ("weekday_count", "曜日別", 164.0, 30.7, 30.5),
+        ("hour_count", "時間帯別", 204.0, 30.7, 76.0),
     ]
     for key, label, x, y, w in specs:
         text(
@@ -185,13 +193,11 @@ def draw_no6(page: Any, s: Any, context: Any) -> Any:
         )
         counts = s[key]
         vals = counts.to_numpy()
-        ax = axes(x, y, w, 39.1, "" if key == "hour_count" else "発生回数")
-        if key == "hour_count":
-            ax.text(0, 1.02, "発生回数", transform=ax.transAxes, fontsize=5.2)
+        ax = axes(x, y, w, 39.1, "発生回数")
         bars = ax.bar(
             range(len(vals)),
             vals,
-            width=0.53,
+            width=0.45 if key == "weekday_count" else 0.53,
             color=[TOP_RED if v == vals.max() else TOP_BLUE for v in vals],
         )
         ax.set_ylim(0, max(1, vals.max()) * 1.2)

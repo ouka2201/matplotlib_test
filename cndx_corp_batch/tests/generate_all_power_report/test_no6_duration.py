@@ -113,11 +113,19 @@ class No6DurationTests(unittest.TestCase):
                 ["順位", "年月日", "時分", "電力(kW)"],
             )
             self.assertEqual(top_table[1, 3].get_text().get_text(), "402")
+            self.assertTrue(
+                all(
+                    cell.get_text().get_ha() == "center"
+                    for (_, column), cell in top_table.items()
+                    if column == 0
+                )
+            )
             self.assertEqual(len(rank50_table), 4)  # 50位の行には見出しを付けない。
             self.assertEqual(
                 [rank50_table[0, i].get_text().get_text() for i in range(4)],
                 ["50", "2025/07/25(金)", "00:00", "201"],
             )
+            self.assertEqual(rank50_table[0, 0].get_text().get_ha(), "center")
             self.assertEqual(len(fig.axes[1].get_xticklabels()), 46)
             for ax, key in zip(
                 fig.axes[4:7], ("month_count", "weekday_count", "hour_count")
@@ -133,8 +141,7 @@ class No6DurationTests(unittest.TestCase):
                         for count in counts
                     ],
                 )
-                self.assertEqual(ax.get_ylabel(), "" if key == "hour_count" else "発生回数")
-            self.assertEqual(fig.axes[6].texts[0].get_text(), "発生回数")
+                self.assertEqual(ax.get_ylabel(), "発生回数")
             self.assertEqual(fig.axes[4].get_xticklabels()[0].get_text(), "07月")
             self.assertEqual(fig.axes[6].get_xticklabels()[0].get_text(), "0")
             texts = [item.get_text() for item in fig.axes[0].texts]
@@ -143,6 +150,25 @@ class No6DurationTests(unittest.TestCase):
             self.assertTrue(
                 any("基本料金の低減につながります" in item for item in texts)
             )
+        finally:
+            plt.close(fig)
+
+    def test_sunday_bar_and_count_do_not_overlap_next_chart_axis_label(self):
+        """日曜日が10件でも、曜日別の棒と値が時間帯別の軸名に重ならない。"""
+        config, context, series = self.fixture()
+        series["weekday_count"] = pd.Series(range(4, 11), index=range(7))
+        fig = self.draw(config, context, series)
+        try:
+            fig.canvas.draw()
+            renderer = fig.canvas.get_renderer()
+            weekday_chart, hour_chart = fig.axes[5:7]
+            sunday_bar = weekday_chart.patches[-1].get_window_extent(renderer)
+            sunday_count = next(
+                text for text in weekday_chart.texts if text.get_text() == "10"
+            ).get_window_extent(renderer)
+            hour_label = hour_chart.yaxis.label.get_window_extent(renderer)
+            self.assertLess(sunday_bar.x1, hour_label.x0)
+            self.assertLess(sunday_count.x1, hour_label.x0)
         finally:
             plt.close(fig)
 

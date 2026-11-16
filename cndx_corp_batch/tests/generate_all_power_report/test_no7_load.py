@@ -150,10 +150,36 @@ class No7LoadTests(unittest.TestCase):
             )
             self.assertIn(DEFAULT_NOTES, texts)
             legend = [
-                patch.get_facecolor() for patch in fig.axes[0].patches
-                if isinstance(patch, Rectangle) and patch.get_width() == 2.8
+                patch.get_facecolor()
+                for patch in fig.axes[0].patches
+                if isinstance(patch, Rectangle) and patch.get_width() == 1.5
             ]
-            self.assertEqual(legend, [to_rgba(color) for color in ("#f28e2b", "#72a3c9", "#e15759")])
+            self.assertEqual(
+                legend, [to_rgba(color) for color in ("#f28e2b", "#72a3c9")]
+            )
+            fig.canvas.draw()
+            renderer = fig.canvas.get_renderer()
+            chart_bounds = ax.get_window_extent(renderer)
+            description = next(
+                item
+                for item in fig.axes[0].texts
+                if item.get_text().startswith("⑤におけるピーク発生日")
+            ).get_window_extent(renderer)
+            for label in ("8-12時 / 13-18時", "その他"):
+                item = next(
+                    item for item in fig.axes[0].texts if item.get_text() == label
+                )
+                bounds = item.get_window_extent(renderer)
+                self.assertLessEqual(item.get_fontsize(), 4.2)
+                self.assertGreaterEqual(bounds.x0, chart_bounds.x0)
+                self.assertLessEqual(bounds.x1, chart_bounds.x1)
+                self.assertFalse(bounds.overlaps(description))
+                self.assertTrue(
+                    all(
+                        not bounds.overlaps(day.get_window_extent(renderer))
+                        for day in ax.texts
+                    )
+                )
             self.assertIn("発行元：東京電力エナジーパートナー株式会社", texts)
         finally:
             plt.close(fig)
