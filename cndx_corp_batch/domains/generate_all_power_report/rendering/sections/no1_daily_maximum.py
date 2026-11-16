@@ -5,7 +5,7 @@ from datetime import timedelta
 from typing import Any
 
 import pandas as pd
-from matplotlib.patches import Ellipse, Rectangle
+from matplotlib.patches import Circle, Rectangle
 
 from ...services.data_service import calendar_power
 from ..styles import WIDTH
@@ -44,10 +44,10 @@ def draw_no1(page: Any, daily: Any, config: Any):
 
     # 帳票No.1 項番1・2：固定タイトルとレポート作成対象年月を青文字で表示する。
     canvas.add_patch(
-        Ellipse((3.7935, 59.9), 4.496, 4.3456, facecolor=TITLE_BLUE, edgecolor="none")
+        Circle((3.8, 59.9), 1.75, facecolor=TITLE_BLUE, edgecolor="none")
     )
     canvas.text(
-        3.7935,
+        3.8,
         59.9,
         "1",
         fontsize=9.6,
@@ -124,7 +124,7 @@ def draw_no1(page: Any, daily: Any, config: Any):
             item = by_day.get(day)
             # 実績のない日には時刻や電力を補わず、実績がないことを表示する。
             labels = [
-                f"{month.month}/{day}",
+                f"{month.month}/{day:02d}",
                 item.timestamp.strftime("%H:%M") if item is not None else "--:--",
                 f"{calendar_power(item.kw):,}kW" if item is not None else "実績なし",
             ]
@@ -172,7 +172,7 @@ def draw_no1(page: Any, daily: Any, config: Any):
         ts = item.timestamp
         weekday = "月火水木金土日"[ts.weekday()]
         label = (
-            f"{rank}位 {ts.day}日（{weekday}） {ts:%H:%M}〜"
+            f"{rank}位  {ts.day:02d}日({weekday})  {ts:%H:%M}〜"
             f"{ts + timedelta(minutes=30):%H:%M} {calendar_power(item.kw):,}kW"
         )
         note_texts.append(

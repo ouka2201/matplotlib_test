@@ -9,7 +9,6 @@
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }
 .page { position: relative; width: 297mm; height: 210mm; padding: 9mm; background: white; break-after: page; }
-/* 各ページの外周だけを黒枠で囲む。画像より手前に描画する。 */ .page::before { content: ''; position: absolute; top: 8mm; right: 8mm; bottom: 8mm; left: 8mm; border: .25mm solid #000; pointer-events: none; z-index: 10; }
 .page:last-child { break-after: auto; }
 * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 /* matplotlibで完成したページPNGを、外枠内281×194mmに配置する。 */ .report-page-image { position: absolute; top: 8mm; left: 8mm; display: block; width: 281mm; height: 194mm; }

@@ -58,7 +58,7 @@ class No2LayoutTests(unittest.TestCase):
                 [str(i) for i in range(24)],
             )
             text = [item.get_text() for item in fig.axes[0].texts]
-            self.assertIn("30分ごとの需要電力の推移：2026年06月30日（火）", text)
+            self.assertIn("30分ごとの需要電力の推移：2026年06月30日(火)", text)
             self.assertIn("最大電力は、23:30〜00:00に\n発生しています", text)
         finally:
             plt.close(fig)

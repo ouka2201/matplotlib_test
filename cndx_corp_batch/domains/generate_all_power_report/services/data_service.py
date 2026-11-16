@@ -90,9 +90,9 @@ def date_label(ts: Any) -> Any:
         ts (pandas.Timestamp): 表示対象の日時。時刻範囲では30分枠の開始日時。
 
     Returns:
-        str: 「2026/06/01（月）」形式の日付。
+        str: 「2026/06/01(月)」形式の日付。
     """
-    return f"{ts:%Y/%m/%d}（{WEEKDAYS[ts.weekday()]}）"
+    return f"{ts:%Y/%m/%d}({WEEKDAYS[ts.weekday()]})"
 
 
 def calendar_power(kw: Any) -> Any:

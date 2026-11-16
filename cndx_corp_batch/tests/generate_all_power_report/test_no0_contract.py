@@ -59,3 +59,10 @@ class No0ContractTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "契約情報が長すぎます"):
                 draw_no0(self.page, self.config)
         self.assertTrue(plt.fignum_exists(self.page.fig.number))
+
+    def test_customer_number_separates_office_code_from_account_number(self):
+        """16桁のARVE番号を事業所コード3桁とお客さま番号13桁で表示する。"""
+        self.config["customer_number"] = "1230000000000123"
+        draw_no0(self.page, self.config)
+        texts = [text.get_text() for text in self.page.canvas.texts]
+        self.assertIn("123-0000000000123", texts)

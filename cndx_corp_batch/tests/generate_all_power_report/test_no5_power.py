@@ -112,17 +112,17 @@ class No5PowerTests(unittest.TestCase):
                 [text.get_text() for text in ax.texts],
                 [
                     "201",
-                    "401.4",
-                    "300.5",
-                    "180.2",
-                    "200.4",
+                    "401",
+                    "301",
+                    "180",
+                    "200",
                     "100",
-                    "140.6",
-                    "120.2",
-                    "160.6",
+                    "141",
+                    "120",
+                    "161",
                     "200",
                     "111",
-                    "201.6",
+                    "202",
                 ],
             )
             line = ax.lines[0]
@@ -161,8 +161,8 @@ class No5PowerTests(unittest.TestCase):
         for value, label in [
             (0.0, "0"),
             (1000.0, "1,000"),
-            (1000.5, "1,000.5"),
-            (1.25, "1.25"),
+            (1000.5, "1,001"),
+            (1.25, "1"),
         ]:
             with self.subTest(value=value):
                 self.assertEqual(format_number(value), label)

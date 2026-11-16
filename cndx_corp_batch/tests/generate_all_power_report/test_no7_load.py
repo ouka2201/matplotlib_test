@@ -5,6 +5,7 @@ import warnings
 
 import matplotlib.pyplot as plt
 from matplotlib.colors import to_rgba
+from matplotlib.patches import Rectangle
 import pandas as pd
 
 from cndx_corp_batch.domains.generate_all_power_report.services.data_service import (
@@ -85,7 +86,7 @@ class No7LoadTests(unittest.TestCase):
         self.assertEqual(len(context["week_rows"]), 7)
         self.assertEqual(
             context["week_rows"][0],
-            {"date": "2026/06/14（日）", "kwh": 60.0, "kw": 2.5},
+            {"date": "2026/06/14(日)", "kwh": 60.0, "kw": 2.5},
         )
         peak_row = context["week_rows"][5]
         self.assertAlmostEqual(peak_row["kwh"], 47 * 1.25 + 100.7)
@@ -124,8 +125,8 @@ class No7LoadTests(unittest.TestCase):
                 [item.get_text() for item in ax.get_xticklabels()],
                 ["0", "6", "12", "18"] * 7,
             )
-            self.assertEqual(ax.texts[0].get_text(), "2026/06/14（日）")
-            self.assertEqual(ax.texts[-1].get_text(), "2026/06/20（土）")
+            self.assertEqual(ax.texts[0].get_text(), "2026/06/14(日)")
+            self.assertEqual(ax.texts[-1].get_text(), "2026/06/20(土)")
             cells = fig.axes[8].tables[0].get_celld()
             self.assertEqual(len(cells), 24)
             self.assertEqual(
@@ -134,7 +135,7 @@ class No7LoadTests(unittest.TestCase):
             )
             self.assertEqual(
                 [cells[6, col].get_text().get_text() for col in range(3)],
-                ["2026/06/19（金）", "159.45", "201.4"],
+                ["2026/06/19(金)", "159", "201"],
             )
             texts = [item.get_text() for item in fig.axes[0].texts]
             self.assertIn(
@@ -147,7 +148,12 @@ class No7LoadTests(unittest.TestCase):
                     "特に太陽光発電システムの導入が効果的です" in item for item in texts
                 )
             )
-            self.assertIn(DEFAULT_NOTES, [item.replace("\n", "") for item in texts])
+            self.assertIn(DEFAULT_NOTES, texts)
+            legend = [
+                patch.get_facecolor() for patch in fig.axes[0].patches
+                if isinstance(patch, Rectangle) and patch.get_width() == 2.8
+            ]
+            self.assertEqual(legend, [to_rgba(color) for color in ("#f28e2b", "#72a3c9", "#e15759")])
             self.assertIn("発行元：東京電力エナジーパートナー株式会社", texts)
         finally:
             plt.close(fig)

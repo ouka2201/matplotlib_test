@@ -98,6 +98,11 @@ class No4EnergyTests(unittest.TestCase):
             )
             texts = [t.get_text() for t in fig.axes[0].texts]
             self.assertIn("使用電力量が最も\n多かったのは08月でした", texts)
+            result = next(
+                t for t in fig.axes[0].texts
+                if t.get_text() == "使用電力量が最も\n多かったのは08月でした"
+            )
+            self.assertEqual(result.get_ha(), "left")
             self.assertIn(
                 (
                     "03月（青点線）を上回る使用電力量は\n"

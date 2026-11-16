@@ -60,7 +60,6 @@ def draw_no4(page: Any, series: Any):
         36.2,
         10.6,
         ["使用電力量が最も", f"多かったのは{month.index[peak].month:02d}月でした"],
-        centered=True,
     )
     note(
         216.2,

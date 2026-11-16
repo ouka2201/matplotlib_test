@@ -74,14 +74,15 @@ class FirstPageCanvas(PageCanvas):
         self.canvas.add_patch(
             Circle((x + 1.8, y + 1.8), 1.75, facecolor=TITLE, edgecolor="none")
         )
-        self.text(
+        self.canvas.text(
             x + 1.8,
-            y + 0.3,
+            y + 1.8,
             str(number),
-            size=8.1,
+            fontsize=8.1,
             color="white",
             ha="center",
-            bold=True,
+            va="center",
+            fontweight="bold",
         )
         self.text(x + 5, y - 0.1, label, size=11.5, color=TITLE, bold=True)
 
@@ -147,6 +148,8 @@ class FirstPageCanvas(PageCanvas):
             item.set_fontsize(item.get_fontsize() * height_limit / box.height * 0.98)
         if item.get_fontsize() < 5.5:
             raise ValueError("1ページ目の説明欄が長すぎます。説明文を短くしてください")
+        item.set_y(y + h / 2)
+        item.set_va("center")
 
     def chart_axes(self, x: float, y: float, w: float, h: float, ylabel: str) -> Any:
         """固定位置にグラフ用Axesを作り、縦軸の基本書式を設定する。
@@ -191,8 +194,15 @@ class SecondPageCanvas(PageCanvas):
         self.canvas.add_patch(
             Circle((3.8, y + 1.8), 1.75, facecolor=TITLE, edgecolor="none")
         )
-        self.text(
-            3.8, y + 0.3, str(number), size=8.1, color="white", bold=True, ha="center"
+        self.canvas.text(
+            3.8,
+            y + 1.8,
+            str(number),
+            fontsize=8.1,
+            color="white",
+            fontweight="bold",
+            ha="center",
+            va="center",
         )
         self.text(7, y, label, size=11.5, color=TITLE, bold=True)
 
@@ -251,6 +261,8 @@ class SecondPageCanvas(PageCanvas):
                 raise ValueError(
                     "2ページ目の説明欄が長すぎます。説明文を短くしてください"
                 )
+        item.set_y(y + h / 2)
+        item.set_va("center")
 
     def axes(
         self, x: Any, y: Any, w: Any, h: Any, ylabel: Any, grid: Any = True

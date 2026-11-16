@@ -73,14 +73,14 @@ class No6DurationTests(unittest.TestCase):
         self.assertEqual(len(series["top"]), 50)
         self.assertEqual(
             context["top_rows"][0],
-            {"rank": 1, "date": "2026/06/30（火）", "time": "23:30", "kw": 401.7},
+            {"rank": 1, "date": "2026/06/30(火)", "time": "23:30", "kw": 401.7},
         )
-        self.assertEqual(context["top_rows"][1]["date"], "2025/07/01（火）")
+        self.assertEqual(context["top_rows"][1]["date"], "2025/07/01(火)")
         self.assertEqual(context["top_rows"][1]["time"], "00:00")
         self.assertEqual(context["top_rows"][2]["time"], "00:30")
         self.assertEqual(
             context["rank50_row"],
-            {"rank": 50, "date": "2025/07/25（金）", "time": "00:00", "kw": 201.4},
+            {"rank": 50, "date": "2025/07/25(金)", "time": "00:00", "kw": 201.4},
         )
         self.assertEqual(series["hour_count"].loc[0], 49)
         self.assertEqual(series["hour_count"].loc[23], 1)
@@ -112,11 +112,11 @@ class No6DurationTests(unittest.TestCase):
                 [top_table[0, i].get_text().get_text() for i in range(4)],
                 ["順位", "年月日", "時分", "電力(kW)"],
             )
-            self.assertEqual(top_table[1, 3].get_text().get_text(), "401.7")
+            self.assertEqual(top_table[1, 3].get_text().get_text(), "402")
             self.assertEqual(len(rank50_table), 4)  # 50位の行には見出しを付けない。
             self.assertEqual(
                 [rank50_table[0, i].get_text().get_text() for i in range(4)],
-                ["50", "2025/07/25（金）", "00:00", "201.4"],
+                ["50", "2025/07/25(金)", "00:00", "201"],
             )
             self.assertEqual(len(fig.axes[1].get_xticklabels()), 46)
             for ax, key in zip(
@@ -133,7 +133,8 @@ class No6DurationTests(unittest.TestCase):
                         for count in counts
                     ],
                 )
-                self.assertEqual(ax.get_ylabel(), "発生回数")
+                self.assertEqual(ax.get_ylabel(), "" if key == "hour_count" else "発生回数")
+            self.assertEqual(fig.axes[6].texts[0].get_text(), "発生回数")
             self.assertEqual(fig.axes[4].get_xticklabels()[0].get_text(), "07月")
             self.assertEqual(fig.axes[6].get_xticklabels()[0].get_text(), "0")
             texts = [item.get_text() for item in fig.axes[0].texts]

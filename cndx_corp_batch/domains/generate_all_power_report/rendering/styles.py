@@ -1,6 +1,6 @@
 """ページ寸法・仕様色・数値表示・共通注記の定義。"""
 
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 
 # A4横の用紙から左右上下8mmの余白を除いた、外枠内の寸法。
 WIDTH, HEIGHT = 281, 194
@@ -25,17 +25,14 @@ LOAD_ORANGE = "#f28e2b"
 
 # No.3・No.7で使用する、仕様書の共通注記。
 DEFAULT_NOTES = (
-    "最大電力とは30分ごとの需要電力の最大値のことです。また、使用電力量とは"
-    "30分ごとの使用電力量を対象期間（月初〜月末）において合計した値のことです。"
+    "最大電力とは30分ごとの需要電力の最大値のことです。また、使用電力量とは\n"
+    "30分ごとの使用電力量を対象期間（月初〜月末）において合計した値のことです。\n"
     "この対象期間は、料金の算定期間とは異なる場合がありますのでご留意ください。"
 )
 
 
 def format_number(value: float) -> str:
-    """電力・電力量を桁区切りで表示し、不要な末尾の0を省く。
-
-    No.5の仕様には整数への丸めがないため、小数部のある値も
-    ラベルに表示する。例: 1000.5は「1,000.5」、1000.0は「1,000」。
+    """帳票の電力・電力量を四捨五入し、整数の桁区切りで表示する。
 
     Args:
         value (float): 表示対象の電力（kW）または電力量（kWh）。
@@ -43,5 +40,4 @@ def format_number(value: float) -> str:
     Returns:
         str: 指数表記を使わない、桁区切りの電力値。
     """
-    label = format(Decimal(str(value)), ",f")
-    return label.rstrip("0").rstrip(".") if "." in label else label
+    return f"{Decimal(str(value)).quantize(Decimal('1'), rounding=ROUND_HALF_UP):,}"

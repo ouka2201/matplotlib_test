@@ -51,10 +51,18 @@ def draw_no0(page: Any, config: Any):
         fontweight="bold",
         color="#101010",
     )
+    customer_number = str(config["customer_number"])
+    # ARVEの16桁は事業所コード3桁とお客さま番号13桁で表示する。
+    if (
+        len(customer_number) == 16
+        and customer_number.isascii()
+        and customer_number.isdigit()
+    ):
+        customer_number = f"{customer_number[:3]}-{customer_number[3:]}"
     rows = [
         ("ご契約名義", str(config["customer_name"])),
         ("ご契約住所", str(config["address"])),
-        ("お客さま番号", str(config["customer_number"])),
+        ("お客さま番号", customer_number),
         ("契約電力", f"{float(config['contract_kw']):,.0f}kW"),
     ]
     value_texts = []

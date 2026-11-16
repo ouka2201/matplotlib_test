@@ -22,7 +22,7 @@ def draw_no2(page: Any, series: Any):
         return
     stamp = day.iloc[0].timestamp
     weekday = "月火水木金土日"[stamp.weekday()]
-    title(2, 133.6, 2, f"30分ごとの需要電力の推移：{stamp:%Y年%m月%d日}（{weekday}）")
+    title(2, 133.6, 2, f"30分ごとの需要電力の推移：{stamp:%Y年%m月%d日}({weekday})")
     text(
         5,
         142,

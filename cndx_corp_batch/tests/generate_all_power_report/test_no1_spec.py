@@ -59,7 +59,7 @@ class No1SpecTests(unittest.TestCase):
         )
         self.assertEqual(
             [row["date"] for row in context["daily_top"]],
-            ["2026/06/02（火）", "2026/06/03（水）", "2026/06/01（月）"],
+            ["2026/06/02(火)", "2026/06/03(水)", "2026/06/01(月)"],
         )
         self.assertEqual([row["kw"] for row in context["daily_top"]], [202, 202, 202])
         self.assertEqual(context["daily_top"][0]["time"], "10:00〜10:30")
@@ -115,10 +115,10 @@ class No1SpecTests(unittest.TestCase):
                         )
                         self.assertEqual(patch.get_facecolor(), to_rgba(color))
                     texts = [item.get_text() for item in fig.axes[0].texts]
-                    self.assertIn(f"{month.month}/1", texts)
+                    self.assertIn(f"{month.month}/01", texts)
                     self.assertIn("202kW", texts)
                     weekday = "月火水木金土日"[month.weekday()]
-                    self.assertIn(f"1位 1日（{weekday}） 19:00〜19:30 202kW", texts)
+                    self.assertIn(f"1位  01日({weekday})  19:00〜19:30 202kW", texts)
                     self.assertIn("TOP3は以下のとおりでした", texts)
                 finally:
                     plt.close(fig)

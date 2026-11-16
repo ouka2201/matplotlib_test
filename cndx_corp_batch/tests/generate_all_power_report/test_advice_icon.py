@@ -77,6 +77,10 @@ class AdviceIconTests(unittest.TestCase):
                     (page.canvas.get_xlim(), page.canvas.get_ylim()),
                     before,
                 )
+                page.fig.canvas.draw()
+                text_box = page.canvas.texts[-1].get_window_extent()
+                center_y = page.canvas.transData.transform((20, 40))[1]
+                self.assertAlmostEqual((text_box.y0 + text_box.y1) / 2, center_y, delta=4)
                 plt.close(page.fig)
 
     def test_yellow_note_does_not_require_icon(self):

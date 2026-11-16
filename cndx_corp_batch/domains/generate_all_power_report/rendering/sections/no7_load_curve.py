@@ -3,6 +3,8 @@
 from datetime import timedelta
 from typing import Any
 
+from matplotlib.patches import Rectangle
+
 from ...services.data_service import date_label
 from ..styles import (
     BLACK,
@@ -80,7 +82,15 @@ def draw_no7(page: Any, s: Any, context: Any):
     ax.tick_params(axis="x", which="minor", length=0)
     ax.xaxis.tick_top()
     ax.tick_params(axis="x", pad=2)
-    text(190, 117, "橙：08〜12時・13〜18時 ／ 青：その他 ／ 赤：1位", size=5.5)
+    for x, color, label in (
+        (188, LOAD_ORANGE, "8-12時 / 13-18時"),
+        (228, TOP_BLUE, "その他"),
+        (251, TOP_RED, "1位"),
+    ):
+        page.canvas.add_patch(
+            Rectangle((x, 116.9), 2.8, 2.8, facecolor=color, edgecolor="none")
+        )
+        text(x + 4, 117, label, size=5.5)
     # 帳票No.7 項番7：電力量は日別48枠の合計、
     # 最大電力は最大枠の電力量×2。ここでは換算済み。
     rows = [
@@ -123,8 +133,5 @@ def draw_no7(page: Any, s: Any, context: Any):
         advice=True,
     )
     # 帳票No.7 項番10：最大電力・使用電力量説明。No.3 項番2と共通の固定文を使う。
-    footer_lines = DEFAULT_NOTES.replace(
-        "30分ごとの使用電力量", "\n30分ごとの使用電力量"
-    ).replace("この対象期間は、", "\nこの対象期間は、")
-    text(197.0, 179.6, footer_lines, size=5.5, linespacing=1.4)
+    text(197.0, 179.6, DEFAULT_NOTES, size=5.5, linespacing=1.4)
     text(278, 190.5, "発行元：東京電力エナジーパートナー株式会社", size=5.3, ha="right")

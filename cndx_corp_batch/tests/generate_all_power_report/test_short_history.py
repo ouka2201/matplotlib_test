@@ -155,7 +155,7 @@ class ShortHistoryTests(unittest.TestCase):
         self.assertEqual(context["actual_period"], "2026/06/10〜2026/06/12")
         self.assertEqual(
             [r["date"] for r in context["daily_top"]],
-            ["2026/06/10（水）", "2026/06/11（木）", "2026/06/12（金）"],
+            ["2026/06/10(水)", "2026/06/11(木)", "2026/06/12(金)"],
         )
         cells = [cell for week in context["weeks"] for cell in week if cell]
         self.assertEqual(sum(cell["kw"] is None for cell in cells), 27)

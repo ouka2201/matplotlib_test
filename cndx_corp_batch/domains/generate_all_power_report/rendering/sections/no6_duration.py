@@ -103,7 +103,7 @@ def draw_no6(page: Any, s: Any, context: Any) -> Any:
         [r["rank"], r["date"], r["time"], format_number(r["kw"])]
         for r in context["top_rows"]
     ]
-    widths = [0.09, 0.46, 0.18, 0.27]
+    widths = [0.13, 0.43, 0.17, 0.27]
     table(
         1.05,
         74.8,
@@ -185,7 +185,9 @@ def draw_no6(page: Any, s: Any, context: Any) -> Any:
         )
         counts = s[key]
         vals = counts.to_numpy()
-        ax = axes(x, y, w, 39.1, "発生回数")
+        ax = axes(x, y, w, 39.1, "" if key == "hour_count" else "発生回数")
+        if key == "hour_count":
+            ax.text(0, 1.02, "発生回数", transform=ax.transAxes, fontsize=5.2)
         bars = ax.bar(
             range(len(vals)),
             vals,
