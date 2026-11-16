@@ -153,15 +153,33 @@ class No6DurationTests(unittest.TestCase):
         finally:
             plt.close(fig)
 
-    def test_sunday_bar_and_count_do_not_overlap_next_chart_axis_label(self):
-        """日曜日が10件でも、曜日別の棒と値が時間帯別の軸名に重ならない。"""
+    def test_feature_charts_keep_spacing_even_with_ten_sunday_occurrences(self):
+        """月別・曜日別・時間帯別の軸名と値が隣のグラフに重ならない。"""
         config, context, series = self.fixture()
         series["weekday_count"] = pd.Series(range(4, 11), index=range(7))
         fig = self.draw(config, context, series)
         try:
             fig.canvas.draw()
             renderer = fig.canvas.get_renderer()
-            weekday_chart, hour_chart = fig.axes[5:7]
+            duration_chart, month_chart, weekday_chart, hour_chart = (
+                fig.axes[i] for i in (1, 4, 5, 6)
+            )
+            margin = fig.bbox.width / 281 * 2
+
+            def right_edge(chart):
+                artists = [*chart.get_xticklabels(), *chart.texts]
+                return max(
+                    [chart.get_window_extent(renderer).x1]
+                    + [item.get_window_extent(renderer).x1 for item in artists]
+                )
+
+            def left_edge(chart):
+                artists = [chart.yaxis.label, *chart.get_yticklabels()]
+                return min(item.get_window_extent(renderer).x0 for item in artists)
+
+            self.assertGreater(left_edge(month_chart) - right_edge(duration_chart), margin)
+            self.assertGreater(left_edge(weekday_chart) - right_edge(month_chart), margin)
+            self.assertGreater(left_edge(hour_chart) - right_edge(weekday_chart), margin)
             sunday_bar = weekday_chart.patches[-1].get_window_extent(renderer)
             sunday_count = next(
                 text for text in weekday_chart.texts if text.get_text() == "10"

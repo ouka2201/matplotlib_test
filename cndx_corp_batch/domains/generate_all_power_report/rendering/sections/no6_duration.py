@@ -177,9 +177,9 @@ def draw_no6(page: Any, s: Any, context: Any) -> Any:
     )
     text(190.5, 14.7, top_label, size=9.6, color="#e03531", bold=True, ha="right")
     specs = [
-        ("month_count", "月別", 116.8, 31.0, 42.0),
-        ("weekday_count", "曜日別", 164.0, 30.7, 30.5),
-        ("hour_count", "時間帯別", 204.0, 30.7, 76.0),
+        ("month_count", "月別", 120.0, 31.0, 35.0),
+        ("weekday_count", "曜日別", 167.0, 30.7, 29.0),
+        ("hour_count", "時間帯別", 208.0, 30.7, 72.0),
     ]
     for key, label, x, y, w in specs:
         text(
