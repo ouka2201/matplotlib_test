@@ -1,4 +1,4 @@
-import { useNavigate } from "@remix-run/react";
+import { useLocation, useNavigate } from "@remix-run/react";
 import { useState } from "react";
 import ErrorHint from "~/components/common/error-hint";
 import MasterLayout from "~/components/layout/master-layout";
@@ -16,14 +16,16 @@ import { canRegisterHandover, canTransferReportData, isFutureHandoverDate } from
 import type { HandoverManager } from "~/lib/validations/mgmg03";
 import type { HandoverState } from "~/types/screen/master/mgmg05";
 
-// shortcut: 仮画面は一括引継のみ。個別引継は企業選択画面の実装時に追加する。
 export default function SalesHandover() {
   const navigate = useNavigate();
+  const { state } = useLocation();
+  const previous = state as { fromManager?: HandoverManager; toManager?: HandoverManager;
+    scheduleDate?: string; hasReportData?: boolean } | null;
   const { session } = useSession();
-  const [fromManager, setFromManager] = useState<HandoverManager | null>(null);
-  const [toManager, setToManager] = useState<HandoverManager | null>(null);
-  const [scheduleDate, setScheduleDate] = useState("");
-  const [hasReportData, setHasReportData] = useState(false);
+  const [fromManager, setFromManager] = useState<HandoverManager | null>(previous?.fromManager ?? null);
+  const [toManager, setToManager] = useState<HandoverManager | null>(previous?.toManager ?? null);
+  const [scheduleDate, setScheduleDate] = useState(previous?.scheduleDate ?? "");
+  const [hasReportData, setHasReportData] = useState(previous?.hasReportData ?? false);
   const [confirmationInput, setConfirmationInput] = useState<HandoverState | null>(null);
   const [isCancelOpen, setIsCancelOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -52,6 +54,26 @@ export default function SalesHandover() {
     });
   };
 
+  const handleIndividual = () => {
+    if (!fromManager || !toManager) return;
+    if (fromManager.user_id === toManager.user_id && fromManager.org_id === toManager.org_id) {
+      setErrorMessage("引継元と引継先には異なる担当者を選択してください。");
+      return;
+    }
+    if (!isFutureHandoverDate(scheduleDate)) {
+      setErrorMessage("実施日はYYYY/MM/DD形式で、明日以降の有効な日付を入力してください。");
+      return;
+    }
+    setErrorMessage("");
+    navigate("/master/mgmg04", { state: {
+      handover_from_org_id: fromManager.org_id, handover_from_user_id: fromManager.user_id,
+      handover_to_org_id: toManager.org_id, handover_to_user_id: toManager.user_id,
+      handover_schedule_date: scheduleDate.replaceAll("/", ""),
+      report_data_flg: canTransferReports && hasReportData,
+      fromManager, toManager, scheduleDate, hasReportData,
+    } });
+  };
+
   return (
     <MasterLayout isEditing={canRegisterHandover(session?.authorityInfo)} breadcrumbItems={[
       { title: "営業担当登録・管理", link: "/master/msmg01" },
@@ -59,7 +81,7 @@ export default function SalesHandover() {
     ]}>
       {!canRegisterHandover(session?.authorityInfo) ? <ErrorHint message="営業担当引継を利用する権限がありません。" /> : (
         <div className="space-y-6 pb-8">
-          <p>一括引継の仮画面です。担当者を検索・選択して、引継内容を入力してください。</p>
+          <p>担当者を検索・選択して、引継内容を入力してください。</p>
           {errorMessage && <ErrorHint message={errorMessage} />}
           <div className="grid gap-6 lg:grid-cols-2">
             <div className="space-y-6">
@@ -85,7 +107,10 @@ export default function SalesHandover() {
           </div>
           <div className="flex justify-between gap-4">
             <Button variant="third" onClick={() => setIsCancelOpen(true)}>キャンセル</Button>
-            <Button variant="primary" disabled={!canConfirm} onClick={handleConfirm}>一括引継</Button>
+            <div className="flex gap-2">
+              <Button variant="third" disabled={!canConfirm} onClick={handleIndividual}>個別引継</Button>
+              <Button variant="primary" disabled={!canConfirm} onClick={handleConfirm}>一括引継</Button>
+            </div>
           </div>
           {confirmationInput && <HandoverConfirmationModal isOpen input={confirmationInput}
             onClose={() => setConfirmationInput(null)} onRegistered={() => navigate("/master/msmg01")} />}

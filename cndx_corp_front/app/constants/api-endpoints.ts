@@ -67,5 +67,7 @@ export const API_ENDPOINTS = {
     API_CONTACT_PERSON_UPDATE: `${API_BASE}/api/contact-person/update`, // 担当者情報登録API
     API_INDIVIDUAL_HANDOVER: `${API_BASE}/api/contact-person/individual_handover`,
     API_INCLUSIVE_HANDOVER: `${API_BASE}/api/contact-person/inclusive_handover`,
+    API_INDIVIDUAL_HANDOVER_SEARCH: `${API_BASE}/api/contact-person/individual_handover_search`,
+    API_SELECT_SCHEDULED_COMPANY: `${API_BASE}/api/contact-person/select_scheduled_company`,
   }
 } as const;

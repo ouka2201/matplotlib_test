@@ -20,7 +20,7 @@ type HandoverManagerSelectorProps = {
 };
 
 export function HandoverManagerSelector({ id, title, value, onChange }: HandoverManagerSelectorProps) {
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(value?.email_address ?? "");
   const [isOpen, setIsOpen] = useState(false);
 
   return (
