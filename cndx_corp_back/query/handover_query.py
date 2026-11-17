@@ -6,6 +6,29 @@ SELECT_ASSIGNED_COMPANIES = """
       AND delete_flg = false ORDER BY corporate_number
 """
 
+SELECT_INDIVIDUAL_HANDOVER_COMPANIES = """
+    SELECT DISTINCT c.company_name, c.corporate_number,
+           CONCAT(COALESCE(p.pref_nm, ''), COALESCE(c.company_address_city, '')) AS company_address
+    FROM db_corp.m_staff_info AS s
+    JOIN db_corp.m_corporate_basic AS c ON c.corporate_number = s.corporate_number
+    LEFT JOIN prefecture_mst AS p ON p.pref_cd = c.company_address_prefecture
+    WHERE s.user_id = :from_user AND s.delete_flg = false AND c.delete_flg = false
+      AND (:is_ep_admin OR s.org_id LIKE :bank_pattern)
+      AND c.company_name LIKE :company_name ESCAPE '!'
+      AND c.corporate_number LIKE :corporate_number ESCAPE '!'
+      AND (COALESCE(p.pref_nm, '') LIKE :company_address ESCAPE '!'
+           OR COALESCE(c.company_address_city, '') LIKE :company_address ESCAPE '!')
+    ORDER BY c.company_name, c.corporate_number
+"""
+
+SELECT_SCHEDULED_COMPANIES = """
+    SELECT corporate_number FROM db_corp.t_sales_user_handover_info
+    WHERE corporate_number IN :numbers AND handover_status = :status
+      AND handover_to_org_id = :to_org AND handover_to_user_id = :to_user
+      AND (:is_ep_admin OR handover_to_org_id LIKE :bank_pattern)
+    ORDER BY corporate_number
+"""
+
 UPSERT_HANDOVER = """
     INSERT INTO db_corp.t_sales_user_handover_info AS h
         (corporate_number, handover_from_org_id, handover_from_user_id,

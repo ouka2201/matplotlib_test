@@ -10,6 +10,7 @@ from . import (  # noqa: E402,F401 - Blueprint作成後にルートを登録す�
     detail_api,
     get_user_api,
     handover_register_api,
+    individual_handover_search_api,
     info_api,
     search_api,
     update_api,
