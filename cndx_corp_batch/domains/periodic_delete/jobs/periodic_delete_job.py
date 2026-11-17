@@ -51,13 +51,13 @@ def _delete_file(path: str | None) -> None:
     target.unlink(missing_ok=True)
 
 
-def _delete_zip_rows(context, table: str, key: tuple[str, ...], cutoff: datetime | str, cutoff_column: str) -> None:
+def _delete_zip_rows(logger, table: str, key: tuple[str, ...], cutoff: datetime | str, cutoff_column: str) -> None:
     """期限切れのZIPファイルと管理行を削除する。
 
     ファイルを先に削除し、再実行時には削除済みのファイルも許容する。
 
     Args:
-        context: ログ出力に使うバッチコンテキスト。
+        logger: Job名を含むログ出力先。
         table: 管理テーブルの物理名。
         key: 管理行を識別する列名。
         cutoff: 削除対象を判定する境界日時または対象年月。
@@ -93,14 +93,14 @@ def _delete_zip_rows(context, table: str, key: tuple[str, ...], cutoff: datetime
         cursor = tuple(rows[-1][column] for column in key)
         with ThreadPoolExecutor(max_workers=os.cpu_count() or 1) as pool:
             list(pool.map(delete_one, rows))
-        context.logger.info("%s: %d件処理", table, len(rows))
+        logger.info("%s: %d件処理", table, len(rows))
 
 
-def _delete_old_rows(context, table: str, column: str, cutoff: str) -> None:
+def _delete_old_rows(logger, table: str, column: str, cutoff: str) -> None:
     """期限切れの管理行を一定件数ずつ削除する。
 
     Args:
-        context: ログ出力に使うバッチコンテキスト。
+        logger: Job名を含むログ出力先。
         table: 削除対象テーブルの物理名。
         column: 境界値と比較する列名。
         cutoff: 削除対象を判定する年月または年月日。
@@ -115,7 +115,7 @@ def _delete_old_rows(context, table: str, column: str, cutoff: str) -> None:
         total += count
         if count < DELETE_SIZE:
             break
-    context.logger.info("%s: %d件削除", table, total)
+    logger.info("%s: %d件削除", table, total)
 
 
 class PeriodicDeleteJob(BaseJob):
@@ -146,12 +146,12 @@ class PeriodicDeleteJob(BaseJob):
         six_months = months_before(self.batch_at, 6)
 
         # 概要定義の保持期間は2年。詳細定義No.2の「5年」は概要と不一致。
-        _delete_zip_rows(self.context, "t_user_power_report_mng_info", ("file_id",),
+        _delete_zip_rows(self.logger, "t_user_power_report_mng_info", ("file_id",),
                          two_years.strftime("%Y%m"), "target_year_month")
-        _delete_old_rows(self.context, "t_power_report_mng_info", "target_year_month", two_years.strftime("%Y%m"))
-        _delete_old_rows(self.context, "t_ep_electricity_data_30min", "t01_get_ymd", five_years.strftime("%Y%m%d"))
-        _delete_old_rows(self.context, "t_30min_import_mng", "target_year_month", five_years.strftime("%Y%m"))
+        _delete_old_rows(self.logger, "t_power_report_mng_info", "target_year_month", two_years.strftime("%Y%m"))
+        _delete_old_rows(self.logger, "t_ep_electricity_data_30min", "t01_get_ymd", five_years.strftime("%Y%m%d"))
+        _delete_old_rows(self.logger, "t_30min_import_mng", "target_year_month", five_years.strftime("%Y%m"))
         # テーブル定義の主キーは creation_id + org_id（詳細定義のファイルID列は存在しない）。
-        _delete_zip_rows(self.context, "t_co2_summary_report_mng_info", ("creation_id", "org_id"),
+        _delete_zip_rows(self.logger, "t_co2_summary_report_mng_info", ("creation_id", "org_id"),
                          self.batch_at - timedelta(hours=24), "file_created_at")
-        _delete_old_rows(self.context, "t_historical_arve_customer_info", "acquisition_year_month", six_months.strftime("%Y%m"))
+        _delete_old_rows(self.logger, "t_historical_arve_customer_info", "acquisition_year_month", six_months.strftime("%Y%m"))

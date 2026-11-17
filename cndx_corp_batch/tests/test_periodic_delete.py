@@ -13,6 +13,7 @@ def test_cutoffs_and_table_order():
     with patch.object(job, "_delete_zip_rows") as zip_rows, patch.object(job, "_delete_old_rows") as old_rows:
         instance = object.__new__(job.PeriodicDeleteJob)
         instance.context = context
+        instance.logger = context.logger
         instance.batch_at = datetime(2026, 11, 17, 2)
         instance.execute()
 
