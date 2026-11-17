@@ -1,8 +1,260 @@
-127.0.0.1 - - [04/Nov/2026 21:09:56] "OPTIONS /api/contact-person/search?org_id=TEP&org_type_code=01&user_role=0&search_query=handover-99009001@example.invalid&search_type=email_address HTTP/1.1" 200 -
-127.0.0.1 - - [04/Nov/2026 21:09:56] "OPTIONS /api/contact-person/search?org_id=TEP&org_type_code=01&user_role=0&search_query=handover-99009001@example.invalid&search_type=email_address HTTP/1.1" 200 -
-2026-11-04T21:09:57.241+09:00 INFO user_id:None screen_id:None api_id:None request_id:41bb6b1f-f40c-4d5f-8b17-61f09ba6a2a2 error_handler.py funcname:not_found msg:404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-127.0.0.1 - - [04/Nov/2026 21:09:57] "GET /api/contact-person/search?org_id=TEP&org_type_code=01&user_role=0&search_query=handover-99009001@example.invalid&search_type=email_address HTTP/1.1" 404 -
-127.0.0.1 - - [04/Nov/2026 21:11:55] "OPTIONS /api/contact-person/search?org_id=TEP&org_type_code=01&user_role=0&search_query=handover-99009001@example.invalid&search_type=email_address HTTP/1.1" 200 -
-127.0.0.1 - - [04/Nov/2026 21:11:55] "OPTIONS /api/contact-person/search?org_id=TEP&org_type_code=01&user_role=0&search_query=handover-99009001@example.invalid&search_type=email_address HTTP/1.1" 200 -
-2026-11-04T21:11:56.022+09:00 INFO user_id:None screen_id:None api_id:None request_id:60b99992-c946-4384-9aaf-c47f610a5b10 error_handler.py funcname:not_found msg:404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-127.0.0.1 - - [04/Nov/2026 21:11:56] "GET /api/contact-person/search?org_id=TEP&org_type_code=01&user_role=0&search_query=handover-99009001@example.invalid&search_type=email_address HTTP/1.1" 404 -
+2026-11-17 16:53:34,056 INFO BLMMRCRDELETE run:40840ac0-42d0-4864-85eb-4506cdce36e5 job:periodic_delete_job base.py:78 _log_start [START] job=periodic_delete_job
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Program Files\Python312\Lib\logging\__init__.py", line 464, in format
+    return self._format(record)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\logging\__init__.py", line 460, in _format
+    return self._fmt % values
+           ~~~~~~~~~~^~~~~~~~
+KeyError: 'job_name'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Program Files\Python312\Lib\logging\__init__.py", line 1160, in emit
+    msg = self.format(record)
+          ^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\logging\__init__.py", line 999, in format
+    return fmt.format(record)
+           ^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\logging\__init__.py", line 706, in format
+    s = self.formatMessage(record)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\logging\__init__.py", line 675, in formatMessage
+    return self._style.format(record)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\logging\__init__.py", line 466, in format
+    raise ValueError('Formatting field not found in record: %s' % e)
+ValueError: Formatting field not found in record: 'job_name'
+Call stack:
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\STEP4\cndx_corp_batch\entrypoints\periodic_delete.py", line 48, in <module>
+    sys.exit(main())
+  File "C:\STEP4\cndx_corp_batch\entrypoints\periodic_delete.py", line 40, in main
+    PeriodicDeleteJob(context, batch_at).run()
+  File "C:\STEP4\cndx_corp_batch\jobs\base.py", line 57, in run
+    result = self.execute(*args, **kwargs)
+  File "C:\STEP4\cndx_corp_batch\domains\periodic_delete\jobs\periodic_delete_job.py", line 179, in execute
+    _delete_zip_rows(
+  File "C:\STEP4\cndx_corp_batch\domains\periodic_delete\jobs\periodic_delete_job.py", line 122, in _delete_zip_rows
+    context.logger.info("%s: %d件処理", table, len(rows))
+Message: '%s: %d件処理'
+Arguments: ('t_user_power_report_mng_info', 1)
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Program Files\Python312\Lib\logging\__init__.py", line 464, in format
+    return self._format(record)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\logging\__init__.py", line 460, in _format
+    return self._fmt % values
+           ~~~~~~~~~~^~~~~~~~
+KeyError: 'job_name'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Program Files\Python312\Lib\logging\__init__.py", line 1160, in emit
+    msg = self.format(record)
+          ^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\logging\__init__.py", line 999, in format
+    return fmt.format(record)
+           ^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\logging\__init__.py", line 706, in format
+    s = self.formatMessage(record)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\logging\__init__.py", line 675, in formatMessage
+    return self._style.format(record)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\logging\__init__.py", line 466, in format
+    raise ValueError('Formatting field not found in record: %s' % e)
+ValueError: Formatting field not found in record: 'job_name'
+Call stack:
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\STEP4\cndx_corp_batch\entrypoints\periodic_delete.py", line 48, in <module>
+    sys.exit(main())
+  File "C:\STEP4\cndx_corp_batch\entrypoints\periodic_delete.py", line 40, in main
+    PeriodicDeleteJob(context, batch_at).run()
+  File "C:\STEP4\cndx_corp_batch\jobs\base.py", line 57, in run
+    result = self.execute(*args, **kwargs)
+  File "C:\STEP4\cndx_corp_batch\domains\periodic_delete\jobs\periodic_delete_job.py", line 186, in execute
+    _delete_old_rows(
+  File "C:\STEP4\cndx_corp_batch\domains\periodic_delete\jobs\periodic_delete_job.py", line 148, in _delete_old_rows
+    context.logger.info("%s: %d件削除", table, total)
+Message: '%s: %d件削除'
+Arguments: ('t_power_report_mng_info', 1)
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Program Files\Python312\Lib\logging\__init__.py", line 464, in format
+    return self._format(record)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\logging\__init__.py", line 460, in _format
+    return self._fmt % values
+           ~~~~~~~~~~^~~~~~~~
+KeyError: 'job_name'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Program Files\Python312\Lib\logging\__init__.py", line 1160, in emit
+    msg = self.format(record)
+          ^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\logging\__init__.py", line 999, in format
+    return fmt.format(record)
+           ^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\logging\__init__.py", line 706, in format
+    s = self.formatMessage(record)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\logging\__init__.py", line 675, in formatMessage
+    return self._style.format(record)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\logging\__init__.py", line 466, in format
+    raise ValueError('Formatting field not found in record: %s' % e)
+ValueError: Formatting field not found in record: 'job_name'
+Call stack:
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\STEP4\cndx_corp_batch\entrypoints\periodic_delete.py", line 48, in <module>
+    sys.exit(main())
+  File "C:\STEP4\cndx_corp_batch\entrypoints\periodic_delete.py", line 40, in main
+    PeriodicDeleteJob(context, batch_at).run()
+  File "C:\STEP4\cndx_corp_batch\jobs\base.py", line 57, in run
+    result = self.execute(*args, **kwargs)
+  File "C:\STEP4\cndx_corp_batch\domains\periodic_delete\jobs\periodic_delete_job.py", line 192, in execute
+    _delete_old_rows(
+  File "C:\STEP4\cndx_corp_batch\domains\periodic_delete\jobs\periodic_delete_job.py", line 148, in _delete_old_rows
+    context.logger.info("%s: %d件削除", table, total)
+Message: '%s: %d件削除'
+Arguments: ('t_ep_electricity_data_30min', 8)
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Program Files\Python312\Lib\logging\__init__.py", line 464, in format
+    return self._format(record)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\logging\__init__.py", line 460, in _format
+    return self._fmt % values
+           ~~~~~~~~~~^~~~~~~~
+KeyError: 'job_name'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Program Files\Python312\Lib\logging\__init__.py", line 1160, in emit
+    msg = self.format(record)
+          ^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\logging\__init__.py", line 999, in format
+    return fmt.format(record)
+           ^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\logging\__init__.py", line 706, in format
+    s = self.formatMessage(record)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\logging\__init__.py", line 675, in formatMessage
+    return self._style.format(record)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\logging\__init__.py", line 466, in format
+    raise ValueError('Formatting field not found in record: %s' % e)
+ValueError: Formatting field not found in record: 'job_name'
+Call stack:
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\STEP4\cndx_corp_batch\entrypoints\periodic_delete.py", line 48, in <module>
+    sys.exit(main())
+  File "C:\STEP4\cndx_corp_batch\entrypoints\periodic_delete.py", line 40, in main
+    PeriodicDeleteJob(context, batch_at).run()
+  File "C:\STEP4\cndx_corp_batch\jobs\base.py", line 57, in run
+    result = self.execute(*args, **kwargs)
+  File "C:\STEP4\cndx_corp_batch\domains\periodic_delete\jobs\periodic_delete_job.py", line 198, in execute
+    _delete_old_rows(
+  File "C:\STEP4\cndx_corp_batch\domains\periodic_delete\jobs\periodic_delete_job.py", line 148, in _delete_old_rows
+    context.logger.info("%s: %d件削除", table, total)
+Message: '%s: %d件削除'
+Arguments: ('t_30min_import_mng', 1)
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Program Files\Python312\Lib\logging\__init__.py", line 464, in format
+    return self._format(record)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\logging\__init__.py", line 460, in _format
+    return self._fmt % values
+           ~~~~~~~~~~^~~~~~~~
+KeyError: 'job_name'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Program Files\Python312\Lib\logging\__init__.py", line 1160, in emit
+    msg = self.format(record)
+          ^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\logging\__init__.py", line 999, in format
+    return fmt.format(record)
+           ^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\logging\__init__.py", line 706, in format
+    s = self.formatMessage(record)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\logging\__init__.py", line 675, in formatMessage
+    return self._style.format(record)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\logging\__init__.py", line 466, in format
+    raise ValueError('Formatting field not found in record: %s' % e)
+ValueError: Formatting field not found in record: 'job_name'
+Call stack:
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\STEP4\cndx_corp_batch\entrypoints\periodic_delete.py", line 48, in <module>
+    sys.exit(main())
+  File "C:\STEP4\cndx_corp_batch\entrypoints\periodic_delete.py", line 40, in main
+    PeriodicDeleteJob(context, batch_at).run()
+  File "C:\STEP4\cndx_corp_batch\jobs\base.py", line 57, in run
+    result = self.execute(*args, **kwargs)
+  File "C:\STEP4\cndx_corp_batch\domains\periodic_delete\jobs\periodic_delete_job.py", line 205, in execute
+    _delete_zip_rows(
+  File "C:\STEP4\cndx_corp_batch\domains\periodic_delete\jobs\periodic_delete_job.py", line 122, in _delete_zip_rows
+    context.logger.info("%s: %d件処理", table, len(rows))
+Message: '%s: %d件処理'
+Arguments: ('t_co2_summary_report_mng_info', 1)
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Program Files\Python312\Lib\logging\__init__.py", line 464, in format
+    return self._format(record)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\logging\__init__.py", line 460, in _format
+    return self._fmt % values
+           ~~~~~~~~~~^~~~~~~~
+KeyError: 'job_name'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Program Files\Python312\Lib\logging\__init__.py", line 1160, in emit
+    msg = self.format(record)
+          ^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\logging\__init__.py", line 999, in format
+    return fmt.format(record)
+           ^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\logging\__init__.py", line 706, in format
+    s = self.formatMessage(record)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\logging\__init__.py", line 675, in formatMessage
+    return self._style.format(record)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\logging\__init__.py", line 466, in format
+    raise ValueError('Formatting field not found in record: %s' % e)
+ValueError: Formatting field not found in record: 'job_name'
+Call stack:
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\STEP4\cndx_corp_batch\entrypoints\periodic_delete.py", line 48, in <module>
+    sys.exit(main())
+  File "C:\STEP4\cndx_corp_batch\entrypoints\periodic_delete.py", line 40, in main
+    PeriodicDeleteJob(context, batch_at).run()
+  File "C:\STEP4\cndx_corp_batch\jobs\base.py", line 57, in run
+    result = self.execute(*args, **kwargs)
+  File "C:\STEP4\cndx_corp_batch\domains\periodic_delete\jobs\periodic_delete_job.py", line 212, in execute
+    _delete_old_rows(
+  File "C:\STEP4\cndx_corp_batch\domains\periodic_delete\jobs\periodic_delete_job.py", line 148, in _delete_old_rows
+    context.logger.info("%s: %d件削除", table, total)
+Message: '%s: %d件削除'
+Arguments: ('t_historical_arve_customer_info', 1)
+2026-11-17 16:53:35,033 INFO BLMMRCRDELETE run:40840ac0-42d0-4864-85eb-4506cdce36e5 job:periodic_delete_job base.py:82 _log_success [SUCCESS] job=periodic_delete_job elapsed=0.98s
