@@ -8,6 +8,7 @@ from pathlib import Path
 from sqlalchemy import text
 
 from cndx_corp_batch.common.db import get_session
+from cndx_corp_batch.jobs.base import BaseJob
 
 
 PAGE_SIZE = 1000
@@ -117,31 +118,40 @@ def _delete_old_rows(context, table: str, column: str, cutoff: str) -> None:
     context.logger.info("%s: %d件削除", table, total)
 
 
-def delete_expired(context, batch_at: datetime) -> None:
-    """設計書の処理順で期限切れのデータを物理削除する。
+class PeriodicDeleteJob(BaseJob):
+    """保持期間を過ぎたZIPファイルとDB行を物理削除する。"""
 
-    境界日時または境界年月と同じ値のデータは削除しない。
+    def __init__(self, context, batch_at: datetime):
+        """削除基準となる実行日時を設定する。
 
-    Args:
-        context: DB接続とログ出力に使うバッチコンテキスト。
-        batch_at: 保持期間を計算する基準日時。
+        Args:
+            context: DB接続とログ出力に使うバッチコンテキスト。
+            batch_at: 保持期間を計算する基準日時。
 
-    Raises:
-        TypeError: 基準日時がdatetimeでない場合。
-    """
-    if not isinstance(batch_at, datetime):
-        raise TypeError("batch_at は datetime を指定してください")
-    two_years = months_before(batch_at, 24)
-    five_years = months_before(batch_at, 60)
-    six_months = months_before(batch_at, 6)
+        Raises:
+            TypeError: 基準日時がdatetimeでない場合。
+        """
+        super().__init__(context)
+        if not isinstance(batch_at, datetime):
+            raise TypeError("batch_at は datetime を指定してください")
+        self.batch_at = batch_at
 
-    # 概要定義の保持期間は2年。詳細定義No.2の「5年」は概要と不一致。
-    _delete_zip_rows(context, "t_user_power_report_mng_info", ("file_id",),
-                     two_years.strftime("%Y%m"), "target_year_month")
-    _delete_old_rows(context, "t_power_report_mng_info", "target_year_month", two_years.strftime("%Y%m"))
-    _delete_old_rows(context, "t_ep_electricity_data_30min", "t01_get_ymd", five_years.strftime("%Y%m%d"))
-    _delete_old_rows(context, "t_30min_import_mng", "target_year_month", five_years.strftime("%Y%m"))
-    # テーブル定義の主キーは creation_id + org_id（詳細定義のファイルID列は存在しない）。
-    _delete_zip_rows(context, "t_co2_summary_report_mng_info", ("creation_id", "org_id"),
-                     batch_at - timedelta(hours=24), "file_created_at")
-    _delete_old_rows(context, "t_historical_arve_customer_info", "acquisition_year_month", six_months.strftime("%Y%m"))
+    def execute(self) -> None:
+        """設計書の処理順で期限切れのデータを物理削除する。
+
+        境界日時または境界年月と同じ値のデータは削除しない。
+        """
+        two_years = months_before(self.batch_at, 24)
+        five_years = months_before(self.batch_at, 60)
+        six_months = months_before(self.batch_at, 6)
+
+        # 概要定義の保持期間は2年。詳細定義No.2の「5年」は概要と不一致。
+        _delete_zip_rows(self.context, "t_user_power_report_mng_info", ("file_id",),
+                         two_years.strftime("%Y%m"), "target_year_month")
+        _delete_old_rows(self.context, "t_power_report_mng_info", "target_year_month", two_years.strftime("%Y%m"))
+        _delete_old_rows(self.context, "t_ep_electricity_data_30min", "t01_get_ymd", five_years.strftime("%Y%m%d"))
+        _delete_old_rows(self.context, "t_30min_import_mng", "target_year_month", five_years.strftime("%Y%m"))
+        # テーブル定義の主キーは creation_id + org_id（詳細定義のファイルID列は存在しない）。
+        _delete_zip_rows(self.context, "t_co2_summary_report_mng_info", ("creation_id", "org_id"),
+                         self.batch_at - timedelta(hours=24), "file_created_at")
+        _delete_old_rows(self.context, "t_historical_arve_customer_info", "acquisition_year_month", six_months.strftime("%Y%m"))

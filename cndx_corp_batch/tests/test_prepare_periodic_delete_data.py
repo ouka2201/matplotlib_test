@@ -6,7 +6,7 @@ from datetime import datetime
 
 from sqlalchemy import Column, DateTime, Integer, MetaData, String, Table, create_engine, select
 
-from cndx_corp_batch.test.prepare_periodic_delete_data import prepare
+from cndx_corp_batch.domains.periodic_delete.jobs.prepare_periodic_delete_data_job import prepare
 
 
 def test_prepare_creates_expired_and_retained_rows_and_zip_files(tmp_path):

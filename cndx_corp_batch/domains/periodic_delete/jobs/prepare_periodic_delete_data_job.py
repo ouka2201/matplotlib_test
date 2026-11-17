@@ -1,9 +1,6 @@
 """定期削除バッチの実行確認に使うDB行とZIPファイルを作成する。"""
 
-import argparse
 import json
-import os
-import sys
 import uuid
 import zipfile
 from datetime import datetime, timedelta
@@ -11,7 +8,8 @@ from pathlib import Path
 
 from sqlalchemy import Boolean, Date, DateTime, Integer, MetaData, Numeric, String, Table, create_engine
 
-from cndx_corp_batch.domains.periodic_delete import months_before
+from cndx_corp_batch.domains.periodic_delete.jobs.periodic_delete_job import months_before
+from cndx_corp_batch.jobs.base import BaseJob
 
 
 TABLES = (
@@ -164,36 +162,31 @@ def prepare(engine, output_dir: Path, batch_at: datetime, schema: str | None = "
         raise
 
 
-def main(argv=None) -> int:
-    """コマンドライン引数を読み取り、テストデータを作成する。
+class PreparePeriodicDeleteDataJob(BaseJob):
+    """定期削除バッチの実行テスト用データを作成する。"""
 
-    Args:
-        argv: コマンドライン引数。省略時は実行時の引数を使う。
+    def __init__(self, context, batch_at: datetime, output_dir: Path):
+        """テストデータの基準日時とZIPの保存先を設定する。
 
-    Returns:
-        正常終了時は0、作成に失敗した場合は1。
-    """
-    parser = argparse.ArgumentParser(description="定期削除バッチのテストデータ作成")
-    parser.add_argument("--batch-date", type=datetime.fromisoformat, required=True,
-                        help="バッチに渡す実行日時 (YYYY-MM-DDTHH:MM:SS)")
-    parser.add_argument("--output-dir", type=Path, default=Path("output/periodic_delete_seed"),
-                        help="ZIPを作成する親ディレクトリ")
-    args = parser.parse_args(argv)
-    db_url = os.environ.get("DATABASE_URL")
-    if not db_url:
-        parser.error("DATABASE_URL を設定してください")
-    engine = create_engine(db_url)
-    try:
-        manifest = prepare(engine, args.output_dir, args.batch_date)
-        print(f"テストデータを作成しました: {manifest}")
-        print(f"削除バッチ: python -m cndx_corp_batch.entrypoints.periodic_delete --batch-date {args.batch_date.isoformat()}")
-        return 0
-    except Exception as exc:
-        print(f"テストデータの作成に失敗しました: {exc}", file=sys.stderr)
-        return 1
-    finally:
-        engine.dispose()
+        Args:
+            context: DB設定とログ出力に使うバッチコンテキスト。
+            batch_at: 定期削除バッチに渡す基準日時。
+            output_dir: ZIPとマニフェストを格納する親ディレクトリ。
+        """
+        super().__init__(context)
+        self.batch_at = batch_at
+        self.output_dir = output_dir
 
+    def execute(self) -> Path:
+        """DB行とZIPを作成し、マニフェストのパスを返す。
 
-if __name__ == "__main__":
-    sys.exit(main())
+        Returns:
+            作成したマニフェストの絶対パス。
+        """
+        engine = create_engine(self.context.config.db_url)
+        try:
+            manifest = prepare(engine, self.output_dir, self.batch_at)
+            self.logger.info("定期削除のテストデータを作成しました。manifest=%s", manifest)
+            return manifest
+        finally:
+            engine.dispose()

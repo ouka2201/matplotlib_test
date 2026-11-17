@@ -9,7 +9,9 @@ from zoneinfo import ZoneInfo
 from cndx_corp_batch.common.config import load_config
 from cndx_corp_batch.common.context import BatchContext
 from cndx_corp_batch.common.logging import setup_logging
-from cndx_corp_batch.domains.periodic_delete import delete_expired
+from cndx_corp_batch.domains.periodic_delete.jobs.periodic_delete_job import (
+    PeriodicDeleteJob,
+)
 
 
 def main(argv=None) -> int:
@@ -29,7 +31,7 @@ def main(argv=None) -> int:
         setup_logging(context.batch_id, context.batch_name)
         try:
             batch_at = args.batch_date or datetime.now(ZoneInfo(config.timezone)).replace(tzinfo=None)
-            delete_expired(context, batch_at)
+            PeriodicDeleteJob(context, batch_at).run()
             return 0
         except Exception:
             context.logger.exception("定期削除バッチに失敗しました。")

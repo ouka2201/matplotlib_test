@@ -4,14 +4,17 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from cndx_corp_batch.domains import periodic_delete as job
+from cndx_corp_batch.domains.periodic_delete.jobs import periodic_delete_job as job
 
 
 def test_cutoffs_and_table_order():
     """各テーブルの境界値と削除対象を確認する。"""
     context = SimpleNamespace(logger=MagicMock())
     with patch.object(job, "_delete_zip_rows") as zip_rows, patch.object(job, "_delete_old_rows") as old_rows:
-        job.delete_expired(context, datetime(2026, 11, 17, 2))
+        instance = object.__new__(job.PeriodicDeleteJob)
+        instance.context = context
+        instance.batch_at = datetime(2026, 11, 17, 2)
+        instance.execute()
 
     assert [call.args[1] for call in zip_rows.call_args_list] == [
         "t_user_power_report_mng_info", "t_co2_summary_report_mng_info"

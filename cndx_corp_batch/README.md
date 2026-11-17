@@ -18,7 +18,7 @@ python -m cndx_corp_batch.entrypoints.periodic_delete --batch-date 2026-11-17T02
 検証用DBの `DATABASE_URL` を設定し、バッチと同じ日時を指定して投入PGを実行します。既存行は変更せず、一意のIDを持つ12行（6テーブル×削除対象・残存対象）とZIPファイル4件を作ります。
 
 ```powershell
-python -m cndx_corp_batch.test.prepare_periodic_delete_data --batch-date 2026-11-17T02:00:00 --output-dir output/periodic_delete_seed
+python -m cndx_corp_batch.entrypoints.prepare_periodic_delete_data --batch-date 2026-11-17T02:00:00 --output-dir output/periodic_delete_seed
 python -m cndx_corp_batch.entrypoints.periodic_delete --batch-date 2026-11-17T02:00:00
 ```
 
