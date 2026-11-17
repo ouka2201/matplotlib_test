@@ -1,5 +1,29 @@
 # 電力見える化レポート一括作成
 
+## 定期削除
+
+`DATABASE_URL` を設定し、プロジェクトルートから次を実行します。日次2時の起動は運用側のCRONジョブで設定します。
+
+```powershell
+python -m cndx_corp_batch.entrypoints.periodic_delete
+python -m cndx_corp_batch.entrypoints.periodic_delete --batch-date 2026-11-17T02:00:00
+```
+
+担当者別ZIPと電力レポート管理は2年、EP30分値と取込管理は5年、CO2集計ZIPと管理は24時間、過去分ARVEは6か月を保持します。境界と同じ日時・年月のデータは残します。ZIPはファイル削除後に管理行を削除し、途中で失敗した場合は異常終了して再実行できます。ファイルパスは絶対パスのZIPのみ受け付けます。
+
+設計書の担当者別ZIPは概要の2年と詳細の5年が矛盾するため、概要の2年を採用しました。CO2管理は詳細の「ファイルID」がテーブル定義に存在しないため、実際の主キー `creation_id` と `org_id` を使います。取込管理は詳細に存在しない「取得_年月日」「レポート作成対象年月」ではなく、テーブル定義の `target_year_month` を使います。
+
+### 実行テスト用データ
+
+検証用DBの `DATABASE_URL` を設定し、バッチと同じ日時を指定して投入PGを実行します。既存行は変更せず、一意のIDを持つ12行（6テーブル×削除対象・残存対象）とZIPファイル4件を作ります。
+
+```powershell
+python -m cndx_corp_batch.test.prepare_periodic_delete_data --batch-date 2026-11-17T02:00:00 --output-dir output/periodic_delete_seed
+python -m cndx_corp_batch.entrypoints.periodic_delete --batch-date 2026-11-17T02:00:00
+```
+
+作成したディレクトリの `manifest.json` に投入行のキー、判定値、ZIPの絶対パスを記録します。バッチ実行後、`expired` の行とZIPが削除され、`retained` は残っていることを確認してください。ZIPの保存先は、削除バッチを実行する環境から同じ絶対パスで見える場所を指定します。
+
 このフォルダーが既存バッチに組み込まれた実装です。本バッチのテストは
 `tests/generate_all_power_report` に配置しています。
 
