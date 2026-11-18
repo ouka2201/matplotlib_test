@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from datetime import date
+from datetime import date, datetime, time
 
 from sqlalchemy import text
 from sqlalchemy.orm import Session
@@ -33,11 +33,12 @@ class SalesUserHandoverJob(BaseJob):
 
         Args:
             context: バッチの設定やロガーを保持する実行コンテキスト。
-            batch_date: 処理対象の日付。省略時は現在の日付を使う。
+            batch_date: 予定日と登録締切日の基準日。省略時は現在の日付を使う。
         """
         super().__init__(context)
         self.batch_date = batch_date or get_current_time().date()
         self.batch_date_text = self.batch_date.strftime("%Y%m%d")
+        self.registration_cutoff = datetime.combine(self.batch_date, time(1))
         self.select_targets = text(
             load_sql_file("select_sales_user_handover_targets.sql")
         )
@@ -93,6 +94,7 @@ class SalesUserHandoverJob(BaseJob):
                     {
                         "batch_date": self.batch_date_text,
                         "handover_status": HANDOVER_STATUS_PLANNED,
+                        "registration_cutoff": self.registration_cutoff,
                     },
                 )
                 .mappings()

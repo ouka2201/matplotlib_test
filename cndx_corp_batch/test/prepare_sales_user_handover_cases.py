@@ -208,9 +208,13 @@ def build_plan(
     main = target()
     if number == 3:
         rows["handover"].clear()
-    elif number == 2:
-        staff(2)
-        target(2, HANDOVER_SCHEDULE_DATE=BASE_DATE.strftime("%Y%m%d"))
+    elif number in (2, 41):
+        if number == 2:
+            staff(2)
+        main["INSERT_DATETIME"] = datetime(2026, 10, 25, 0, 30)
+        main["UPDATED_AT"] = datetime(2026, 10, 25, 0, 30)
+        if number == 2:
+            target(2, HANDOVER_SCHEDULE_DATE=BASE_DATE.strftime("%Y%m%d"))
     elif number == 45:
         main["HANDOVER_STATUS"] = HANDOVER_STATUS_ERROR
         main["HANDOVERED_AT"] = datetime(2026, 10, 26, 0, 45)
@@ -256,9 +260,7 @@ def build_plan(
         main["INSERT_DATETIME"] = datetime.fromisoformat(
             "2026-10-26T" + ("00:58:59", "00:59:00", "00:59:59", "01:00:00")[number - 8]
         )
-        notes.append(
-            "現在の対象取得SQLには登録締切条件がない。Q01の期待結果を確認する。"
-        )
+        notes.append("登録締切はバッチ実行年月日（--batch-date、省略時は当日）の01:00:00より前。")
     elif number in (12, 42):
         staff(2)
         if number == 42:

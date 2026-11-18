@@ -1,4 +1,4 @@
-"""バッチ設計書_定期削除の物理削除処理。"""
+"""定期削除バッチで使う削除処理を定義する。"""
 
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta
@@ -18,14 +18,14 @@ DELETE_SIZE = 10000
 def months_before(value: datetime, months: int) -> datetime:
     """指定した月数だけ日時を戻す。
 
-    戻した先に同じ日がない場合は、PostgreSQLの月減算と同じく月末を使う。
+    移動先の月に同じ日がない場合は、PostgreSQLと同じく月末に合わせる。
 
     Args:
         value: 基準となる日時。
         months: 戻す月数。
 
     Returns:
-        月数を戻した日時。
+        指定した月数だけ前の日時。
     """
     import calendar
 
@@ -57,7 +57,7 @@ def _delete_zip_rows(logger, table: str, key: tuple[str, ...], cutoff: datetime 
     ファイルを先に削除し、再実行時には削除済みのファイルも許容する。
 
     Args:
-        logger: Job名を含むログ出力先。
+        logger: ジョブ名を含むログの出力先。
         table: 管理テーブルの物理名。
         key: 管理行を識別する列名。
         cutoff: 削除対象を判定する境界日時または対象年月。
@@ -100,12 +100,12 @@ def _delete_old_rows(logger, table: str, column: str, cutoff: str) -> None:
     """期限切れの管理行を一定件数ずつ削除する。
 
     Args:
-        logger: Job名を含むログ出力先。
+        logger: ジョブ名を含むログの出力先。
         table: 削除対象テーブルの物理名。
         column: 境界値と比較する列名。
         cutoff: 削除対象を判定する年月または年月日。
     """
-    # 1トランザクションを制限し、数百万件の対象でもロックとWALの肥大化を抑える。
+    # 1回のトランザクションで削除する件数を制限し、ロックとWALの肥大化を抑える。
     query = text(f"DELETE FROM db_corp.{table} WHERE ctid IN ("
                  f"SELECT ctid FROM db_corp.{table} WHERE {column} < :cutoff LIMIT :limit)")
     total = 0
@@ -145,13 +145,13 @@ class PeriodicDeleteJob(BaseJob):
         five_years = months_before(self.batch_at, 60)
         six_months = months_before(self.batch_at, 6)
 
-        # 概要定義の保持期間は2年。詳細定義No.2の「5年」は概要と不一致。
+        # 設計書の概要と詳細で保持期間が異なるため、概要に記載された2年を採用する。
         _delete_zip_rows(self.logger, "t_user_power_report_mng_info", ("file_id",),
                          two_years.strftime("%Y%m"), "target_year_month")
         _delete_old_rows(self.logger, "t_power_report_mng_info", "target_year_month", two_years.strftime("%Y%m"))
         _delete_old_rows(self.logger, "t_ep_electricity_data_30min", "t01_get_ymd", five_years.strftime("%Y%m%d"))
         _delete_old_rows(self.logger, "t_30min_import_mng", "target_year_month", five_years.strftime("%Y%m"))
-        # テーブル定義の主キーは creation_id + org_id（詳細定義のファイルID列は存在しない）。
+        # 詳細定義の「ファイルID」は存在しないため、テーブル定義の主キー2列を使う。
         _delete_zip_rows(self.logger, "t_co2_summary_report_mng_info", ("creation_id", "org_id"),
                          self.batch_at - timedelta(hours=24), "file_created_at")
         _delete_old_rows(self.logger, "t_historical_arve_customer_info", "acquisition_year_month", six_months.strftime("%Y%m"))

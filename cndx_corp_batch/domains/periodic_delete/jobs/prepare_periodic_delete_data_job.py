@@ -1,4 +1,4 @@
-"""定期削除バッチの実行確認に使うDB行とZIPファイルを作成する。"""
+"""定期削除バッチの動作確認に使うDBのデータとZIPファイルを作成する。"""
 
 import json
 import uuid
@@ -23,15 +23,15 @@ TABLES = (
 
 
 def _required_values(table, values: dict, batch_at: datetime) -> dict:
-    """テーブル定義にある必須列をテスト用の値で補う。
+    """テーブル定義を参照し、必須列にテスト用の値を設定する。
 
     Args:
         table: DBから取得したテーブル定義。
-        values: 削除条件と主キーに使う値。
+        values: 削除条件と主キーに設定する値。
         batch_at: テストの基準日時。
 
     Returns:
-        INSERTに渡す列名と値の対応。
+        登録する列名と値の対応。
 
     Raises:
         ValueError: 必須列の型に対応する値を作れない場合。
@@ -65,13 +65,13 @@ def _required_values(table, values: dict, batch_at: datetime) -> dict:
 
 
 def prepare(engine, output_dir: Path, batch_at: datetime, schema: str | None = "db_corp") -> Path:
-    """期限切れと境界値の行をDBに登録し、対応するZIPを作る。
+    """削除対象と残す対象をDBに登録し、対応するZIPを作成する。
 
     Args:
         engine: テスト用DBへのSQLAlchemyエンジン。
         output_dir: ZIPとマニフェストを格納する親ディレクトリ。
         batch_at: 定期削除バッチに渡す基準日時。
-        schema: テスト対象のスキーマ名。SQLiteの単体テストでは省略する。
+        schema: テスト対象のスキーマ名。SQLiteの単体テストではNoneを指定する。
 
     Returns:
         作成したマニフェストの絶対パス。
@@ -178,7 +178,7 @@ class PreparePeriodicDeleteDataJob(BaseJob):
         self.output_dir = output_dir
 
     def execute(self) -> Path:
-        """DB行とZIPを作成し、マニフェストのパスを返す。
+        """DBのデータとZIPを作成し、マニフェストのパスを返す。
 
         Returns:
             作成したマニフェストの絶対パス。
