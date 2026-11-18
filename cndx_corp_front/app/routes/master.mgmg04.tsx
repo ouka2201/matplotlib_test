@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from "@remix-run/react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 import ErrorHint from "~/components/common/error-hint";
 import MasterLayout from "~/components/layout/master-layout";
@@ -34,8 +34,10 @@ export default function IndividualHandover() {
   const navigate = useNavigate();
   const { state } = useLocation();
   const { session } = useSession();
-  const parsed = handoverParamsSchema.safeParse(state);
-  const handover = parsed.success ? parsed.data : null;
+  const handover = useMemo(() => {
+    const parsed = handoverParamsSchema.safeParse(state);
+    return parsed.success ? parsed.data : null;
+  }, [state]);
   const [filters, setFilters] = useState<Filters>(emptyFilters);
   const [criteria, setCriteria] = useState<Filters>(emptyFilters);
   const [refresh, setRefresh] = useState(0);
@@ -63,7 +65,7 @@ export default function IndividualHandover() {
         handover_to_org_id: handover.handover_to_org_id,
         handover_to_user_id: handover.handover_to_user_id,
       });
-      list.forEach(({ corporate_number }) => scheduledParams.append("corp_number_list", corporate_number));
+      list.forEach(({ corporate_number: corporateNumber }) => scheduledParams.append("corp_number_list", corporateNumber));
       const scheduled: unknown = await getData(
         `${API_ENDPOINTS.CONTACT_PERSON.API_SELECT_SCHEDULED_COMPANY}?${scheduledParams}`,
         { Authorization: `Bearer ${session.token}` }, { signal },
@@ -76,7 +78,7 @@ export default function IndividualHandover() {
     } finally {
       if (!signal.aborted) setLoading(false);
     }
-  }, [handover?.handover_from_user_id, handover?.handover_to_org_id, handover?.handover_to_user_id, session?.token]);
+  }, [handover, session?.token]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -90,13 +92,17 @@ export default function IndividualHandover() {
     : [...new Set([...current, ...companies.map((company) => company.corporate_number)])]);
   const toggle = (number: string) => setSelected((current) => current.includes(number)
     ? current.filter((item) => item !== number) : [...current, number]);
+  let screenError = "";
+  if (!canRegisterHandover(session?.authorityInfo)) {
+    screenError = "個別引継を利用する権限がありません。";
+  } else if (!handover) {
+    screenError = "引継情報がありません。営業担当引継画面から開いてください。";
+  }
 
   return <MasterLayout isEditing={canRegisterHandover(session?.authorityInfo)} breadcrumbItems={[
     { title: "営業担当引継", link: "/master/mgmg03" }, { title: "個別引継", link: "" },
   ]}>
-    {!canRegisterHandover(session?.authorityInfo) ? <ErrorHint message="個別引継を利用する権限がありません。" />
-      : !handover ? <ErrorHint message="引継情報がありません。営業担当引継画面から開いてください。" />
-      : <div className="space-y-6 pb-8">
+    {screenError ? <ErrorHint message={screenError} /> : <div className="space-y-6 pb-8">
         <h1 className="text-xl font-semibold">引継対象選択</h1>
         <form className="grid gap-4 md:grid-cols-3" onSubmit={(event) => {
           event.preventDefault(); setCriteria({ ...filters });

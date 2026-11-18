@@ -1,4 +1,4 @@
-"""LMMGMG-API-07/08 個別引継の検索API。"""
+"""個別引継の対象企業と、引継予定がある企業を取得するAPI。"""
 
 import traceback
 
