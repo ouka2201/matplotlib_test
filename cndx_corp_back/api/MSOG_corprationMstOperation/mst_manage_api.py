@@ -1,3 +1,5 @@
+import re
+
 from flask import jsonify
 from flask.views import MethodView
 from flask_jwt_extended import jwt_required
@@ -20,6 +22,26 @@ class MstDataManageApi(MethodView):
     @controller
     @jwt_user_context_db(refresh=False)
     def post(self, dict_request_data, user_context=None, logger=None):
+        if (
+            not user_context
+            or user_context.get("org_type_code") != "01"
+            or str(user_context.get("role")) != "0"
+        ):
+            return jsonify({"message": "利用権限がありません。"}), 403
+
+        corporate_number = (
+            dict_request_data.get("corporate_number")
+            if isinstance(dict_request_data, dict)
+            else None
+        )
+        if not isinstance(corporate_number, str) or not re.fullmatch(
+            r"[0-9]{13}", corporate_number
+        ):
+            return (
+                jsonify({"message": "入力値が不正です。", "errors": ["corporate_number"]}),
+                400,
+            )
+
         dict_request_data["user_id"] = user_context.get("user_id")
         res = CorprationBasicUpdateService().post_corpration_building_info(
             request_dict=dict_request_data
