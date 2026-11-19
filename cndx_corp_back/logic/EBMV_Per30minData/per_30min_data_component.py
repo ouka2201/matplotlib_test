@@ -67,7 +67,7 @@ class Per30minDataComponent:
 
                 if building_id_val:  # 値がNoneや空文字でない場合
                     query = query.filter(
-                        TElectricityData30min.building_id == building_id_val
+                        TElectricityData30min.building_id.contains(building_id_val, autoescape=True)
                     )
 
                 conditions = [
@@ -174,9 +174,10 @@ class Per30minDataComponent:
 
         normalized_rows.sort(
             key=lambda row: (
-                row.get("corp_number"),
-                row.get("building_id"),
-                row.get("period_from"),
+                row.get("building_name") is None,
+                row.get("building_name") or "",
+                row.get("period_from") or "",
+                row.get("building_id") or "",
             )
         )
         return normalized_rows

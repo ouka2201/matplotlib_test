@@ -1,3 +1,5 @@
+import re
+
 from flask import jsonify
 from flask.views import MethodView
 
@@ -23,6 +25,25 @@ class Per30minDataApi(MethodView):
             role_id = user_context.get("role")
             if org_type_code != "01" or str(role_id) not in ("0", "1"):
                 return jsonify({"message": "利用権限がありません。"}), 403
+
+            corp_number = dict_request_data.get("corp_number", "")
+            agreement_category = dict_request_data.get("agreement_category", "")
+            building_id = dict_request_data.get("building_id", "")
+            org_id = dict_request_data.get("org_id", "")
+            errors = []
+            if not isinstance(corp_number, str) or not re.fullmatch(r"[0-9]{13}", corp_number.strip()):
+                errors.append("corp_number")
+            if not isinstance(agreement_category, str) or (
+                agreement_category and not re.fullmatch(r"[0-9]{2}", agreement_category.strip())
+            ):
+                errors.append("agreement_category")
+            if not isinstance(building_id, str) or len(building_id.strip()) > 113:
+                errors.append("building_id")
+            if not isinstance(org_id, str) or len(org_id.strip()) > 20:
+                errors.append("org_id")
+            if errors:
+                return jsonify({"message": "入力値が不正です。", "errors": errors}), 400
+
             res = Per30minDataService().get_per_30min_data_list(
                 dict_request_data, org_type_code, login_org_id, user_id, role_id
             )
