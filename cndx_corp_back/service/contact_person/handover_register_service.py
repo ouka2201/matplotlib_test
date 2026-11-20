@@ -6,6 +6,7 @@ from cndx_corp_back.common.database_manager import get_scoped_session
 from cndx_corp_back.constant.handover_constants import (
     HANDOVER_ALREADY_PROCESSED,
     HANDOVER_STATUS_PLANNED,
+    HANDOVER_SOURCE_WITHOUT_COMPANIES,
     HANDOVER_TYPE_BULK,
     HANDOVER_TYPE_INDIVIDUAL,
     HANDOVER_UNASSIGNED_COMPANY,
@@ -55,6 +56,8 @@ def register_handover(data: dict, user_context: dict, handover_type: str) -> Non
         )
         if handover_type == HANDOVER_TYPE_BULK:
             numbers = assigned
+            if not numbers:
+                raise ValueError(HANDOVER_SOURCE_WITHOUT_COMPANIES)
         elif not set(numbers) <= set(assigned):
             raise ValueError(HANDOVER_UNASSIGNED_COMPANY)
 
