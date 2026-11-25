@@ -75,6 +75,29 @@ EP管理者で別種別の組織を作る場合は `--org-type-code`（01～06�
 `--with-business-data` を省略した場合は**確認モーダル表示まで**です。担当企業を割り当てないため、登録・バッチの確認には次の手順を使ってください。
 作成した担当者のメールは送信先として使わない予約ドメインで、ログイン用途でもありません。
 
+## 個別引継画面用のデータ
+
+`--individual-handover` を指定すると、引継元担当者が受け持つ2法人と、先頭の1法人だけに引継区分「個別」・ステータス「予定」の引継予定を作成します。個別引継画面を開くと1法人にチェックが入り、もう1法人は未選択になります。`--with-business-data`、`--existing-handover`、`--handover-type 0` を別途指定する必要はありません。
+
+```powershell
+$individualArgs = @(
+  '--login-user-id', '00000001',
+  '--from-org-id', 'BNK0001901',
+  '--to-org-id', 'BNK0001902',
+  '--create-organizations',
+  '--individual-handover',
+  '--start-id', '900001',
+  '--schedule-date', '2026-12-21'
+)
+python cndx_corp_back/test/prepare_handover_screen_data.py @individualArgs
+python cndx_corp_back/test/prepare_handover_screen_data.py @individualArgs --apply
+python cndx_corp_back/test/prepare_handover_screen_data.py @individualArgs --verify-stage prepared
+```
+
+IDと実施日は検証環境に合わせて変更してください。作成する法人番号は既定で `9900000900001` と `9900000900002` です。お客さま名は「個別引継テスト企業1／2」、本社所在地はそれぞれ「東京都千代田区1-1」「東京都港区2-2」です。お客さま名、法人番号、本社所在地の検索で2法人を区別できます。
+
+画面では上記の元・先担当者を選択し、「個別引継」を押してください。2法人とも選択して登録した場合は `--verify-stage registered` で確認できます。初期状態に戻すには `--reset`、削除するには `--cleanup` を、投入時と同じ `$individualArgs` で実行します。投入済みデータの確認には `--verify-stage prepared` を使ってください。
+
 ## 登録からバッチ完了まで
 
 同じ検証DBをフロント経由のAPI、データ作成PG、バッチで使用します。バックエンドだけでなく
@@ -114,7 +137,7 @@ python cndx_corp_back/test/prepare_handover_screen_data.py @seedArgs --apply
 | レポート保管・CN申請・建物情報（3表） | 組織IDの引継確認 |
 
 レポート保管情報はDB行のみです。PDFファイルの作成やダウンロード確認は対象外です。
-**引継予定はPGでは作成しません。次の画面操作で登録してください。**
+**以下は `--individual-handover` を付けない通常の手順です。引継予定は画面から登録してください。**
 
 1. 指定した管理者でログインし、上記「画面操作」と同様に元・先担当者を選択する。
 2. 実施日に `$handoverDate` を `YYYY/MM/DD` 形式で入力する。

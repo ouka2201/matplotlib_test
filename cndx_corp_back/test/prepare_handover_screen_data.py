@@ -44,7 +44,11 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--agreement-category", default="01")
     parser.add_argument("--energy-code", default="ELECTRICITY")
     parser.add_argument("--existing-handover", action="store_true", help="更新ケース用の引継予定を作成")
-    parser.add_argument("--handover-type", choices=("0", "1"), default="1")
+    parser.add_argument("--handover-type", choices=("0", "1"))
+    parser.add_argument(
+        "--individual-handover", action="store_true",
+        help="個別引継画面用に2法人と予定済みの引継1件を作成",
+    )
     parser.add_argument(
         "--schedule-date",
         type=date.fromisoformat,
@@ -58,10 +62,20 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     )
     action.add_argument(
         "--verify-stage",
-        choices=("registered", "completed"),
-        help="登録後・バッチ後を確認（参照のみ）",
+        choices=("prepared", "registered", "completed"),
+        help="準備直後・登録後・バッチ後を確認（参照のみ）",
     )
     args = parser.parse_args(argv)
+    if args.individual_handover:
+        if args.handover_type not in (None, "0"):
+            parser.error("--individual-handoverでは--handover-type 1を指定できません。")
+        args.with_business_data = True
+        args.existing_handover = True
+        args.handover_type = "0"
+    else:
+        args.handover_type = args.handover_type or "1"
+    if args.verify_stage == "prepared" and not args.individual_handover:
+        parser.error("--verify-stage preparedには--individual-handoverが必要です。")
     if args.verify_stage and not args.with_business_data:
         parser.error("--verify-stageには--with-business-dataが必要です。")
     if args.existing_handover and not args.with_business_data:
