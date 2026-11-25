@@ -15,7 +15,7 @@ MARKER = "handover_screen_seed"
 
 
 def build_business_rows(args: argparse.Namespace) -> dict[str, list[dict]]:
-    # 2法人・過去データ8表の既存ケースを再利用し、予定は画面から登録する。
+    # 2法人・過去データ8表の既存ケースを再利用する。
     plan = build_plan(
         "42",
         start_id=args.start_id,
@@ -33,8 +33,15 @@ def build_business_rows(args: argparse.Namespace) -> dict[str, list[dict]]:
                     row[key] = args.from_org_id
             if "USER_ID" in row:
                 row["USER_ID"] = args.from_user_id
-    for row in rows["corporate"]:
-        row.update(COMPANY_ADDRESS_PREFECTURE="13", COMPANY_ADDRESS_CITY="千代田区1-1")
+    individual = getattr(args, "individual_handover", False)
+    for index, row in enumerate(rows["corporate"], 1):
+        if individual:
+            row["COMPANY_NAME"] = f"個別引継テスト企業{index}"
+        row.update(
+            COMPANY_ADDRESS_PREFECTURE="13",
+            COMPANY_ADDRESS_CITY=("千代田区1-1", "港区2-2")[index - 1]
+            if individual else "千代田区1-1",
+        )
     rows["details"] = [
         {
             "CORPORATE_NUMBER": row["CORPORATE_NUMBER"],
@@ -142,7 +149,12 @@ def prepare_business(connection: Connection, args: argparse.Namespace) -> str:
     ).first():
         raise ValueError("テスト担当者が別の担当企業に使用されています。")
     _insert_rows(connection, tables, rows, args.apply)
-    return f"対象法人: {', '.join(numbers)}（予定は画面から登録）"
+    note = (
+        "1法人は予定済み、1法人は未選択"
+        if getattr(args, "individual_handover", False)
+        else "予定は画面から登録"
+    )
+    return f"対象法人: {', '.join(numbers)}（{note}）"
 
 
 def _insert_rows(connection: Connection, tables: dict, rows: dict, apply: bool) -> None:
@@ -169,6 +181,35 @@ def _insert_rows(connection: Connection, tables: dict, rows: dict, apply: bool) 
 def _verify(existing: dict, expected: dict, args: argparse.Namespace) -> str:
     numbers = {row["CORPORATE_NUMBER"] for row in expected["corporate"]}
     targets = existing["handover"]
+    if args.verify_stage == "prepared":
+        first = expected["corporate"][0]["CORPORATE_NUMBER"]
+        if len(targets) != 1 or targets[0]["corporate_number"] != first:
+            raise ValueError("予定済みの引継が先頭の1法人だけではありません。")
+        target = targets[0]
+        if (
+            target["handover_status"],
+            target["handover_type"],
+            target["handover_from_org_id"],
+            target["handover_from_user_id"],
+            target["handover_to_org_id"],
+            target["handover_to_user_id"],
+            target["handover_schedule_date"],
+        ) != (
+            "1", "0", args.from_org_id, args.from_user_id,
+            args.to_org_id, args.to_user_id, args.schedule_date.strftime("%Y%m%d"),
+        ):
+            raise ValueError("個別引継の予定済みデータが期待値と異なります。")
+        if len(existing["staff"]) != 2 or {
+            row["corporate_number"] for row in existing["staff"]
+        } != numbers or any(
+            row["corporate_number"] not in numbers
+            or row["user_id"] != args.from_user_id
+            or row["org_id"] != args.from_org_id
+            or row["delete_flg"]
+            for row in existing["staff"]
+        ):
+            raise ValueError("引継元担当者の担当法人が2件ではありません。")
+        return "確認OK: 個別引継 / 2法人 / 予定済み1法人"
     if len(targets) != 2 or {r["corporate_number"] for r in targets} != numbers:
         raise ValueError("引継予定が2法人分登録されていません。")
     is_completed = args.verify_stage == "completed"
