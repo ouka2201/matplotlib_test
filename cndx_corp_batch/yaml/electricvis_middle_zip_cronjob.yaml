@@ -1,0 +1,61 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: electricvis-middle-zip
+spec:
+  schedule: "0 * * * *"
+  timeZone: Asia/Tokyo
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 5
+  startingDeadlineSeconds: 300
+  jobTemplate:
+    spec:
+      backoffLimit: 0
+      activeDeadlineSeconds: 3600
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: batch
+              image: data.ts.tdh.tepcube.jp:10140/cndx_corp_step3_maint/cndx-corp-batch:0.1
+              imagePullPolicy: IfNotPresent
+              workingDir: /app/cndx_corp_batch
+              command:
+                - python
+                - -m
+                - entrypoints.user_power_report
+              env:
+                - name: TZ
+                  value: Asia/Tokyo
+                - name: BATCH_NAME
+                  value: BLMMRCRZIPCREATE
+                - name: DATABASE_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: epdb-secret
+                      key: DATABASE_URL
+                - name: API_VERSION
+                  value: "3.21"
+                - name: FINAL_METER_READING_DATE
+                  value: "14"
+                - name: OFFSET_MONTH_1
+                  value: "3"
+                - name: OFFSET_MONTH_2
+                  value: "2"
+                - name: USER_POWER_REPORT_FILE_PATH
+                  value: /bd-fs-mnt/TenantShare/corp/electricity_vis_middle/power_report
+              envFrom:
+                - configMapRef:
+                    name: cndx-corp-config
+                - secretRef:
+                    name: tableau-secret
+                - secretRef:
+                    name: epdb-secret
+              resources:
+                requests:
+                  cpu: "250m"
+                  memory: "512Mi"
+                limits:
+                  cpu: "1"
+                  memory: "1Gi"

@@ -1,14 +1,14 @@
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: electric_vis-5min
+  name: handover
 spec:
-  schedule: "*/5 * * * *"
+  schedule: "0 1 * * *"
+  timeZone: Asia/Tokyo
   concurrencyPolicy: Forbid
   successfulJobsHistoryLimit: 3
   failedJobsHistoryLimit: 5
   startingDeadlineSeconds: 300
-
   jobTemplate:
     spec:
       backoffLimit: 0
@@ -24,12 +24,19 @@ spec:
               command:
                 - python
                 - -m
-                - entrypoints.cn_karte_batch
+                - entrypoints.sales_user_handover_batch
               env:
                 - name: TZ
                   value: Asia/Tokyo
                 - name: BATCH_NAME
-                  value: cn-karte-batch
+                  value: BLMMGMGHANDOVER
+                - name: DATABASE_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: epdb-secret
+                      key: DATABASE_URL
+                - name: API_VERSION
+                  value: "3.21"
               envFrom:
                 - configMapRef:
                     name: cndx-corp-config
