@@ -1,0 +1,30 @@
+INSERT INTO db_corp.t_user_power_report_mng_info (
+file_name,
+file_path,
+file_created_at,
+create_status,
+org_id,
+user_org_name,
+sales_user_name,
+target_year_month,
+syousapo_flg,
+created_by,
+created_at,
+updated_by,
+updated_at
+)
+VALUES (
+:file_name,
+:file_path,
+:file_created_at,
+:create_status,
+:org_id,
+:user_org_name,
+:sales_user_name,
+:target_year_month,
+:syousapo_flg,
+:created_by,
+:created_at,
+:updated_by,
+:updated_at
+);

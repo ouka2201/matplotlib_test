@@ -1,0 +1,1 @@
+TRUNCATE TABLE db_corp.t_ep_contracted_power;

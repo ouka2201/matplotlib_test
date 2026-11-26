@@ -1,0 +1,1 @@
+TRUNCATE TABLE db_corp.t_arve_customer_info;

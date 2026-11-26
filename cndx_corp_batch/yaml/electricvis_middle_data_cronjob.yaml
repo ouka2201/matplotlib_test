@@ -1,0 +1,76 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: electricvis_middle_data
+spec:
+  schedule: "0 12-21 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 5
+  startingDeadlineSeconds: 300
+
+  jobTemplate:
+    spec:
+      backoffLimit: 0
+      activeDeadlineSeconds: 3600
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: batch
+              image: data.ts.tdh.tepcube.jp:10140/cndx_corp_step3_maint/cndx-corp-batch:0.1
+              imagePullPolicy: IfNotPresent
+              workingDir: /app/cndx_corp_batch
+              command:
+                - python
+                - -m
+                - entrypoints.import_30min_cust
+              env:
+                - name: TZ
+                  value: Asia/Tokyo
+                - name: BATCH_NAME
+                  value: import-30min-cust
+                - name: TDV_SERVER_URL
+                  value: "https://n1001184.dev.int.tepco.co.jp/server/A10_CN可視化アプリ_API公開"
+                - name: TDV_USERNAME
+                  value: "DevTestUser12"
+                - name: TDV_PASSWORD
+                  value: "Oq7!Ww9(Wq0%"
+                - name: ARVE_ENDPOINT
+                  value: "/お客様情報_部分負荷検証用/views/お客様情報_部分負荷検証用"
+                - name: ARVE_RETRY_COUNT
+                  value: "0"
+                - name: ARVE_RETRY_INTERVAL
+                  value: "120"
+                - name: ARVE_VERIFY
+                  value: "False"
+                - name: ARVE_TIMEOUT
+                  value: "120"
+                - name: EP_REGULAR_ENDPOINT
+                  value: "/D4ZT30T01_cacheON_indexON/views/D4ZT30T01_cacheON_indexON"
+                - name: EP_NEWCOMMER_ENDPOINT
+                  value: "/D4ZT30T01/views/D4ZT30T01"
+                - name: EP_CONTRACTED_POWER_ENDPOINT
+                  value: "QSKTQKYK01_cacheON_重複除外/views/QSKTQKYK01_cacheON_重複除外"
+                - name: EP_RETRY_COUNT
+                  value: "0"
+                - name: EP_RETRY_INTERVAL
+                  value: "120"
+                - name: EP_VERIFY
+                  value: "False"
+                - name: EP_TIMEOUT
+                  value: "120"
+              envFrom:
+                - configMapRef:
+                    name: cndx-corp-config
+                - secretRef:
+                    name: tableau-secret
+                - secretRef:
+                    name: epdb-secret
+              resources:
+                requests:
+                  cpu: "250m"
+                  memory: "512Mi"
+                limits:
+                  cpu: "1"
+                  memory: "1Gi"
